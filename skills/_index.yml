@@ -1,0 +1,32 @@
+generated: '2026-08-26'
+method: generated
+source: >-
+  openapi/*.yml (verified operationIds), conventions/ppro-conventions.yml, errors/ppro-failure-codes.yml,
+  asyncapi/ppro-webhooks.yml, and PPRO's own quickstart and guide pages
+api: PPRO Global API
+note: >-
+  PPRO publishes no AGENTS.md and no packaged agent skills of its own — it points agents at llms.txt and its
+  MCP server instead. These three skills are generated from PPRO's published contract and documentation.
+  Every operationId named in them exists in openapi/*.yml and every webhook event type exists in
+  asyncapi/ppro-webhooks.yml; nothing was invented.
+skill_count: 3
+skills:
+- name: ppro-collect-a-local-payment
+  file: skills/ppro-collect-a-local-payment.md
+  description: Collect a one-off payment with a local payment method or card, drive consumer authentication, and capture.
+  operations: [authorize, confirm, getPaymentCharge, capture, getCapture, getCaptures]
+- name: ppro-set-up-recurring-payments
+  file: skills/ppro-set-up-recurring-payments.md
+  description: Establish a consumer mandate as a payment agreement, charge against it on a schedule, and revoke cleanly.
+  operations: [createAgreement, confirm, fetchPaymentAgreement, createCharge, revokeAgreement, createPaymentInstrument,
+    fetchPaymentInstrument, deletePaymentInstrument]
+- name: ppro-handle-a-dispute
+  file: skills/ppro-handle-a-dispute.md
+  description: Work a dispute end to end — capability gates, evidence upload, action, chargeback reconciliation, reporting.
+  operations: [getDisputes, getById, postMessage, uploadFile, downloadFile, actionDispute, getChargebacks, getChargeback,
+    getChargebackReversals, disputeReports, getReportById]
+mcp_alternative:
+  note: >-
+    For the payment-charge, instrument, agreement and session flows an agent can call PPRO's hosted MCP server
+    directly (https://mcp.eu.ppro.com, 28 tools) instead of the REST operations named above. Disputes,
+    chargebacks, reports, fund statuses and onboarding are REST-only — see mcp/ppro-tool-crosswalk.yml.

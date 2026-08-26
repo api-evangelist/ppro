@@ -1,0 +1,23 @@
+generated: '2026-08-26'
+method: searched
+source: https://developerhub.ppro.com/llms.txt
+note: >-
+  Both llms.txt files in this directory are PPRO's own, saved verbatim. ppro-llms.txt is the developer-hub
+  root index covering all four projects (PPRO API / Global API, Simple API, Risk Management, LATAM API);
+  ppro-global-api-llms.txt is the Global API section index. PPRO also serves a per-section and per-category
+  llms.txt at every level of the docs tree and a .md twin of every page, and its MCP documentation explicitly
+  points agents at llms.txt as the curated map. Nothing here was generated.
+files:
+- file: llms/ppro-llms.txt
+  url: https://developerhub.ppro.com/llms.txt
+  http_status: 200
+  bytes: 5929
+  fetched: '2026-08-26'
+- file: llms/ppro-global-api-llms.txt
+  url: https://developerhub.ppro.com/global-api/llms.txt
+  http_status: 200
+  bytes: 2383
+  fetched: '2026-08-26'
+llms_full_txt:
+  present: false
+  note: PPRO publishes no llms-full.txt; only the sectioned indexes and per-page .md twins.

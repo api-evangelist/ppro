@@ -1,0 +1,364 @@
+generated: '2026-08-26'
+method: searched
+source: https://developerhub.ppro.com/global-api/reference/ppro-failure-codes
+api: PPRO Global API
+note: PPRO's decline surface is not an HTTP-status surface. A request can be accepted with a 2xx while the underlying
+  authorization, capture, refund or void is declined; the created entity then carries a failure object. This file
+  catalogues the failureCode values PPRO publishes, grouped by failureType. It complements errors/ppro-problem-types.yml,
+  which covers the transport-level 4xx/5xx envelope.
+envelope:
+  field: failure
+  location: on the created entity in a 2xx response, and mirrored onto the parent payment charge as the most recent
+    failure
+  fields:
+  - name: failureType
+    description: 'General category: INTERNAL_ERROR, INTERNAL_DECLINE, PROVIDER_ERROR, PROVIDER_DECLINE'
+  - name: failureCode
+    description: Optional. Internal PPRO code identifying the specific failure — the values catalogued here.
+  - name: providerFailureCode
+    description: Optional. Raw failure code returned by the upstream provider. Not published by PPRO; passed through.
+  - name: failureMessage
+    description: Human-readable message describing the cause.
+  - name: isRetryable
+    description: Optional. Whether a fresh attempt later may succeed. Not all payment methods support this indication.
+failure_types:
+- type: INTERNAL_ERROR
+  meaning: An unexpected error occurred within PPRO's system.
+- type: INTERNAL_DECLINE
+  meaning: PPRO determined that the operation should be declined.
+- type: PROVIDER_ERROR
+  meaning: An error occurred while communicating with an upstream provider.
+- type: PROVIDER_DECLINE
+  meaning: The upstream provider declined the operation.
+masked_to_buyer:
+  policy: not-stated
+  note: 'PPRO does not publish a masking policy. Several recommended-steps entries do instruct the merchant to show
+    the consumer a generic error rather than the reason (for example BLOCKED_IP: "Show a generic error and contact
+    PPRO support for details"), which is guidance to the merchant, not a platform-enforced mask.'
+decline_code_count: 76
+decline_codes:
+- code: AGREEMENT_INACTIVE
+  failure_type: INTERNAL_DECLINE
+  meaning: Payment Agreement not yet active or failed during setup.
+  action: Ensure the Agreement status is `ACTIVE` before creating payments. Handle activation webhooks properly.
+- code: AGREEMENT_REVOKED
+  failure_type: INTERNAL_DECLINE
+  meaning: Payment Agreement revoked by the consumer or merchant.
+  action: Verify Agreement status before reuse. Stop future payments under revoked agreements.
+- code: AMOUNT_NOT_SUPPORTED
+  failure_type: INTERNAL_DECLINE
+  meaning: Amount value is invalid or outside supported range.
+  action: Use a valid `amount.value` within the payment methods min/max limits.
+- code: BLOCKED_ACCOUNT
+  failure_type: INTERNAL_DECLINE
+  meaning: Account or card blocked by PPRO due to suspected fraud or abuse.
+  action: Ask the consumer to select a different payment method.
+- code: BLOCKED_BIN
+  failure_type: INTERNAL_DECLINE
+  meaning: BIN (first 6–8 digits) blocked by PPRO due to high risk or chargebacks.
+  action: Ask the consumer to select a different payment method.
+- code: BLOCKED_EMAIL
+  failure_type: INTERNAL_DECLINE
+  meaning: Consumer email blocked by PPRO due to suspected fraud or abuse.
+  action: Verify the consumer’s identity before allowing further payment attempts, and ask them to use a different
+    verified email address or payment method.
+- code: BLOCKED_IP
+  failure_type: INTERNAL_DECLINE
+  meaning: Consumer IP blocked by PPRO due to suspected fraud or abuse.
+  action: Show a generic error and contact PPRO support for details.
+- code: CANCELED_BY_CONSUMER
+  failure_type: INTERNAL_DECLINE
+  meaning: null
+  action: null
+- code: CHARGEBACK_DETECTED
+  failure_type: INTERNAL_DECLINE
+  meaning: null
+  action: null
+- code: COUNTRY_NOT_SUPPORTED
+  failure_type: INTERNAL_DECLINE
+  meaning: Country code invalid or unsupported by the payment method.
+  action: Re-submit with a valid `countryCode` value supported by the payment method.
+- code: EXCEEDS_AUTHORIZED_AMOUNT
+  failure_type: INTERNAL_DECLINE
+  meaning: Capture or void amount exceeds the remaining authorized amount.
+  action: Ensure captures stay within the authorized total and the charge is still CAPTURE_PENDING
+- code: EXCEEDS_CAPTURED_AMOUNT
+  failure_type: INTERNAL_DECLINE
+  meaning: Refund amount exceeds the captured funds.
+  action: Verify that total captures minus refunds ≥ refund amount before retrying.
+- code: EXCEEDS_REFUND_LIMIT
+  failure_type: INTERNAL_DECLINE
+  meaning: Refund would reduce the account balance below minimum.
+  action: Contact PPRO to request a higher refund limit.
+- code: EXCEEDS_REFUNDABLE_AMOUNT
+  failure_type: INTERNAL_DECLINE
+  meaning: Refund attempted before capture or after full refund.
+  action: Confirm at least one successful capture and that charge is not fully refunded.
+- code: GENERIC_DECLINE
+  failure_type: INTERNAL_DECLINE
+  meaning: Payment declined by PPRO systems without a specific reason.
+  action: Retry the payment. If retry attempts are also unsuccessful, ask the consumer to choose a different payment
+    method.
+- code: HIGH_ACCOUNT_VELOCITY
+  failure_type: INTERNAL_DECLINE
+  meaning: Too many attempts from the same account or card.
+  action: Contact your account manager; ask the consumer to try a different method.
+- code: HIGH_BIN_VELOCITY
+  failure_type: INTERNAL_DECLINE
+  meaning: Too many attempts from the same BIN range.
+  action: Contact your account manager; ask the consumer to use another card.
+- code: HIGH_EMAIL_VELOCITY
+  failure_type: INTERNAL_DECLINE
+  meaning: Too many attempts using the same email address.
+  action: Contact your account manager; ask the consumer to try a different email.
+- code: HIGH_IP_VELOCITY
+  failure_type: INTERNAL_DECLINE
+  meaning: Too many attempts from the same IP address.
+  action: Contact your account manager for details.
+- code: INSTRUMENT_NOT_FOUND
+  failure_type: INTERNAL_DECLINE
+  meaning: Specified `instrumentId` not found.
+  action: Verify the `instrumentId` exists, is stored correctly, and belongs to the same merchant account.
+- code: INTERNAL_PROCESSING_ERROR
+  failure_type: INTERNAL_DECLINE
+  meaning: null
+  action: null
+- code: INVALID_ACCOUNT
+  failure_type: INTERNAL_DECLINE
+  meaning: Account or card format not supported.
+  action: Check that the payment method supports the account type used.
+- code: INVALID_AMOUNT
+  failure_type: INTERNAL_DECLINE
+  meaning: null
+  action: null
+- code: INVALID_AUTHENTICATION_SETTINGS
+  failure_type: INTERNAL_DECLINE
+  meaning: Invalid or missing `authenticationSettings` for the payment method.
+  action: Send valid authentication parameters per the payment method’s documentation.
+- code: INVALID_COUNTRY
+  failure_type: INTERNAL_DECLINE
+  meaning: Unsupported or invalid country for this payment method.
+  action: Use a supported country per the payment method documentation.
+- code: INVALID_CURRENCY
+  failure_type: INTERNAL_DECLINE
+  meaning: Unsupported or invalid currency for this payment method.
+  action: Use a supported currency per the payment method documentation.
+- code: INVALID_INPUT_DATA
+  failure_type: INTERNAL_DECLINE
+  meaning: null
+  action: null
+- code: INVALID_IP
+  failure_type: INTERNAL_DECLINE
+  meaning: Consumer IP invalid or not supported by the provider.
+  action: Ensure IP format is valid and supported for the consumer’s country.
+- code: INVALID_MANDATE_ID
+  failure_type: INTERNAL_DECLINE
+  meaning: null
+  action: null
+- code: INVALID_PAYMENT_METHOD
+  failure_type: INTERNAL_DECLINE
+  meaning: Unrecognized `paymentMethod` value.
+  action: Use a valid `paymentMethod` from the supported list.
+- code: INVALID_TAX_ID
+  failure_type: INTERNAL_DECLINE
+  meaning: Invalid `consumer.taxIdentification` for this payment method
+  action: Send a valid tax ID per payment method requirements.
+- code: MISSING_IBAN
+  failure_type: INTERNAL_DECLINE
+  meaning: null
+  action: null
+- code: NO_AUTHORIZED_AMOUNT
+  failure_type: INTERNAL_DECLINE
+  meaning: No successful Authorization found; capture/void not possible.
+  action: Wait for `AUTHORIZATION_SUCCEEDED` webhook before capture or void.
+- code: NO_CAPTURED_AMOUNT
+  failure_type: INTERNAL_DECLINE
+  meaning: null
+  action: null
+- code: PAYMENT_METHOD_TIMEOUT
+  failure_type: INTERNAL_DECLINE
+  meaning: Authorization not completed within timeout limit set by PPRO
+  action: Redirect the consumer to select a new payment method.
+- code: SIMULTANEOUS_OPERATION_IN_PROGRESS
+  failure_type: INTERNAL_DECLINE
+  meaning: null
+  action: null
+- code: INTERNAL_SERVICE_UNAVAILABLE
+  failure_type: INTERNAL_ERROR
+  meaning: A PPRO internal service is temporarily down during request processing. This typically indicates a production
+    incident.
+  action: The request may have partially completed (e.g., capture triggered but response not received). After recovery,
+    PPRO resolves any side effects and sends webhooks with the final status.
+- code: INTERNAL_PROCESSING_ERROR
+  failure_type: INTERNAL_ERROR
+  meaning: A PPRO internal service encountered an unexpected error while handling the request. These are extremely
+    rare.
+  action: The request may have partially completed (e.g., capture triggered but response not received). After recovery,
+    PPRO resolves any side effects and sends webhooks with the final status.
+- code: ACCOUNT_NOT_SUPPORTED
+  failure_type: PROVIDER_DECLINE
+  meaning: The consumer's account or card not supported.
+  action: Return the consumer to the payment method selection step of the checkout to try again with a different
+    card or payment method.
+- code: AMOUNT_NOT_SUPPORTED
+  failure_type: PROVIDER_DECLINE
+  meaning: Amount value is outside supported range.
+  action: Use a valid `amount.value` within the payment methods min/max limits.
+- code: AUTHENTICATION_FAILED
+  failure_type: PROVIDER_DECLINE
+  meaning: The consumer failed authentication.
+  action: The consumer should contact their issuer or provider to receive more information and resolve the problem.
+- code: BLOCKED_ACCOUNT
+  failure_type: PROVIDER_DECLINE
+  meaning: null
+  action: null
+- code: CANCELED_BY_CONSUMER
+  failure_type: PROVIDER_DECLINE
+  meaning: The provider has informed us that the consumer intentionally abandoned the authentication flow.
+  action: Return the consumer to the payment method selection step of the checkout so they can initiate a new payment.
+- code: CARD_CLOSED_OR_INVALID
+  failure_type: PROVIDER_DECLINE
+  meaning: The card is expired, blocked, reported stolen/lost, or the associated bank account is closed.
+  action: Inform the customer that an automated refund is not possible. Arrange an alternative payment method (e.g.,
+    bank transfer).
+- code: COUNTRY_NOT_SUPPORTED
+  failure_type: PROVIDER_DECLINE
+  meaning: The country value is not supported by the provider.
+  action: Have the consumer fill in the country value again with a valid one.
+- code: CURRENCY_NOT_SUPPORTED
+  failure_type: PROVIDER_DECLINE
+  meaning: null
+  action: null
+- code: DUPLICATE_DETECTED
+  failure_type: PROVIDER_DECLINE
+  meaning: Provider detected a very similar request recently with the same details and amount.
+  action: Check and ensure you are not charging/refunding multiple times for the same product.
+- code: EXCEEDS_REFUNDABLE_AMOUNT
+  failure_type: PROVIDER_DECLINE
+  meaning: The amount requested exceeds the remaining balance, or a refund for this transaction is already in progress/duplicated.
+  action: Verify if a refund was already processed. Ensure the refund amount does not exceed the original transaction
+    value.
+- code: EXPIRED_CARD
+  failure_type: PROVIDER_DECLINE
+  meaning: The card has expired.
+  action: Ask the consumer to update/change their card or choose a different payment method.
+- code: EXPIRED_SESSION
+  failure_type: PROVIDER_DECLINE
+  meaning: null
+  action: null
+- code: FORMAT_ERROR
+  failure_type: PROVIDER_DECLINE
+  meaning: The payload sent to the acquirer contained invalid characters, missing fields, or incorrect formatting.
+  action: Contact PPRO's support team with the transaction ID.
+- code: GENERIC_DECLINE
+  failure_type: PROVIDER_DECLINE
+  meaning: The acquirer returned a generic decline.
+  action: null
+- code: INCORRECT_BILLING_ADDRESS
+  failure_type: PROVIDER_DECLINE
+  meaning: The billing address entered was wrong.
+  action: Have the consumer enter the billing address again.
+- code: INCORRECT_CVV
+  failure_type: PROVIDER_DECLINE
+  meaning: The CVC/CVV was wrong.
+  action: Have the consumer try again by entering the correct CVC/CVV.
+- code: INCORRECT_HOLDER_NAME
+  failure_type: PROVIDER_DECLINE
+  meaning: The card or account holderName could not be validated by the issuer.
+  action: Have the consumer enter their card details again or try a different card.
+- code: INCORRECT_ISSUER
+  failure_type: PROVIDER_DECLINE
+  meaning: The card number/issuer is not within a card number range supported by the provider.
+  action: Have the consumer enter their card number again or try a different card.
+- code: INCORRECT_NUMBER
+  failure_type: PROVIDER_DECLINE
+  meaning: The card or account number cannot be validated by the issuer.
+  action: Have the consumer enter their card number again or try a different card.
+- code: INCORRECT_TAX_ID
+  failure_type: PROVIDER_DECLINE
+  meaning: The provider has determined the consumer.taxIdentification to be incorrect.
+  action: Have the consumer enter their tax identification number again. If you receive this failure code frequently
+    and consistently, check that consumer.taxIdentification is being collected in the right format. Refer to the
+    payment method guide to ensure proper formatting.
+- code: INSUFFICIENT_FUNDS
+  failure_type: PROVIDER_DECLINE
+  meaning: Insufficient funds in the account.
+  action: Ask the consumer to choose a different payment method, card or account.
+- code: INVALID_MERCHANT
+  failure_type: PROVIDER_DECLINE
+  meaning: null
+  action: null
+- code: IS_EXCEEDING_ACCOUNT_LIMIT
+  failure_type: PROVIDER_DECLINE
+  meaning: The amount value exceeds the limit on the consumer's account.
+  action: The consumer should contact their issuer to receive more information and resolve the problem.
+- code: IS_GENERIC_DECLINE
+  failure_type: PROVIDER_DECLINE
+  meaning: Generic decline by the issuer.
+  action: The consumer should contact their issuer to receive more information and resolve the problem.
+- code: IS_HIGH_VELOCITY
+  failure_type: PROVIDER_DECLINE
+  meaning: The consumer has exceeded the number of attempts allowed by the issuer.
+  action: The consumer should contact their issuer to receive more information and resolve the problem.
+- code: IS_NOT_PERMITTED
+  failure_type: PROVIDER_DECLINE
+  meaning: Not permitted by the issuer.
+  action: The consumer should contact their issuer to receive more information and resolve the problem.
+- code: REFUND_BLOCKED_TEMPORARILY
+  failure_type: PROVIDER_DECLINE
+  meaning: The request is blocked due to temporary operational limits, queuing, or rate-limiting at the acquirer.
+  action: Do not retry immediately. Wait 1 day before retrying it. If the issue persists, contact PPRO's support
+    team with the transaction ID.
+- code: REFUND_NOT_SUPPORTED
+  failure_type: PROVIDER_DECLINE
+  meaning: The specific product, card type, or acquirer rule does not allow refunds for this transaction.
+  action: Inform the customer that an automated refund is not possible. Arrange an alternative payment method (e.g.,
+    bank transfer).
+- code: REFUND_PERIOD_EXPIRED
+  failure_type: PROVIDER_DECLINE
+  meaning: The transaction is outside the permitted window.
+  action: Inform the customer that an automated refund is no longer possible. Arrange an alternative payment method
+    (e.g., bank transfer).
+- code: RETRY_REFUND_LATER
+  failure_type: PROVIDER_DECLINE
+  meaning: A temporary communication or system failure occurred during the refund process.
+  action: Retry the request after a short interval (e.g., 15–30 minutes). If the issue persists, contact PPRO's
+    support team with the transaction ID.
+- code: SUS_FRAUD
+  failure_type: PROVIDER_DECLINE
+  meaning: The payment was declined because the issuer or provider suspects it was fraudulent.
+  action: The consumer should not be informed about the reason for the decline, and should see only a generic error
+    message.
+- code: SUS_LOST
+  failure_type: PROVIDER_DECLINE
+  meaning: The payment was declined because the consumer's card was reported lost.
+  action: The consumer should not be informed about the reason for the decline, and should see only a generic error
+    message.
+- code: SUS_STOLEN
+  failure_type: PROVIDER_DECLINE
+  meaning: The payment was declined because the consumer's card was reported stolen.
+  action: The consumer should not be informed about the reason for the decline, and should see only a generic error
+    message.
+- code: TRANSACTION_DISPUTED
+  failure_type: PROVIDER_DECLINE
+  meaning: The transaction has an open chargeback or is blocked due to an existing dispute.
+  action: Refunds cannot be processed while a chargeback is active.
+- code: UNKNOWN
+  failure_type: PROVIDER_DECLINE
+  meaning: The acquirer rejected the payment charge or refund with a code that is not currently mapped in our system.
+  action: Contact PPRO's support team with the transaction ID to identify the specific acquirer response.
+- code: UNRESPONSIVE_ISSUER
+  failure_type: PROVIDER_ERROR
+  meaning: The issuer cannot be contacted/is unavailable.
+  action: Retry the request. If you receive this failure code repeatedly, ask the consumer to contact their issuer
+    to receive more information and resolve the problem.
+- code: UNRESPONSIVE_PROVIDER
+  failure_type: PROVIDER_ERROR
+  meaning: The provider cannot be contacted/is unavailable.
+  action: Retry the request. If you receive this failure code repeatedly, there may be an incident / unscheduled
+    maintenance being done by the provider. In general, PPRO will inform you if we detect any provider intermittencies.
+- code: PROVIDER_PROCESSING_ERROR
+  failure_type: PROVIDER_ERROR
+  meaning: The provider could not process the request we sent to them. These errors are very rare.
+  action: This could be caused either by a bug on the provider side, or a bug in the way PPRO formats the request
+    to the provider. These errors are very rare and we work to get them fixed as soon as possible when they arise.

@@ -1,0 +1,16 @@
+generated: '2026-08-26'
+method: derived
+source: openapi/ppro-payment-agreements-openapi.yml, openapi/ppro-payment-charges-openapi.yml,
+  openapi/ppro-payment-instruments-openapi.yml, openapi/ppro-payment-sessions-openapi.yml
+summary:
+  types:
+  - http
+schemes:
+- name: bearer_token
+  type: http
+  scheme: bearer
+  sources:
+  - openapi/ppro-payment-agreements-openapi.yml
+  - openapi/ppro-payment-charges-openapi.yml
+  - openapi/ppro-payment-instruments-openapi.yml
+  - openapi/ppro-payment-sessions-openapi.yml

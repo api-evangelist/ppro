@@ -1,0 +1,97 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  https://developerhub.ppro.com/global-api/reference/error-representation, cross-checked against the 4xx/5xx
+  responses declared in openapi/*.yml
+api: PPRO Global API
+format: custom-json
+rfc9457: false
+rfc9457_note: >-
+  PPRO does not use application/problem+json. Every declared error response in all eleven specs is
+  application/json carrying PPRO's own three-field envelope. Recorded as a gap, not fabricated as conformant.
+envelope:
+  media_type: application/json
+  shape: '{"status": <int>, "failureMessage": "<string>", "timestamp": "<ISO 8601 UTC>"}'
+  example: '{"status": 404, "failureMessage": "Payment charge not found", "timestamp": "2025-02-17T21:18:20.003Z"}'
+problem_type_count: 11
+problem_types:
+- status: 400
+  title: Bad Request
+  meaning: The request is invalid or malformed.
+  examples: Malformed JSON, missing required parameters, invalid data formats.
+  remediation: Validate the payload against the operation's requestBody schema before retrying; a 400 does not store the idempotency key, so the same key may be reused.
+  spec_occurrences: 35
+- status: 401
+  title: Unauthorized
+  meaning: The client is not authenticated.
+  examples: Missing or invalid authentication details.
+  body: '{"message": "Unauthorized"}'
+  remediation: Send Authorization Bearer with a key issued for the environment being called; sandbox keys do not work against api.eu.ppro.com.
+  spec_occurrences: 2
+- status: 403
+  title: Forbidden
+  meaning: The client is authenticated but does not have permission to perform the requested action.
+  examples: Trying to access a restricted endpoint.
+  remediation: Confirm the endpoint is enabled for the account and that Merchant-Id names an account the key may act for.
+  spec_occurrences: 19
+- status: 404
+  title: Not Found
+  meaning: The requested resource does not exist.
+  examples: Retrieving a charge or operation using an unknown ID.
+  remediation: Verify the prefixed identifier and that it belongs to the merchant on the request.
+  spec_occurrences: 31
+- status: 405
+  title: Method Not Allowed
+  meaning: The HTTP method used is not supported for the requested resource.
+  examples: Using POST on a resource that only supports GET.
+  remediation: Check the operation in the OpenAPI document.
+  spec_occurrences: 19
+- status: 409
+  title: Conflict
+  meaning: The request could not be completed due to a conflict.
+  examples: Duplicate resource creation; idempotency key conflict.
+  remediation: >-
+    Returned when a Request-Idempotency-Key is replayed while the original is still in flight, or is replayed
+    with a different request body. Wait for the original to settle, or generate a new UUID for a genuinely
+    different request.
+  spec_occurrences: 47
+- status: 415
+  title: Unsupported Media Type
+  meaning: The request contains an unsupported content type.
+  examples: Sending XML when the API expects JSON.
+  remediation: Send Content-Type application/json (multipart/form-data for dispute file upload).
+- status: 422
+  title: Unprocessable Entity
+  meaning: The request is well-formed but contains semantic errors.
+  examples: Invalid field value, e.g. a negative amount for a payment.
+  remediation: Check amounts are positive integers in minor units and that enum values match the spec.
+- status: 429
+  title: Too Many Requests
+  meaning: The client has exceeded rate limits.
+  remediation: >-
+    Back off using X-RateLimit-Replenish-Rate and X-RateLimit-Remaining. No Retry-After header is documented.
+    See rate-limits/ppro-rate-limits.yml.
+  spec_occurrences: 19
+- status: 431
+  title: Request Header Fields Too Large
+  meaning: One or more request headers are too large.
+  examples: Overly large authentication tokens or custom headers.
+  remediation: Trim custom headers; PPRO caps string values at 512 characters.
+- status: 500
+  title: Internal Server Error
+  meaning: Server-side failure on the PPRO side; typically temporary.
+  remediation: Safe to retry with the SAME Request-Idempotency-Key — PPRO explicitly names 5xx as retry-safe.
+  spec_occurrences: 31
+- status: 504
+  title: Response timeout
+  meaning: PPRO did not respond within the gateway window.
+  remediation: >-
+    Retry with the same Request-Idempotency-Key, and rely on the CloudEvents webhook to learn the true
+    terminal state — a timeout is the canonical case PPRO's idempotency contract exists for.
+  spec_occurrences: 40
+operation_level_failures:
+  note: >-
+    Distinct from the HTTP errors above. A 2xx response can carry a declined operation. Those are catalogued
+    separately in errors/ppro-failure-codes.yml (76 published failureCode values across four failureTypes).
+  catalog: errors/ppro-failure-codes.yml
+docs: https://developerhub.ppro.com/global-api/reference/error-representation

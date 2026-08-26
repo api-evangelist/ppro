@@ -1,0 +1,47 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for GPG Funds
+  version: 1.0.0
+extends: ppro-fund-statuses-openapi.yml
+x-generated: '2026-08-26'
+x-method: generated
+x-source: apis.yml + conventions/ppro-conventions.yml + mcp/ppro-tool-crosswalk.yml
+actions:
+- description: Record the canonical published location and harvest provenance for this contract.
+  target: $.info
+  update:
+    x-apis-io:
+      canonical-source: https://developerhub.ppro.com/global-api/openapi/gpg-funds.json
+      discovery: https://developerhub.ppro.com/.well-known/api-catalog (RFC 9727 linkset)
+      harvested: '2026-08-26'
+      provider: ppro
+- description: Attach the cross-cutting runtime semantics PPRO documents outside the contract.
+  target: $.info
+  update:
+    x-conventions:
+      amounts: integer minor units, ISO 4217 currency codes
+      artifacts:
+        conventions: conventions/ppro-conventions.yml
+        errors: errors/ppro-problem-types.yml
+        failure-codes: errors/ppro-failure-codes.yml
+        rate-limits: rate-limits/ppro-rate-limits.yml
+        sandbox: sandbox/ppro-sandbox.yml
+        webhooks: asyncapi/ppro-webhooks.yml
+      auth: 'Authorization: Bearer {API_KEY}; Merchant-Id header on selected endpoints'
+      error-envelope: '{status, failureMessage, timestamp} over application/json (not RFC 9457)'
+      events: CloudEvents 1.0.2 webhooks, PPRO-Signature HMAC-SHA256
+      idempotency-header: Request-Idempotency-Key (POST and PATCH, UUIDv4, 24h retention)
+      operation-failure-envelope: failure {failureType, failureCode, providerFailureCode, failureMessage, isRetryable}
+      rate-limit-headers:
+      - X-RateLimit-Remaining
+      - X-RateLimit-Requested-Tokens
+      - X-RateLimit-Burst-Capacity
+      - X-RateLimit-Replenish-Rate
+      timestamps: ISO 8601 UTC, millisecond precision
+- description: Note the sandbox/live split PPRO documents for these hosts.
+  target: $.servers
+  update:
+    x-environments:
+      live: https://api.eu.ppro.com
+      note: Sandbox credentials only work against the sandbox host; sandbox rate limits are 5/s vs 50/s live.
+      sandbox: https://api.sandbox.eu.ppro.com

@@ -1,0 +1,87 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  https://developerhub.ppro.com/global-api/docs/testing,
+  https://developerhub.ppro.com/global-api/reference/api-authentication,
+  https://developerhub.ppro.com/global-api/docs/mock-authenticator
+api: PPRO Global API
+environments:
+- name: Sandbox
+  host: https://api.sandbox.eu.ppro.com
+  mcp: https://mcp.sandbox.eu.ppro.com
+  purpose: Test integration. No funds are transferred.
+  credentials: Provided when the sandbox account is created.
+  key_prefix_example: key_sandbox_
+  rate_limit: 5 reads/second and 5 writes/second (reduced from the live 50/50)
+- name: Live
+  host: https://api.eu.ppro.com
+  mcp: https://mcp.eu.ppro.com
+  purpose: Production.
+  credentials: Provided when integration is complete.
+key_separation: true
+key_separation_note: Sandbox credentials only work in the sandbox environment; live credentials only against the live host.
+test_cards:
+  mechanism: >-
+    Any card number or network token may be used in sandbox. The outcome is determined by the LAST TWO DIGITS
+    of the card number. Card brand and BIN range have no effect on the sandbox response, and the same logic
+    applies to network token numbers. Valid in any country.
+  expiry: any
+  cvv: any
+  triggers:
+  - last_two_digits: '00'
+    result: APPROVED
+    failure_type: null
+    failure_code: null
+    account_updater_webhook: false
+  - last_two_digits: '01'
+    result: declined
+    failure_type: PROVIDER_DECLINE
+    failure_code: SUS_STOLEN
+    account_updater_webhook: false
+  - last_two_digits: '02'
+    result: declined
+    failure_type: PROVIDER_DECLINE
+    failure_code: INSUFFICIENT_FUNDS
+    account_updater_webhook: false
+  - last_two_digits: '10'
+    result: APPROVED
+    failure_type: null
+    failure_code: null
+    account_updater_webhook: true
+  - last_two_digits: '12'
+    result: declined
+    failure_type: PROVIDER_DECLINE
+    failure_code: INSUFFICIENT_FUNDS
+    account_updater_webhook: true
+  - last_two_digits: any other
+    result: error
+    failure_type: INTERNAL_ERROR
+    failure_code: INTERNAL_SERVICE_UNAVAILABLE
+    account_updater_webhook: false
+  caveats:
+  - Some countries require a valid, correctly calculated taxIdentification for sandbox requests; the requirement is documented per payment method.
+local_payment_method_testing:
+  mechanism: >-
+    Where available, PPRO routes sandbox traffic to the LPM's own sandbox, giving a complete end-to-end
+    consumer experience. Per-method testing instructions live in the "Sandbox testing" section of each
+    payment method page.
+  docs: https://developerhub.ppro.com/global-api/docs/payment-methods
+mock_authenticator:
+  present: true
+  docs: https://developerhub.ppro.com/global-api/docs/mock-authenticator
+  note: PPRO publishes a mock authenticator for exercising the consumer-authentication step of the payment flows.
+time_simulation:
+  present: false
+  note: No test clocks or time-travel fixtures are published.
+demo:
+- name: PPRO Demo Store
+  url: https://demo-store.ppro.com/
+  note: Interactive demo of the Drop-in Checkout.
+- name: Drop-in Checkout Playground
+  url: https://playground.drop-in-checkout.ppro.com/
+- name: Drop-in Checkout Storybook
+  url: https://storybook.drop-in-checkout.ppro.com/?path=/docs/installation--docs
+no_fabrication_note: >-
+  Every trigger value above is published verbatim by PPRO. No test card number, key or token has been invented
+  — PPRO deliberately publishes a RULE (last two digits) rather than a card list, and that rule is recorded as
+  the rule it is.

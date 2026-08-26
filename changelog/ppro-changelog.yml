@@ -1,0 +1,67 @@
+generated: '2026-08-26'
+method: searched
+source: https://developerhub.ppro.com/global-api/changelog
+api: PPRO Global API
+url: https://developerhub.ppro.com/global-api/changelog
+scheme: monthly-digest
+format: dated monthly posts grouped into New / Improvements (and Fixes where applicable)
+current_version: v1
+breaking_change_signalling: >-
+  None. Entries are grouped as New and Improvements; PPRO does not label breaking changes, and no entry in
+  the published window announced one.
+window: 2025-10 through 2026-05 (eight monthly entries published at the time of harvest)
+entry_count: 8
+entries:
+- version: May 2026
+  date: '2026-05-01'
+  url: https://developerhub.ppro.com/global-api/changelog/may-2026
+  breaking: false
+  additions:
+  - Global Disputes Platform now supports the arbitration phase.
+  improvements:
+  - Afterpay and Wero dispute and chargeback documentation updated with clearer explanations.
+- version: April 2026
+  date: '2026-04-01'
+  url: https://developerhub.ppro.com/global-api/changelog/april-2026
+  breaking: false
+  additions:
+  - 'New payment method: Pay By Bank (Open Banking Payments).'
+  - Global Disputes Platform now supports automated dispute management for Wero, Afterpay and Brazil card payments.
+  - Chargebacks are now available in the global dispute platform.
+  improvements:
+  - BLIK now supports a unique consumer id fingerprint in the instruments object.
+- version: March 2026
+  date: '2026-03-01'
+  url: https://developerhub.ppro.com/global-api/changelog/march-2026
+  breaking: false
+  additions:
+  - 'Payment method enhancement: EPS Recurring.'
+  - 'Payment method enhancement: MB WAY Recurring.'
+  - 'New payment method: NuPay (one-time and recurring).'
+  - Extended dispute lifecycle added to the global dispute platform, including pre-disputes and pre-arbitration.
+- version: February 2026
+  date: '2026-02-01'
+  url: https://developerhub.ppro.com/global-api/changelog/february-26
+  breaking: false
+- version: January 2026
+  date: '2026-01-01'
+  url: https://developerhub.ppro.com/global-api/changelog/janaury-2026
+  breaking: false
+  note: PPRO's own URL slug is misspelled ("janaury"); recorded verbatim so the link resolves.
+- version: December 2025
+  date: '2025-12-01'
+  url: https://developerhub.ppro.com/global-api/changelog/december-25
+  breaking: false
+- version: November 2025
+  date: '2025-11-01'
+  url: https://developerhub.ppro.com/global-api/changelog/november-2025
+  breaking: false
+- version: October 2025
+  date: '2025-10-01'
+  url: https://developerhub.ppro.com/global-api/changelog/october-2025
+  breaking: false
+other_changelogs:
+- api: Simple API
+  url: https://developerhub.ppro.com/simple-api/changelog
+- api: LATAM API
+  url: https://developerhub.ppro.com/latam-api/changelog

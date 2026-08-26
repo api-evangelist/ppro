@@ -1,0 +1,46 @@
+generated: '2026-08-26'
+method: searched
+source: https://developerhub.ppro.com/global-api/reference/api-rate-limit
+api: PPRO Global API
+model: token-bucket
+limit_count: 4
+limits:
+- scope: per-customer (read operations, live)
+  window: per second
+  limit: 50
+  burst: 100
+  unit: requests
+  note: X-RateLimit-Replenish-Rate defaults to 50 reads/second; X-RateLimit-Burst-Capacity is double the replenish rate.
+- scope: per-customer (write operations, live)
+  window: per second
+  limit: 50
+  burst: 100
+  unit: requests
+  note: X-RateLimit-Replenish-Rate defaults to 50 writes/second; burst capacity is double.
+- scope: per-customer (read operations, sandbox)
+  window: per second
+  limit: 5
+  burst: 10
+  unit: requests
+  note: Sandbox read and write limits are reduced to 5 requests per second.
+- scope: per-customer (write operations, sandbox)
+  window: per second
+  limit: 5
+  burst: 10
+  unit: requests
+response_headers:
+- header: X-RateLimit-Remaining
+  meaning: Tokens currently available — how many requests can be made immediately before requests are refused.
+- header: X-RateLimit-Requested-Tokens
+  meaning: Tokens consumed by this request. Each request costs one token.
+- header: X-RateLimit-Burst-Capacity
+  meaning: Maximum tokens the bucket can hold — the largest burst possible when the bucket is full.
+- header: X-RateLimit-Replenish-Rate
+  meaning: Tokens refilled per second — the sustained rate that can be maintained over time.
+retry_after_header: false
+exhausted_status: 429
+exhausted_body: Standard PPRO error envelope with status 429.
+increases: >-
+  Increased limits are configurable on request for high-traffic customers or for peak events, with Black
+  Friday and Singles' Day named explicitly by PPRO.
+docs: https://developerhub.ppro.com/global-api/reference/api-rate-limit

@@ -1,0 +1,223 @@
+openapi: 3.1.0
+info:
+  title: Dispute Reports Service
+  description: 'Provides authorized systems access to generate and retrieve dispute reports for a merchant. A report lists
+    every status change for disputes updated within the requested date range.
+
+    '
+  version: v1
+servers:
+- url: https://api.sandbox.eu.ppro.com
+  description: Sandbox environment for integration testing
+- url: https://api.eu.ppro.com
+  description: Production
+tags:
+- name: Dispute Reports
+  description: Endpoints for generating and retrieving dispute reports
+paths:
+  /v1/dispute-reports:
+    post:
+      tags:
+      - Dispute Reports
+      summary: Create a dispute report
+      description: Triggers generation of a dispute report for the given merchant over the specified date range. The date
+        range must be within the last 90 days and the end date must be before now.
+      operationId: disputeReports
+      parameters:
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      - name: Request-Reference
+        in: header
+        description: Optional Reference for the request. This is used to identify the request in debugging.
+        schema:
+          type: string
+        example: unique-value-for-request-reference
+      - name: Request-Idempotency-Key
+        in: header
+        description: Optional Idempotency Key for the request. Sending duplicate requests will result in 409 HTTP status code.
+        schema:
+          type: string
+        example: unique-value-for-idempotency
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReportRequest'
+        required: true
+      responses:
+        '200':
+          description: Report created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+        '401':
+          description: Unauthorised
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+        '409':
+          description: Duplicate request received with the same idempotency key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+  /v1/dispute-reports/{reportId}:
+    get:
+      tags:
+      - Dispute Reports
+      summary: Get a dispute report by ID
+      description: Returns the report metadata and, when processing is complete, a pre-signed download URL.
+      operationId: getReportById
+      parameters:
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      - name: reportId
+        in: path
+        description: The report ID returned when the report was created.
+        required: true
+        schema:
+          type: string
+        example: report_a1b2c3d4e5f67890abcde
+      - name: Request-Reference
+        in: header
+        description: Optional Reference for the request. This is used to identify the request in debugging.
+        schema:
+          type: string
+        example: unique-value-for-request-reference
+      responses:
+        '200':
+          description: Report found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+        '401':
+          description: Unauthorised
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+        '409':
+          description: Duplicate request received with the same idempotency key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+components:
+  schemas:
+    CreateReportRequest:
+      type: object
+      description: Request body for creating a dispute report
+      properties:
+        startDate:
+          type: string
+          format: date-time
+          description: Start of the reporting window. Must be within the last 90 days.
+          example: '2026-06-17T00:00:00Z'
+        endDate:
+          type: string
+          format: date-time
+          description: End of the reporting window.
+          example: '2026-07-17T11:58:00Z'
+        webhookUrl:
+          type: string
+          description: Optional URL to notify via webhook when the report status changes.
+          example: https://merchant.example.com/webhooks/reports
+      required:
+      - endDate
+      - startDate
+    ReportResponse:
+      type: object
+      description: Dispute report details
+      properties:
+        id:
+          type: string
+          description: Unique report identifier.
+          example: report_a1b2c3d4e5f67890abcde
+        startDate:
+          type: string
+          format: date-time
+          description: Start of the reporting window.
+          example: '2026-06-17T00:00:00Z'
+        endDate:
+          type: string
+          format: date-time
+          description: End of the reporting window.
+          example: '2026-07-17T11:58:00Z'
+        status:
+          type: string
+          description: Current processing status of the report.
+          enum:
+          - PENDING
+          - PROCESSED
+          - FAILED
+          - EXPIRED
+          example: PENDING
+        downloadUrl:
+          type: string
+          description: Pre-signed URL to download the generated report file. Present only when status is PROCESSED.
+          example: https://example.com/reports/report_a1b2c3d4e5f67890abcde.csv?expires=3600
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the report was created.
+          example: '2026-07-17T12:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the report was updated.
+          example: '2026-07-17T12:00:00Z'
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}

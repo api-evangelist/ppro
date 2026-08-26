@@ -1,0 +1,203 @@
+generated: '2026-08-26'
+method: searched
+source: https://developerhub.ppro.com/global-api/docs/webhooks + https://developerhub.ppro.com/global-api/openapi/gpg-webhooks.json
+api: PPRO Global API
+asyncapi_published: false
+asyncapi_note: PPRO publishes NO AsyncAPI document. Its event surface is declared instead inside an OpenAPI 3.1
+  document that uses the top-level webhooks object (openapi/ppro-webhooks-openapi.yml, 30 webhook definitions, full
+  request-body schemas). That is a real machine-readable event contract, so this file catalogues it as a Webhooks
+  surface rather than fabricating an AsyncAPI conversion.
+envelope:
+  specification: CloudEvents 1.0.2
+  fields:
+  - specversion
+  - source
+  - datacontenttype
+  - id
+  - type
+  - subject
+  - time
+  - data
+  source_value: https://www.ppro.com
+  subject: the resource id the event is about, e.g. charge_bcxWI3Xf7X9P3etLPUOv8
+transport:
+  protocol: HTTPS POST to a merchant-defined endpoint
+  port: 443 by default; non-standard ports require PPRO enablement
+  configuration: webhooksUrl parameter on payment charge / payment agreement creation, or an account-level default
+    set by the PPRO account manager
+  custom_headers: Optional static key/value headers can be configured per account for routing or additional auth.
+  separate_urls: Separate URLs can be configured for payment events and dispute events.
+security:
+  header: PPRO-Signature
+  scheme: HMAC-SHA256
+  formula: sha256(t + "." + rawPayload) keyed with the pre-shared signing secret, where t is the UNIX timestamp
+    in the header
+  header_format: 'ppro-signature: t=<unix>,s=<hex digest>'
+  deprecated:
+    header: Webhook-Signature
+    formula: sha256(payload + "." + signingSecret)
+    status: deprecated for new customers
+  secret_provisioning: Set by the PPRO account manager; not self-serve.
+delivery:
+  ack: Respond 2xx immediately, store the payload, defer processing to a background queue.
+  retry_model: exponential backoff
+  first_retry_seconds: 15
+  backoff: interval doubles each attempt
+  max_attempts: 15
+  total_window_hours: 68
+event_count: 30
+events:
+- name: Agreement Active
+  type: PAYMENT_AGREEMENT_ACTIVE
+  group: Payment Agreements
+  description: Sent on Payment Agreement activation
+  data_schema: AgreementActiveEventRequestDetails
+- name: Agreement Authentication Pending
+  type: PAYMENT_AGREEMENT_AUTHENTICATION_PENDING
+  group: Payment Agreements
+  description: Sent when the Payment Agreement is pending authentication
+  data_schema: AgreementAuthenticationPendingEventRequestDetails
+- name: Agreement Created
+  type: PAYMENT_AGREEMENT_CREATED
+  group: Payment Agreements
+  description: Sent when the Payment Agreement is created
+  data_schema: AgreementCreatedEventRequestDetails
+- name: Agreement Failed
+  type: PAYMENT_AGREEMENT_FAILED
+  group: Payment Agreements
+  description: Sent when the Payment Agreement fails
+  data_schema: AgreementFailedEventRequestDetails
+- name: Agreement Revoked by Consumer
+  type: PAYMENT_AGREEMENT_REVOKED_BY_CONSUMER
+  group: Payment Agreements
+  description: Sent when the Payment Agreement is revoked by the consumer
+  data_schema: AgreementRevokedByConsumerEventRequestDetails
+- name: Agreement Revoked by Merchant
+  type: PAYMENT_AGREEMENT_REVOKED_BY_MERCHANT
+  group: Payment Agreements
+  description: Sent when the Payment Agreement is revoked by the merchant
+  data_schema: AgreementRevokedByMerchantEventRequestDetails
+- name: Agreement Revoked by Provider
+  type: PAYMENT_AGREEMENT_REVOKED_BY_PROVIDER
+  group: Payment Agreements
+  description: Sent when the Payment Agreement is revoked by the provider
+  data_schema: AgreementRevokedByProviderEventRequestDetails
+- name: Agreement Updated
+  type: PAYMENT_AGREEMENT_UPDATED
+  group: Payment Agreements
+  description: Sent when the Payment Agreement is updated
+  data_schema: AgreementUpdatedEventRequestDetails
+- name: Chargeback Succeeded
+  type: CHARGEBACK_SUCCEEDED
+  group: Chargebacks
+  description: Sent on Chargeback success
+  data_schema: ChargebackSucceededEventRequestDetails
+- name: Charge Authentication Pending
+  type: PAYMENT_CHARGE_AUTHENTICATION_PENDING
+  group: Payment Charges
+  description: Sent when the Payment Charge is pending authentication
+  data_schema: ChargeAuthenticationPendingEventRequestDetails
+- name: Charge Authorization Failed
+  type: PAYMENT_CHARGE_AUTHORIZATION_FAILED
+  group: Payment Charges
+  description: Sent when the Payment Charge authorization fails
+  data_schema: ChargeAuthorizationFailedEventRequestDetails
+- name: Charge Authorization Succeeded
+  type: PAYMENT_CHARGE_AUTHORIZATION_SUCCEEDED
+  group: Payment Charges
+  description: Sent when the Payment Charge authorization succeeds
+  data_schema: ChargeAuthorizationSucceededEventRequestDetails
+- name: Charge Capture Failed
+  type: PAYMENT_CHARGE_CAPTURE_FAILED
+  group: Payment Charges
+  description: Sent when the Payment Charge capture fails
+  data_schema: ChargeCaptureFailedEventRequestDetails
+- name: Charge Capture Succeeded
+  type: PAYMENT_CHARGE_CAPTURE_SUCCEEDED
+  group: Payment Charges
+  description: Sent when the Payment Charge capture succeeds
+  data_schema: ChargeCaptureSucceededEventRequestDetails
+- name: Charge Created
+  type: PAYMENT_CHARGE_CREATED
+  group: Payment Charges
+  description: Sent when the Payment Charge creation succeeds
+  data_schema: ChargeCreatedEventRequestDetails
+- name: Charge Discard Failed
+  type: PAYMENT_CHARGE_DISCARD_FAILED
+  group: Payment Charges
+  description: Sent when the Payment Charge discard fails
+  data_schema: ChargeDiscardFailedEventRequestDetails
+- name: Charge Discard Succeeded
+  type: PAYMENT_CHARGE_DISCARDED
+  group: Payment Charges
+  description: Sent when the Payment Charge discard succeeds
+  data_schema: ChargeDiscardSucceedEventRequestDetails
+- name: Charge Provider Confirmation Pending
+  type: PAYMENT_CHARGE_PROVIDER_CONFIRMATION_PENDING
+  group: Payment Charges
+  description: Sent when the Payment Charge is pending provider confirmation
+  data_schema: ChargeProviderConfirmationPendingEventRequestDetails
+- name: Charge Refund Failed
+  type: PAYMENT_CHARGE_REFUND_FAILED
+  group: Payment Charges
+  description: Sent when the Payment Charge refund fails
+  data_schema: ChargeRefundFailedEventRequestDetails
+- name: Charge Refund Pending
+  type: PAYMENT_CHARGE_REFUND_PENDING
+  group: Payment Charges
+  description: Sent when the Payment Charge refund is pending
+  data_schema: ChargeRefundPendingEventRequestDetails
+- name: Charge Refund Succeeded
+  type: PAYMENT_CHARGE_REFUND_SUCCEEDED
+  group: Payment Charges
+  description: Sent when the Payment Charge refund succeeds
+  data_schema: ChargeRefundSucceededEventRequestDetails
+- name: Charge Void Failed
+  type: PAYMENT_CHARGE_VOID_FAILED
+  group: Payment Charges
+  description: Sent when the Payment Charge void fails
+  data_schema: ChargeVoidFailedEventRequestDetails
+- name: Charge Void Succeeded
+  type: PAYMENT_CHARGE_VOID_SUCCEEDED
+  group: Payment Charges
+  description: Sent when the Payment Charge void succeeds
+  data_schema: ChargeVoidSucceededEventRequestDetails
+- name: Funds State Changed
+  type: FUNDS_STATE_CHANGED
+  group: Fund Statuses
+  description: Sent when the Payment Charge funds state changes
+  data_schema: FundsStateChangedEventRequestDetails
+- name: Instrument Created
+  type: PAYMENT_INSTRUMENT_CREATED
+  group: Payment Instruments
+  description: Sent on Payment Instrument creation
+  data_schema: InstrumentCreatedEventRequestDetails
+- name: Instrument Deleted
+  type: PAYMENT_INSTRUMENT_DELETED
+  group: Payment Instruments
+  description: Sent on Payment Instrument deletion
+  data_schema: InstrumentDeletedEventRequestDetails
+- name: Instrument Details Updated
+  type: PAYMENT_INSTRUMENT_DETAILS_UPDATED
+  group: Payment Instruments
+  description: Sent on Payment Instrument details update
+  data_schema: InstrumentUpdatedEventRequestDetails
+- name: Report Expired
+  type: REPORT_EXPIRED
+  group: Payment Reports
+  description: Sent when a Report expires
+  data_schema: ReportsExpiredEventRequestDetails
+- name: Report Processing Failed
+  type: REPORT_FAILED
+  group: Payment Reports
+  description: Sent when a Report fails to process
+  data_schema: ReportsFailedEventRequestDetails
+- name: Report Processed
+  type: REPORT_PROCESSED
+  group: Payment Reports
+  description: Sent when a Report is processed
+  data_schema: ReportsProcessedEventRequestDetails
+docs:
+- https://developerhub.ppro.com/global-api/docs/webhooks
+- https://developerhub.ppro.com/global-api/docs/webhooks-event-payloads
+- https://developerhub.ppro.com/global-api/reference/webhooks

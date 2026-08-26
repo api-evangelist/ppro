@@ -1,0 +1,54 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  https://developerhub.ppro.com/global-api/docs/drop-in-checkout,
+  https://developerhub.ppro.com/global-api/docs/quickstart-drop-in-checkout,
+  https://registry.npmjs.org/@pprogroup/drop-in-checkout
+api: PPRO Global API
+component_count: 1
+families:
+- family: Drop-in Checkout
+  kind: embeddable-checkout
+  loader: '@pprogroup/drop-in-checkout (npm, v3.5.3, published 2026-07-31)'
+  frameworks: [React, vanilla JavaScript]
+  description: >-
+    One component that renders the whole payment selector, or individual payment method forms, inside an
+    existing checkout. Each payment method ships as a registered component with its own validation rules,
+    copy and logo, switched on with a single entry in paymentMethodConfig.
+  modes:
+  - mode: payment selector
+    note: Full functionality including smart ordering of payment methods.
+  - mode: individual payment method form
+    note: Fastest way to add one or two key local payment methods; supports A/B testing a new method.
+  coverage: cards, wallets, bank redirects, BNPL, stablecoins and cash payment methods across 24 markets
+  pci_posture: >-
+    Card number and CVV are collected inside PPRO-hosted iframes, so the integrator's servers never touch raw
+    card data and the integration stays out of PCI scope. This is PPRO's own wording; it is a scope statement,
+    not a certification claim.
+  server_dependency: >-
+    The integrator's server creates a session via POST /v1/payment-sessions (operationId createSession); the
+    SDK collects payment details client-side and by default sends the authorization to PPRO, or the integrator
+    can defer and route authorization through their own backend via onSubmitPayment.
+  customization:
+  - Light and dark themes, floating labels, accordion or tab layouts, custom fields and sections via appearance and forms props.
+  - 24 locales with per-message overrides via the messages prop.
+  flows: [one-time, recurring, SEPA mandate, tokenised cards, non-native recurring]
+  availability: Available only for merchants (not for PSP/platform resale, per PPRO's own callout).
+  resources:
+  - name: Quickstart
+    url: https://developerhub.ppro.com/global-api/docs/quickstart-drop-in-checkout
+  - name: Storybook
+    url: https://storybook.drop-in-checkout.ppro.com/?path=/docs/installation--docs
+  - name: Playground app
+    url: https://playground.drop-in-checkout.ppro.com/
+  - name: Demo store
+    url: https://demo-store.ppro.com/
+  - name: Troubleshooting
+    url: https://developerhub.ppro.com/global-api/docs/troubleshooting
+dashboard:
+  name: PPRO Dashboard
+  url: https://dashboard.ppro.com/
+  note: >-
+    Hosted operator surface, not an embeddable component — payment charge search, merchant management, user
+    management with SSO and MFA, and dispute handling.
+  docs: https://developerhub.ppro.com/global-api/docs/intro-dashboard

@@ -1,0 +1,67 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  https://registry.npmjs.org/@pprogroup/drop-in-checkout,
+  https://developerhub.ppro.com/global-api/docs/drop-in-checkout,
+  https://github.com/PPROGroup/txp-payment-interfaces-drop-in-checkout
+package_count: 1
+official_count: 1
+note: >-
+  PPRO ships exactly one first-party client library, and it is a checkout UI SDK rather than an API client.
+  There is no published server-side SDK for the Global API in any registry — no npm package other than the
+  Drop-in Checkout, nothing on PyPI (pypi.org/pypi/ppro/json returns 404), nothing under a PPRO namespace on
+  Maven Central, NuGet, RubyGems, Packagist, crates.io or pkg.go.dev, and the developer hub's own "Tools"
+  section lists OpenAPI generation, Postman, MCP and llms.txt in place of SDKs. That is a real finding, not a
+  gap in the search: PPRO's stated integration path is "use our OpenAPI spec to generate client libraries".
+packages:
+- name: '@pprogroup/drop-in-checkout'
+  registry: npm
+  url: https://www.npmjs.com/package/@pprogroup/drop-in-checkout
+  metadata_url: https://registry.npmjs.org/@pprogroup/drop-in-checkout
+  official: true
+  official_evidence: >-
+    Published under the @pprogroup npm scope, repository github.com/PPROGroup/txp-payment-interfaces-drop-in-checkout,
+    and documented as the Drop-in Checkout SDK on PPRO's own developer hub.
+  language: JavaScript/TypeScript
+  kind: checkout-ui-sdk
+  frameworks: [React, vanilla JavaScript]
+  version: 3.5.3
+  published: '2026-07-31'
+  first_published: '2024-01-29'
+  release_count: 319
+  description: >-
+    Drop-in Checkout — a single component rendering cards, wallets, bank redirects, BNPL, stablecoins and cash
+    payment methods across 24 markets, with card number and CVV held in PPRO-hosted iframes so the integrator
+    stays out of PCI scope.
+  repository: https://github.com/PPROGroup/txp-payment-interfaces-drop-in-checkout
+  repository_public: false
+  repository_note: >-
+    The npm metadata names a GitHub repository, but the PPROGroup organization exposes no public repositories,
+    so the source is not readable. Only the published package is.
+  docs: https://developerhub.ppro.com/global-api/docs/drop-in-checkout
+  storybook: https://storybook.drop-in-checkout.ppro.com/?path=/docs/installation--docs
+registries_checked:
+- registry: npm
+  query: 'ppro, @pprogroup'
+  result: 1 first-party package
+- registry: PyPI
+  query: ppro
+  result: 404 — no package
+- registry: Maven Central
+  query: com.ppro / ppro
+  result: no first-party artifact found
+- registry: NuGet
+  result: no first-party package found
+- registry: RubyGems
+  result: no first-party gem found
+- registry: Packagist
+  result: no first-party package found
+- registry: crates.io
+  result: no first-party crate found
+- registry: pkg.go.dev
+  result: no first-party module found
+decay_signal:
+  status: current
+  detail: >-
+    The only first-party package was published 2026-07-31, less than a month before this harvest, against a
+    Global API whose most recent documented change is May 2026. No abandonment signal.

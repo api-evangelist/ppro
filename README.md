@@ -64,5 +64,57 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-PPRO is a company surfaced via the API Evangelist harvest backlog (source: secondary-market) and added to the network as a stub for full-pipeline profiling.
-- https://forgeglobal.com/ppro_stock/
+PPRO is a local payments infrastructure company. It lets payment service providers, acquirers,
+platforms and enterprise merchants accept the payment methods consumers actually use in their own
+market — bank redirects (iDEAL, BLIK, Przelewy24, Pay By Bank), wallets (Alipay, WeChat Pay, Amazon
+Pay, Cash App Pay, TWINT, Swish), cash and voucher rails (Boleto, OXXO, Multibanco, Indomaret), SEPA
+Direct Debit, Pix, UPI, BNPL and stablecoins — through one REST integration.
+
+## What this profile found
+
+- **Eleven OpenAPI 3.1 documents, 63 operations and 30 webhook definitions**, all served from PPRO's
+  own developer hub and discovered through an RFC 9727 API catalog at
+  `https://developerhub.ppro.com/.well-known/api-catalog`.
+- **A live, first-party remote MCP server** at `https://mcp.eu.ppro.com` (sandbox
+  `https://mcp.sandbox.eu.ppro.com`). Anonymous `initialize` + `tools/list` returned **28 tools with
+  complete JSON Schema inputs**, saved verbatim in `mcp/ppro-mcp-tools.json`. Every tool binds
+  one-to-one to a published OpenAPI `operationId`.
+- **A documented idempotency contract** (`Request-Idempotency-Key`, UUIDv4, 24h retention, 409 on
+  in-flight or body-mismatch replay) and a **token-bucket rate limit with four response headers**.
+- **CloudEvents 1.0.2 webhooks** with HMAC-SHA256 `PPRO-Signature` verification and a documented
+  retry ladder (15s first retry, doubling, 15 attempts, ~68 hours).
+- **76 published failure codes** across four failure types, catalogued in
+  `errors/ppro-failure-codes.yml`.
+- **No AsyncAPI, no GraphQL, no gRPC, no SOAP, no OAuth, no agent card, no security.txt** — all
+  probed, all recorded as absent rather than assumed.
+
+## Contents
+
+| Directory | What is in it |
+|---|---|
+| `openapi/` | Eleven PPRO OpenAPI 3.1 documents; raw harvests in `_original/` |
+| `overlays/` | OpenAPI Overlay 1.0.0 documents carrying our enhancements |
+| `mcp/` | MCP server manifest, the verbatim `tools/list` response, and the tool ↔ REST crosswalk |
+| `asyncapi/` | The 30-event CloudEvents webhook catalogue |
+| `conventions/` | Auth, idempotency, pagination, data standards, reversibility |
+| `errors/` | HTTP problem types and the 76 published failure codes |
+| `authentication/`, `security/` | Auth profile, domain security probe, trust center, disclosure probe |
+| `lifecycle/`, `changelog/` | Versioning and deprecation posture, monthly changelog |
+| `sandbox/`, `plans/`, `rate-limits/` | Test environment and triggers, pricing posture, published limits |
+| `packages/`, `components/` | The one first-party npm SDK, and the Drop-in Checkout component family |
+| `data-model/` | 19-entity graph derived from the `$ref` and id-reference links |
+| `conformance/` | Standards conformance, including the domain-standard signatures |
+| `skills/`, `llms/`, `well-known/` | Agent skills, PPRO's own llms.txt files, well-known probe record |
+
+## Primary public sources
+
+- https://www.ppro.com/
+- https://developerhub.ppro.com/
+- https://developerhub.ppro.com/global-api/reference
+- https://developerhub.ppro.com/.well-known/api-catalog
+- https://developerhub.ppro.com/llms.txt
+- https://mcp.eu.ppro.com
+- https://status.ppro.com/
+- https://trust.ppro.com/
+- https://www.postman.com/pprodev (linked from PPRO's own developer-resources page)
+- https://www.npmjs.com/package/@pprogroup/drop-in-checkout

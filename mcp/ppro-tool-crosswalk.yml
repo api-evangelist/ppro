@@ -1,0 +1,461 @@
+generated: '2026-08-26'
+method: derived
+source: mcp/ppro-mcp-tools.json (live anonymous tools/list on https://mcp.eu.ppro.com) + openapi/*.yml
+note: 'Every one of the 28 MCP tools binds one-to-one to a published OpenAPI operationId, so there are no MCP-only
+  tools. The divergence runs the other way: 35 REST operations — fund statuses, disputes, chargebacks, dispute reports,
+  merchant onboarding and payment-method enrollment — have no MCP tool, and PPRO says so plainly in its MCP docs
+  ("Currently, interactions with the following APIs are supported, we are working on adding more APIs and endpoints").'
+surfaces:
+  openapi:
+    files:
+    - openapi/ppro-chargebacks-openapi.yml
+    - openapi/ppro-dispute-reports-openapi.yml
+    - openapi/ppro-enrollment-openapi.yml
+    - openapi/ppro-fund-statuses-openapi.yml
+    - openapi/ppro-onboarding-openapi.yml
+    - openapi/ppro-payment-agreements-openapi.yml
+    - openapi/ppro-payment-charges-openapi.yml
+    - openapi/ppro-payment-instruments-openapi.yml
+    - openapi/ppro-payment-sessions-openapi.yml
+    - openapi/ppro-risk-management-openapi.yml
+    - openapi/ppro-webhooks-openapi.yml
+    catalog: https://developerhub.ppro.com/global-api/.well-known/api-catalog
+    gated: false
+  mcp:
+    url: https://mcp.eu.ppro.com
+    sandbox: https://mcp.sandbox.eu.ppro.com
+    gated: false
+    gated_note: tools/list is anonymous; tool INVOCATION requires a Bearer API key
+  graphql:
+    endpoint: null
+    note: PPRO publishes no GraphQL surface
+coverage:
+  mcp_tools: 28
+  rest_operations: 63
+  bound: 28
+  mcp_only: 0
+  rest_only: 35
+  rest_coverage_pct: 44.4
+crosswalk:
+- tool: CREATE_PAYMENT_SESSION
+  category: payment-sessions
+  rest:
+  - createSession
+  spec: openapi/ppro-payment-sessions-openapi.yml
+  http: POST /v1/payment-sessions
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: GET_PAYMENT_SESSION
+  category: payment-sessions
+  rest:
+  - fetchSession
+  spec: openapi/ppro-payment-sessions-openapi.yml
+  http: GET /v1/payment-sessions/{session-id}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: UPDATE_PAYMENT_SESSION
+  category: payment-sessions
+  rest:
+  - patchSession
+  spec: openapi/ppro-payment-sessions-openapi.yml
+  http: PATCH /v1/payment-sessions/{session-id}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: AUTHORIZE_PAYMENT_SESSION
+  category: payment-sessions
+  rest:
+  - authorizeSession
+  spec: openapi/ppro-payment-sessions-openapi.yml
+  http: POST /v1/payment-sessions/{session-id}/authorizations
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: CREATE_PAYMENT_INSTRUMENT
+  category: payment-instruments
+  rest:
+  - createPaymentInstrument
+  spec: openapi/ppro-payment-instruments-openapi.yml
+  http: POST /v1/payment-instruments
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: GET_PAYMENT_INSTRUMENT
+  category: payment-instruments
+  rest:
+  - fetchPaymentInstrument
+  spec: openapi/ppro-payment-instruments-openapi.yml
+  http: GET /v1/payment-instruments/{instrument-id}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: UPDATE_PAYMENT_INSTRUMENT
+  category: payment-instruments
+  rest:
+  - updatePaymentInstrument
+  spec: openapi/ppro-payment-instruments-openapi.yml
+  http: PUT /v1/payment-instruments/{instrument-id}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: DELETE_PAYMENT_INSTRUMENT
+  category: payment-instruments
+  rest:
+  - deletePaymentInstrument
+  spec: openapi/ppro-payment-instruments-openapi.yml
+  http: DELETE /v1/payment-instruments/{instrument-id}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: CREATE_PAYMENT_AGREEMENT
+  category: payment-agreements
+  rest:
+  - createAgreement
+  spec: openapi/ppro-payment-agreements-openapi.yml
+  http: POST /v1/payment-agreements
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: GET_PAYMENT_AGREEMENT
+  category: payment-agreements
+  rest:
+  - fetchPaymentAgreement
+  spec: openapi/ppro-payment-agreements-openapi.yml
+  http: GET /v1/payment-agreements/{agreement-id}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: REVOKE_PAYMENT_AGREEMENT
+  category: payment-agreements
+  rest:
+  - revokeAgreement
+  spec: openapi/ppro-payment-agreements-openapi.yml
+  http: POST /v1/payment-agreements/{agreement-id}/revocations
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: UPDATE_PAYMENT_AGREEMENT_AUTHORIZATION
+  category: payment-agreements
+  rest:
+  - confirm
+  spec: openapi/ppro-payment-agreements-openapi.yml
+  http: POST /v1/payment-agreements/{agreementId}/authorizations
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: CREATE_PAYMENT_AGREEMENT_CHARGE
+  category: payment-agreements
+  rest:
+  - createCharge
+  spec: openapi/ppro-payment-agreements-openapi.yml
+  http: POST /v1/payment-agreements/{agreement-id}/payment-charges
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: CREATE_PAYMENT_CHARGE
+  category: payment-charges
+  rest:
+  - authorize
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: POST /v1/payment-charges
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: GET_PAYMENT_CHARGE
+  category: payment-charges
+  rest:
+  - getPaymentCharge
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: LIST_PAYMENT_CHARGES
+  category: payment-charges
+  rest:
+  - searchPaymentCharge
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: UPDATE_PAYMENT_CHARGE_AUTHORIZATION
+  category: payment-charges
+  rest:
+  - confirm
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: POST /v1/payment-charges/{paymentChargeId}/authorizations
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: GET_PAYMENT_CHARGE_AUTHORIZATION
+  category: payment-charges
+  rest:
+  - getAuthorization
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}/authorizations/{authorizationId}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: LIST_PAYMENT_CHARGE_AUTHORIZATIONS
+  category: payment-charges
+  rest:
+  - getAuthorizations
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}/authorizations
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: CAPTURE_PAYMENT_CHARGE
+  category: payment-charges
+  rest:
+  - capture
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: POST /v1/payment-charges/{paymentChargeId}/captures
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: GET_PAYMENT_CHARGE_CAPTURE
+  category: payment-charges
+  rest:
+  - getCapture
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}/captures/{captureId}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: LIST_PAYMENT_CHARGE_CAPTURES
+  category: payment-charges
+  rest:
+  - getCaptures
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}/captures
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: REFUND_PAYMENT_CHARGE
+  category: payment-charges
+  rest:
+  - refund
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: POST /v1/payment-charges/{paymentChargeId}/refunds
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: GET_PAYMENT_CHARGE_REFUND
+  category: payment-charges
+  rest:
+  - getRefund
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}/refunds/{refundId}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: LIST_PAYMENT_CHARGE_REFUNDS
+  category: payment-charges
+  rest:
+  - getRefunds
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}/refunds
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: VOID_PAYMENT_CHARGE
+  category: payment-charges
+  rest:
+  - processVoid
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: POST /v1/payment-charges/{paymentChargeId}/voids
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: GET_PAYMENT_CHARGE_VOID
+  category: payment-charges
+  rest:
+  - getVoid
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}/voids/{voidId}
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+- tool: LIST_PAYMENT_CHARGE_VOIDS
+  category: payment-charges
+  rest:
+  - getVoids
+  spec: openapi/ppro-payment-charges-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}/voids
+  binding: one-to-one
+  confidence: high
+  note: Bound by verified operationId; the MCP inputSchema returned by the live tools/list mirrors this operation's
+    parameters and requestBody.
+mcp_only: []
+rest_only:
+- operationId: getChargeback
+  spec: openapi/ppro-chargebacks-openapi.yml
+  http: GET /v1/chargebacks/{id}
+  summary: Get Chargeback
+- operationId: getChargebackReversal
+  spec: openapi/ppro-chargebacks-openapi.yml
+  http: GET /v1/chargeback-reversals/{id}
+  summary: Get Chargeback Reversal
+- operationId: getChargebackReversals
+  spec: openapi/ppro-chargebacks-openapi.yml
+  http: GET /v1/chargeback-reversals
+  summary: Get Chargeback Reversals
+- operationId: getChargebacks
+  spec: openapi/ppro-chargebacks-openapi.yml
+  http: GET /v1/chargebacks
+  summary: Get Chargebacks
+- operationId: disputeReports
+  spec: openapi/ppro-dispute-reports-openapi.yml
+  http: POST /v1/dispute-reports
+  summary: Create a dispute report
+- operationId: getReportById
+  spec: openapi/ppro-dispute-reports-openapi.yml
+  http: GET /v1/dispute-reports/{reportId}
+  summary: Get a dispute report by ID
+- operationId: enroll
+  spec: openapi/ppro-enrollment-openapi.yml
+  http: POST /v1/merchants/{merchant-id}/enrollments
+  summary: Enroll a payment method
+- operationId: fetch
+  spec: openapi/ppro-enrollment-openapi.yml
+  http: GET /v1/merchants/{merchant-id}/enrollments/{enrollment-id}
+  summary: Get enrollment
+- operationId: list
+  spec: openapi/ppro-enrollment-openapi.yml
+  http: GET /v1/merchants/{merchant-id}/enrollments
+  summary: List enrollments
+- operationId: getFundsStatuses
+  spec: openapi/ppro-fund-statuses-openapi.yml
+  http: GET /v1/payment-charges/{paymentChargeId}/funds-statuses
+  summary: Fetch latest available funds statuses for payment charge captures and refunds
+- operationId: associatePersonWithMerchant
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: POST /v1/merchants/{merchant-id}/people
+  summary: Associate a person with a Merchant
+- operationId: createMerchant
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: POST /v1/merchants
+  summary: Create a Merchant
+- operationId: createPerson
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: POST /v1/people
+  summary: Create a Person
+- operationId: createPlatform
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: POST /v1/platforms
+  summary: Create a Platform
+- operationId: deactivateMerchant
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: DELETE /v1/merchants/{merchant-id}
+  summary: Deactivate a Merchant
+- operationId: deactivatePerson
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: DELETE /v1/people/{person-id}
+  summary: Deactivate a Person
+- operationId: dissociatePersonFromMerchant
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: DELETE /v1/merchants/{merchant-id}/people/{person-id}
+  summary: Dissociate a person from a Merchant
+- operationId: getMerchant
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: GET /v1/merchants/{merchant-id}
+  summary: Get Merchant Details
+- operationId: getPerson
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: GET /v1/people/{person-id}
+  summary: Get a Person
+- operationId: getPlatform
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: GET /v1/platforms/{platform-id}
+  summary: Get Platform Details
+- operationId: getPsp
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: GET /v1/psps/{psp-id}
+  summary: Get PSP Details
+- operationId: listMerchantPeople
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: GET /v1/merchants/{merchant-id}/people
+  summary: List People for Merchant
+- operationId: listPlatforms
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: GET /v1/platforms
+  summary: List Platforms
+- operationId: listPsps
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: GET /v1/psps
+  summary: List PSPs
+- operationId: replaceMerchant
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: PUT /v1/merchants/{merchant-id}
+  summary: Replace a Merchant
+- operationId: replacePerson
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: PUT /v1/people/{person-id}
+  summary: Replace a Person
+- operationId: updateMerchant
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: PATCH /v1/merchants/{merchant-id}
+  summary: Update a Merchant
+- operationId: updatePerson
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: PATCH /v1/people/{person-id}
+  summary: Update part of a Person
+- operationId: updatePlatform
+  spec: openapi/ppro-onboarding-openapi.yml
+  http: PATCH /v1/platforms/{platform-id}
+  summary: Update part of a Platform
+- operationId: actionDispute
+  spec: openapi/ppro-risk-management-openapi.yml
+  http: POST /v1/disputes/{disputeId}/actions
+  summary: Merchant action
+- operationId: downloadFile
+  spec: openapi/ppro-risk-management-openapi.yml
+  http: GET /v1/disputes/{disputeId}/files/{fileId}
+  summary: Download File
+- operationId: getById
+  spec: openapi/ppro-risk-management-openapi.yml
+  http: GET /v1/disputes/{disputeId}
+  summary: Get Dispute
+- operationId: getDisputes
+  spec: openapi/ppro-risk-management-openapi.yml
+  http: GET /v1/disputes
+  summary: Get Disputes
+- operationId: postMessage
+  spec: openapi/ppro-risk-management-openapi.yml
+  http: POST /v1/disputes/{disputeId}/messages
+  summary: Post Message
+- operationId: uploadFile
+  spec: openapi/ppro-risk-management-openapi.yml
+  http: POST /v1/disputes/{disputeId}/files
+  summary: Upload File

@@ -1,0 +1,106 @@
+# PPRO Documentation
+
+> PPRO - the ultimate local payments platform! Global growth starts with local payments. Boost your checkout and your business by letting your customers pay the way they prefer. The local way.
+
+Append .md to any documentation page URL to get its markdown version.
+
+Each project below either links to its own llms.txt, which contains a full index of that project's documentation, or inlines the index its authors wrote by hand. Where links are listed, the section and category ones narrow to that part of the docs.
+
+## PPRO API
+
+- [PPRO API](https://developerhub.ppro.com/global-api/llms.txt): Welcome to the PPRO Developer Hub, your central resource for building with the PPRO API. Explore detailed guides, comprehensive API documentation, and step-by-step integration tutorials to help you connect seamlessly to our global payments platform.
+
+### Guides
+
+- [Guides index](https://developerhub.ppro.com/global-api/docs/llms.txt): full section index
+- [PPRO API](https://developerhub.ppro.com/global-api/docs/ppro-api/llms.txt)
+- [Accept Payments](https://developerhub.ppro.com/global-api/docs/accept-payments/llms.txt)
+- [Payment Methods](https://developerhub.ppro.com/global-api/docs/payment-methods/llms.txt)
+- [Manage Payments](https://developerhub.ppro.com/global-api/docs/manage-payments/llms.txt)
+- [Features](https://developerhub.ppro.com/global-api/docs/features/llms.txt)
+- [Risk Management](https://developerhub.ppro.com/global-api/docs/risk-management/llms.txt)
+- [Reporting](https://developerhub.ppro.com/global-api/docs/reporting/llms.txt)
+- [Drop-in Checkout](https://developerhub.ppro.com/global-api/docs/drop-in-checkout/llms.txt)
+- [PPRO Dashboard](https://developerhub.ppro.com/global-api/docs/ppro-dashboard/llms.txt)
+
+### API Reference
+
+- [API Reference index](https://developerhub.ppro.com/global-api/reference/llms.txt): full section index
+- [Fundamentals](https://developerhub.ppro.com/global-api/reference/fundamentals/llms.txt)
+- [Payment Charges](https://developerhub.ppro.com/global-api/reference/payment-charges/llms.txt)
+- [Payment Instruments](https://developerhub.ppro.com/global-api/reference/payment-instruments/llms.txt)
+- [Payment Agreements](https://developerhub.ppro.com/global-api/reference/payment-agreements/llms.txt)
+- [Payment Sessions](https://developerhub.ppro.com/global-api/reference/payment-sessions/llms.txt)
+- [Fund Statuses](https://developerhub.ppro.com/global-api/reference/fund-statuses/llms.txt)
+- [Risk Management](https://developerhub.ppro.com/global-api/reference/risk-management/llms.txt)
+- [Webhooks](https://developerhub.ppro.com/global-api/reference/webhooks/llms.txt)
+
+### Changelog
+
+- [Changelog index](https://developerhub.ppro.com/global-api/changelog/llms.txt): full section index
+
+
+## Simple API
+
+- [Simple API](https://developerhub.ppro.com/simple-api/llms.txt)
+
+### Guides
+
+- [Guides index](https://developerhub.ppro.com/simple-api/docs/llms.txt): full section index
+- [Introduction](https://developerhub.ppro.com/simple-api/docs/introduction/llms.txt)
+- [ONBOARD](https://developerhub.ppro.com/simple-api/docs/onboard/llms.txt)
+- [ACCEPT](https://developerhub.ppro.com/simple-api/docs/accept/llms.txt)
+- [collect](https://developerhub.ppro.com/simple-api/docs/collect/llms.txt)
+- [payment method integrations](https://developerhub.ppro.com/simple-api/docs/payment-method-integrations/llms.txt)
+
+### API Reference
+
+- [API Reference index](https://developerhub.ppro.com/simple-api/reference/llms.txt): full section index
+- [Protocol details](https://developerhub.ppro.com/simple-api/reference/protocol-details/llms.txt)
+- [Payment Gateway](https://developerhub.ppro.com/simple-api/reference/payment-gateway/llms.txt)
+- [BOARDING PLATFORM](https://developerhub.ppro.com/simple-api/reference/boarding-platform/llms.txt)
+
+### Changelog
+
+- [Changelog index](https://developerhub.ppro.com/simple-api/changelog/llms.txt): full section index
+
+
+## Risk Management
+
+- [Risk Management](https://developerhub.ppro.com/risk-management/llms.txt)
+
+### Guides
+
+- [Guides index](https://developerhub.ppro.com/risk-management/docs/llms.txt): full section index
+- [Risk management](https://developerhub.ppro.com/risk-management/docs/risk-management/llms.txt)
+- [disputes](https://developerhub.ppro.com/risk-management/docs/disputes/llms.txt)
+- [fraud alerts](https://developerhub.ppro.com/risk-management/docs/fraud-alerts/llms.txt)
+
+### API Reference
+
+- [API Reference index](https://developerhub.ppro.com/risk-management/reference/llms.txt): full section index
+- [fundamentals](https://developerhub.ppro.com/risk-management/reference/fundamentals/llms.txt)
+- [Authentication](https://developerhub.ppro.com/risk-management/reference/authentication/llms.txt)
+- [Disputes](https://developerhub.ppro.com/risk-management/reference/disputes/llms.txt)
+- [Fraud Alerts](https://developerhub.ppro.com/risk-management/reference/fraud-alerts/llms.txt)
+
+
+## LATAM API
+
+- [LATAM API](https://developerhub.ppro.com/latam-api/llms.txt)
+
+### Guides
+
+- [Guides index](https://developerhub.ppro.com/latam-api/docs/llms.txt): full section index
+- [Integration Guide](https://developerhub.ppro.com/latam-api/docs/integration-guide/llms.txt)
+- [Accept Payments](https://developerhub.ppro.com/latam-api/docs/accept-payments/llms.txt)
+- [Manage Payments](https://developerhub.ppro.com/latam-api/docs/manage-payments/llms.txt)
+- [Features](https://developerhub.ppro.com/latam-api/docs/features/llms.txt)
+- [Reporting](https://developerhub.ppro.com/latam-api/docs/reporting/llms.txt)
+
+### API Reference
+
+- [API Reference index](https://developerhub.ppro.com/latam-api/reference/llms.txt): full section index
+- [Fundamentals](https://developerhub.ppro.com/latam-api/reference/fundamentals/llms.txt)
+- [Latam API](https://developerhub.ppro.com/latam-api/reference/latam-api/llms.txt)
+- [Registration API](https://developerhub.ppro.com/latam-api/reference/registration-api/llms.txt)

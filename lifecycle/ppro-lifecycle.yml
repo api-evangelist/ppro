@@ -1,0 +1,74 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  https://developerhub.ppro.com/global-api/docs/developer-resources,
+  https://developerhub.ppro.com/global-api/changelog,
+  https://status.ppro.com/, plus openapi/*.yml
+api: PPRO Global API
+versioning:
+  scheme: path-prefix
+  current: v1
+  path: /v1
+  spec_version_field: v1 in info.version on every published OpenAPI document
+  policy_published: false
+  policy_statement: >-
+    "We are planning API versioning to ensure smooth updates and backwards compatibility. Details will be
+    shared as the API evolves." — PPRO developer resources page, 2026-08-09. There is no versioning policy
+    document, no version-selection header, and no dated version list.
+  docs: https://developerhub.ppro.com/global-api/docs/developer-resources
+deprecation:
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  rfc8594: false
+  note: >-
+    No deprecation policy, no Sunset or Deprecation response headers, and no published removal timeline.
+    Deprecation is signalled only in-band: the specs mark individual fields deprecated (for example
+    amount.type on the payment session and charge payloads, superseded by amountType), the webhooks page
+    states that the non-HMAC Webhook-Signature header is "deprecated for new customers", and the developer
+    hub keeps three older API projects (Simple API, LATAM API, Risk Management API) behind a "Looking for
+    previous APIs?" selector without stating an end-of-life date for any of them.
+  deprecated_in_spec:
+  - field: amount.type
+    specs: [openapi/ppro-payment-sessions-openapi.yml, openapi/ppro-payment-charges-openapi.yml, openapi/ppro-payment-agreements-openapi.yml]
+    replacement: amountType
+  deprecated_operations: []
+  superseded_products:
+  - name: Simple API
+    docs: https://developerhub.ppro.com/simple-api/docs/introduction
+    note: Listed under "Access older APIs"; still documented, no stated sunset date.
+  - name: LATAM API
+    docs: https://developerhub.ppro.com/latam-api/docs/integration-guide
+    note: Listed under "Access older APIs"; still documented, no stated sunset date.
+  - name: Risk Management API
+    docs: https://developerhub.ppro.com/risk-management/docs/risk-management
+    note: >-
+      Listed under "Access older APIs". Its capability has been folded into the Global API as the Disputes and
+      Chargebacks endpoints, but the standalone project remains published with no stated sunset date.
+status_page:
+  present: true
+  url: https://status.ppro.com/
+  title: PPRO Acquiring Platform Status
+  vendor: Atlassian Statuspage
+  http_status: 200
+  note: Real-time and historical component status and incident history for the acquiring platform.
+changelog:
+  present: true
+  url: https://developerhub.ppro.com/global-api/changelog
+  cadence: monthly
+  detail: changelog/ppro-changelog.yml
+sla:
+  published: false
+  note: >-
+    No public SLA, uptime target or credit schedule. Availability commitments sit inside the Payment Services
+    Agreement, which is a contract document rather than a published service level.
+  terms: https://www.ppro.com/legal/payment-services-agreement-general-terms-and-conditions/
+support:
+  channels:
+  - type: contact-form
+    url: https://www.ppro.com/contact/
+    note: General inquiry form plus a dedicated Latin America payment support form.
+  - type: account-manager
+    note: >-
+      Several operational levers are account-manager-gated rather than self-serve — webhook signing secret,
+      default webhooksUrl, non-standard webhook ports, live credentials, and rate-limit increases.

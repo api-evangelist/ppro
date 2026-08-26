@@ -1,18 +1,93 @@
 aid: ppro
 name: PPRO
-description: 'PPRO is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'PPRO is a local payments infrastructure company that lets payment service providers,
+  acquirers, platforms and enterprise merchants accept the payment methods consumers actually use in
+  their own market — bank redirects such as iDEAL, BLIK, Przelewy24 and Pay By Bank, wallets such as
+  Alipay, WeChat Pay, Amazon Pay, Cash App Pay, TWINT and Swish, cash and voucher rails such as Boleto,
+  OXXO, Multibanco and Indomaret, SEPA Direct Debit, Pix, UPI, BNPL and stablecoins — through a single
+  REST integration. The PPRO Global API is an OpenAPI 3.1 platform built around four core objects
+  (payment charges, payment instruments, payment agreements and payment sessions) plus captures,
+  refunds, voids, fund statuses, disputes and chargebacks, with CloudEvents 1.0.2 webhooks, an
+  idempotency-key contract, a documented token-bucket rate limit, a Drop-in Checkout component library
+  and a hosted Model Context Protocol server so coding agents can call the platform directly.'
 url: https://raw.githubusercontent.com/api-evangelist/ppro/refs/heads/main/apis.yml
+image: https://files.readme.io/920bf80-ppro_logo_black.svg
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
 specificationVersion: '0.20'
 created: '2026-08-26'
 modified: '2026-08-26'
 tags:
+- Payments
+- Local Payment Methods
+- Financial Services
+- Fintech
+- Acquiring
+- Checkout
+- E-commerce
+- Digital Wallets
+- Recurring Payments
+- Disputes
+- Chargebacks
 - Company
-apis: []
+apis:
+- name: PPRO Global API
+  description: 'PPRO''s current-generation REST payments platform. Payment charges, payment instruments,
+    payment agreements and payment sessions are the four core objects; captures, refunds and voids are
+    sub-resources of a charge; fund statuses, disputes, chargebacks and dispute reports complete the
+    money-movement and risk surface. All requests are Bearer-token authenticated, POST and PATCH accept
+    a Request-Idempotency-Key, and every asynchronous state change is delivered as a CloudEvents 1.0.2
+    webhook.'
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Payments
+  - Local Payment Methods
+  - Checkout
+  - Disputes
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-payment-charges-openapi.yml
+  - type: OpenAPI
+    url: openapi/ppro-payment-instruments-openapi.yml
+  - type: OpenAPI
+    url: openapi/ppro-payment-agreements-openapi.yml
+  - type: OpenAPI
+    url: openapi/ppro-payment-sessions-openapi.yml
+  - type: OpenAPI
+    url: openapi/ppro-fund-statuses-openapi.yml
+  - type: OpenAPI
+    url: openapi/ppro-risk-management-openapi.yml
+  - type: OpenAPI
+    url: openapi/ppro-chargebacks-openapi.yml
+  - type: OpenAPI
+    url: openapi/ppro-dispute-reports-openapi.yml
+  - type: OpenAPI
+    url: openapi/ppro-webhooks-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: MCPServer
+    url: mcp/ppro-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- name: PPRO Onboarding API
+  description: 'Merchant boarding and enrollment for PPRO platforms and PSPs — create and amend
+    merchants, people, platforms and PSP records, and enroll merchants onto payment methods. The
+    boarding contract publishes only the sandbox server block; PPRO''s own authentication reference
+    names https://api.eu.ppro.com as the live host for the platform, and production boarding access is
+    arranged through a PPRO account manager.'
+  humanURL: https://developerhub.ppro.com/global-api/reference
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Onboarding
+  - Merchants
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-onboarding-openapi.yml
+  - type: OpenAPI
+    url: openapi/ppro-enrollment-openapi.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +95,73 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
-  url: https://forgeglobal.com/ppro_stock/
+  url: https://www.ppro.com/
+- type: DeveloperPortal
+  url: https://developerhub.ppro.com/
+- type: Documentation
+  url: https://developerhub.ppro.com/global-api/docs/welcome
+- type: APIReference
+  url: https://developerhub.ppro.com/global-api/reference
+- type: GettingStarted
+  url: https://developerhub.ppro.com/global-api/docs/get-started
+- type: Authentication
+  url: authentication/ppro-authentication.yml
+- type: Idempotency
+  url: conventions/ppro-conventions.yml
+- type: Conventions
+  url: conventions/ppro-conventions.yml
+- type: RateLimits
+  url: rate-limits/ppro-rate-limits.yml
+- type: ErrorCatalog
+  url: errors/ppro-problem-types.yml
+- type: DeclineCodes
+  url: errors/ppro-failure-codes.yml
+- type: Lifecycle
+  url: lifecycle/ppro-lifecycle.yml
+- type: StatusPage
+  url: https://status.ppro.com/
+- type: ChangeLog
+  url: changelog/ppro-changelog.yml
+- type: Sandbox
+  url: sandbox/ppro-sandbox.yml
+- type: Packages
+  url: packages/ppro-packages.yml
+- type: SDKs
+  url: packages/ppro-packages.yml
+- type: Components
+  url: components/ppro-components.yml
+- type: DataModel
+  url: data-model/ppro-data-model.yml
+- type: Conformance
+  url: conformance/ppro-conformance.yml
+- type: DomainSecurity
+  url: security/ppro-domain-security.yml
+- type: TrustCenter
+  url: https://trust.ppro.com/
+- type: WellKnown
+  url: well-known/ppro-well-known.yml
+- type: LLMsTxt
+  url: llms/ppro-llms.txt
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Postman
+  url: https://www.postman.com/pprodev
+- type: GitHubOrganization
+  url: https://github.com/PPRO
+- type: Blog
+  url: https://www.ppro.com/news/
+- type: Support
+  url: https://www.ppro.com/contact/
+- type: SignUp
+  url: https://dashboard.ppro.com/
+- type: TermsOfService
+  url: https://www.ppro.com/legal/payment-services-agreement-general-terms-and-conditions/
+- type: PrivacyPolicy
+  url: https://www.ppro.com/legal/privacy-notice/
+- type: Plans
+  url: plans/ppro-plans-pricing.yml
+x-enrichment:
+  date: '2026-08-26'
+  status: enriched
+  artifacts_added: 63
+  pass: local-v1

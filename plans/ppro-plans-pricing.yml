@@ -1,0 +1,26 @@
+generated: '2026-08-26'
+method: searched
+source: https://www.ppro.com/
+api: PPRO
+plan_count: 0
+plans: []
+pricing_model: negotiated
+note: >-
+  PPRO publishes no self-serve plans, tiers or rate card. It sells to payment service providers, acquirers,
+  platforms and enterprise merchants under a Payment Services Agreement, and its own site routes every
+  pricing question to a sales contact form rather than a pricing page — there is no /pricing route on
+  www.ppro.com and no pricing endpoint anywhere in the developer hub. Commercial terms (base fee rates,
+  monthly minimum fees, per-incident operational fees) are set in the contract, not published. Recorded as
+  plan_count 0 deliberately: this is an enterprise contact-sales posture, not a missing probe.
+evidence:
+- url: https://www.ppro.com/
+  status: 403
+  note: Cloudflare bot interstitial on direct fetch; page content read through a rendering fetch, which showed only "Get started" and "Get in touch" calls to action, no pricing route.
+- url: https://www.ppro.com/contact/
+  status: 403
+  note: Cloudflare bot interstitial on direct fetch; rendered content confirms two sales/support contact forms and no published rates.
+- url: https://developerhub.ppro.com/global-api/llms.txt
+  status: 200
+  note: Complete documentation index — no pricing or plans section in any of the four projects.
+signup: https://dashboard.ppro.com/
+terms: https://www.ppro.com/legal/payment-services-agreement-general-terms-and-conditions/

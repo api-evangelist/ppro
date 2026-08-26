@@ -1,0 +1,227 @@
+generated: '2026-08-26'
+method: derived
+source: >-
+  openapi/*.yml ($ref graph and id-reference fields across all eleven specifications), enriched from
+  https://developerhub.ppro.com/global-api/docs/introduction-to-core-api-objects and
+  https://developerhub.ppro.com/global-api/reference/data-standards
+api: PPRO Global API
+identifier_convention:
+  style: '<prefix>_<opaque string, up to 21 chars>'
+  note: Prefixes charge_ and refund_ are documented; the rest are read from published example payloads.
+entity_count: 19
+entities:
+- name: PaymentCharge
+  id_prefix: charge_
+  spec: openapi/ppro-payment-charges-openapi.yml
+  operations: [authorize, getPaymentCharge, searchPaymentCharge, createCharge]
+  description: >-
+    A single collection of funds from a consumer. The root object of the money-movement graph. Carries
+    paymentMethod, paymentMedium, scheduleType, currency, country, status, consumer and a failure object
+    mirroring the most recent failure across any of its operations.
+  relationships:
+  - has_many: Authorization
+    via: authorizations
+  - has_many: Capture
+    via: captures
+  - has_many: Refund
+    via: refunds
+  - has_many: Void
+    via: voids
+  - has_many: FundStatus
+    via: getFundsStatuses
+  - has_many: Dispute
+    via: paymentChargeId
+  - belongs_to: PaymentInstrument
+    via: instrumentId
+    optional: true
+  - belongs_to: PaymentAgreement
+    via: agreementId
+    optional: true
+  - belongs_to: PaymentSession
+    via: paymentSessionId
+    optional: true
+- name: Authorization
+  id_prefix: authz_
+  spec: openapi/ppro-payment-charges-openapi.yml
+  operations: [confirm, getAuthorization, getAuthorizations]
+  description: The reservation of funds on a charge. May require additional consumer authentication data before it can proceed.
+  relationships:
+  - belongs_to: PaymentCharge
+    via: _links.payment_charge
+- name: Capture
+  id_prefix: capture_
+  spec: openapi/ppro-payment-charges-openapi.yml
+  operations: [capture, getCapture, getCaptures]
+  description: Movement of authorized funds. Full, partial, multiple or automatic (autoCapture=true on the charge).
+  relationships:
+  - belongs_to: PaymentCharge
+    via: _links.payment_charge
+- name: Refund
+  id_prefix: refund_
+  spec: openapi/ppro-payment-charges-openapi.yml
+  operations: [refund, getRefund, getRefunds]
+  description: Return of captured funds to the consumer. Total refunded may not exceed the captured amount. Carries refundReason (RETURN, DUPLCIATE, FRAUD, CUSTOMER_REQUEST, OTHER — PPRO's own enum, misspelling included).
+  relationships:
+  - belongs_to: PaymentCharge
+    via: _links.payment_charge
+    reverses: Capture
+- name: Void
+  id_prefix: void_
+  spec: openapi/ppro-payment-charges-openapi.yml
+  operations: [processVoid, getVoid, getVoids]
+  description: Cancellation of an uncaptured authorization, releasing funds back to the consumer. Impossible once the charge is CAPTURED.
+  relationships:
+  - belongs_to: PaymentCharge
+    via: _links.payment_charge
+    reverses: Authorization
+- name: PaymentInstrument
+  id_prefix: instr_
+  spec: openapi/ppro-payment-instruments-openapi.yml
+  operations: [createPaymentInstrument, fetchPaymentInstrument, updatePaymentInstrument, deletePaymentInstrument]
+  description: >-
+    A stored means of payment reusable across charges and agreements. Polymorphic by instrument type —
+    VaultedCard, CardNetworkToken, BankAccount, AmazonPay, BancontactAccount, KlarnaAccount, TwintWallet,
+    UpiAutoPay, PassthroughWallet and a Mock type for sandbox.
+  relationships:
+  - has_many: PaymentCharge
+    via: instrumentId
+  - has_many: PaymentAgreement
+    via: instrumentId
+- name: PaymentAgreement
+  id_prefix: agree_
+  spec: openapi/ppro-payment-agreements-openapi.yml
+  operations: [createAgreement, fetchPaymentAgreement, confirm, revokeAgreement, createCharge]
+  description: >-
+    A consumer mandate for recurring or merchant-initiated payments. Must reach status ACTIVE before charges
+    may be created under it; revocation is terminal.
+  relationships:
+  - has_many: PaymentCharge
+    via: agreementId
+  - belongs_to: PaymentInstrument
+    via: instrumentId
+  - belongs_to: PaymentCharge
+    via: initialPaymentChargeId
+    optional: true
+  - belongs_to: PaymentSession
+    via: paymentSessionId
+    optional: true
+- name: PaymentSession
+  id_prefix: session_
+  spec: openapi/ppro-payment-sessions-openapi.yml
+  operations: [createSession, fetchSession, patchSession, authorizeSession]
+  description: >-
+    The checkout-side container the Drop-in Checkout renders against. Authorizing a session resolves to either
+    a payment charge or a payment agreement.
+  relationships:
+  - has_one: PaymentCharge
+    via: initialPaymentChargeId
+  - has_one: PaymentAgreement
+    via: paymentAgreementId
+- name: FundStatus
+  spec: openapi/ppro-fund-statuses-openapi.yml
+  operations: [getFundsStatuses]
+  description: Settlement state of a charge's captures and refunds. Emitted asynchronously as the Funds State Changed webhook.
+  relationships:
+  - belongs_to: PaymentCharge
+    via: paymentChargeId
+  - belongs_to: Capture
+    via: operationId
+  - belongs_to: Refund
+    via: operationId
+- name: Dispute
+  spec: openapi/ppro-risk-management-openapi.yml
+  operations: [getById, getDisputes, actionDispute, postMessage, uploadFile, downloadFile]
+  description: >-
+    A consumer or issuer challenge to a charge. Capabilities are state-gated — POST MESSAGE and UPLOAD_FILE
+    are only permitted when the dispute's capability list allows them. Merchant actions are accept, challenge
+    or offer.
+  relationships:
+  - belongs_to: PaymentCharge
+    via: paymentChargeId
+  - has_many: DisputeFile
+    via: fileId
+  - has_many: Chargeback
+    via: disputeId
+- name: DisputeFile
+  spec: openapi/ppro-risk-management-openapi.yml
+  operations: [uploadFile, downloadFile]
+  description: Evidence attached to a dispute, uploaded as multipart/form-data raw binary (base64 explicitly unsupported).
+  relationships:
+  - belongs_to: Dispute
+    via: disputeId
+- name: DisputeReport
+  spec: openapi/ppro-dispute-reports-openapi.yml
+  operations: [disputeReports, getReportById]
+  description: >-
+    Asynchronously generated dispute report over a date range within the last 90 days, ending before now.
+    Completion yields a pre-signed download URL; expiry is announced by the Report Expired webhook.
+  relationships:
+  - belongs_to: Merchant
+    via: merchantId
+- name: Chargeback
+  spec: openapi/ppro-chargebacks-openapi.yml
+  operations: [getChargebacks, getChargeback]
+  description: A scheme-level forced reversal. Queried by exactly one of disputeId or paymentChargeId.
+  relationships:
+  - belongs_to: Dispute
+    via: disputeId
+  - belongs_to: PaymentCharge
+    via: paymentChargeId
+  - has_many: ChargebackReversal
+    via: chargeback id
+- name: ChargebackReversal
+  spec: openapi/ppro-chargebacks-openapi.yml
+  operations: [getChargebackReversals, getChargebackReversal]
+  description: Reversal of a chargeback in the merchant's favour.
+  relationships:
+  - belongs_to: Chargeback
+    via: id
+- name: Merchant
+  id_prefix: merch_
+  spec: openapi/ppro-onboarding-openapi.yml
+  operations: [createMerchant, getMerchant, updateMerchant, replaceMerchant, deactivateMerchant]
+  description: >-
+    The boarded entity every payment object is scoped to; also the value of the Merchant-Id request header.
+  relationships:
+  - has_many: Person
+    via: listMerchantPeople / associatePersonWithMerchant
+  - has_many: Enrollment
+    via: merchant-id
+  - belongs_to: Platform
+    via: platformId
+- name: Person
+  spec: openapi/ppro-onboarding-openapi.yml
+  operations: [createPerson, getPerson, updatePerson, replacePerson, deactivatePerson]
+  description: A natural person (UBO, director, signatory) associated with one or more merchants for KYC.
+  relationships:
+  - has_many: Merchant
+    via: association
+- name: Platform
+  spec: openapi/ppro-onboarding-openapi.yml
+  operations: [listPlatforms, createPlatform, getPlatform, updatePlatform]
+  description: A PSP-owned grouping of merchants.
+  relationships:
+  - has_many: Merchant
+    via: platformId
+  - belongs_to: Psp
+    via: pspId
+- name: Psp
+  spec: openapi/ppro-onboarding-openapi.yml
+  operations: [listPsps, getPsp]
+  description: The payment service provider reselling PPRO's rails. Read-only over the API.
+  relationships:
+  - has_many: Platform
+    via: pspId
+- name: Enrollment
+  spec: openapi/ppro-enrollment-openapi.yml
+  operations: [enroll, fetch, list]
+  description: A merchant's activation on a specific payment method.
+  relationships:
+  - belongs_to: Merchant
+    via: merchant-id
+core_object_note: >-
+  PPRO's own documentation names payment charges, payment instruments and payment agreements as the three
+  core API objects; payment sessions is the fourth surface the Drop-in Checkout drives. Everything else in
+  this graph hangs off those four.
+subway: null
+docs: https://developerhub.ppro.com/global-api/docs/introduction-to-core-api-objects

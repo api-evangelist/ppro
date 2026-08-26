@@ -1,0 +1,83 @@
+generated: '2026-08-26'
+method: probed
+source: https://developerhub.ppro.com/global-api/docs/mcp
+name: PPRO Global API MCP Server
+description: >-
+  PPRO publishes a first-party, hosted Model Context Protocol server that fronts the Global API. It is a
+  streamable-HTTP MCP server (serverInfo global-api-mcp 1.0.0, protocolVersion 2025-06-18) exposing 28
+  tools across payment sessions, payment instruments, payment agreements and payment charges — the same
+  four core objects as the REST API, plus the capture / refund / void sub-resources. Tool discovery is
+  anonymous: an unauthenticated initialize + tools/list returns the full tool set with complete JSON
+  Schema inputs. Calling a tool requires the same Bearer API key as the REST API.
+deployment:
+  mode: remote
+  endpoint: https://mcp.eu.ppro.com
+  sandbox_endpoint: https://mcp.sandbox.eu.ppro.com
+  install: null
+  package: null
+  auth: api-key
+  auth_detail: >-
+    Authorization: Bearer {API_KEY} header, the same key used for the REST API. PPRO's documented client
+    configs pass it as a static header (Cursor / Claude Code --header) or via mcp-remote for stdio-only
+    clients. No OAuth: neither /.well-known/oauth-authorization-server nor /.well-known/oauth-protected-resource
+    is served on mcp.eu.ppro.com (both 404).
+  verified: probed
+  transport: streamable-http
+  protocol_version: '2025-06-18'
+  server_info:
+    name: global-api-mcp
+    version: 1.0.0
+  capabilities:
+    tools: true
+    resources: true
+    prompts: true
+    completions: true
+    logging: true
+x-evidence:
+  fetched: '2026-08-26'
+  initialize:
+    url: https://mcp.eu.ppro.com
+    method: POST
+    http_status: 200
+    note: anonymous initialize succeeded; server returned an mcp-session-id header
+  tools_list:
+    url: https://mcp.eu.ppro.com
+    method: POST
+    http_status: 200
+    note: anonymous tools/list returned 28 tools with full inputSchema, saved verbatim
+    file: mcp/ppro-mcp-tools.json
+  docs:
+    url: https://developerhub.ppro.com/global-api/docs/mcp
+    http_status: 200
+tool_count: 28
+tools_file: mcp/ppro-mcp-tools.json
+tool_groups:
+- group: Payment Sessions
+  tools: [CREATE_PAYMENT_SESSION, GET_PAYMENT_SESSION, UPDATE_PAYMENT_SESSION, AUTHORIZE_PAYMENT_SESSION]
+- group: Payment Instruments
+  tools: [CREATE_PAYMENT_INSTRUMENT, GET_PAYMENT_INSTRUMENT, UPDATE_PAYMENT_INSTRUMENT, DELETE_PAYMENT_INSTRUMENT]
+- group: Payment Agreements
+  tools: [CREATE_PAYMENT_AGREEMENT, GET_PAYMENT_AGREEMENT, REVOKE_PAYMENT_AGREEMENT, UPDATE_PAYMENT_AGREEMENT_AUTHORIZATION,
+    CREATE_PAYMENT_AGREEMENT_CHARGE]
+- group: Payment Charges
+  tools: [CREATE_PAYMENT_CHARGE, GET_PAYMENT_CHARGE, LIST_PAYMENT_CHARGES, UPDATE_PAYMENT_CHARGE_AUTHORIZATION,
+    GET_PAYMENT_CHARGE_AUTHORIZATION, LIST_PAYMENT_CHARGE_AUTHORIZATIONS, CAPTURE_PAYMENT_CHARGE,
+    GET_PAYMENT_CHARGE_CAPTURE, LIST_PAYMENT_CHARGE_CAPTURES, REFUND_PAYMENT_CHARGE, GET_PAYMENT_CHARGE_REFUND,
+    LIST_PAYMENT_CHARGE_REFUNDS, VOID_PAYMENT_CHARGE, GET_PAYMENT_CHARGE_VOID, LIST_PAYMENT_CHARGE_VOIDS]
+client_configuration:
+- client: Cursor
+  file: ~/.cursor/mcp.json
+  shape: >-
+    {"mcpServers":{"ppro-global-api-sandbox":{"url":"https://mcp.sandbox.eu.ppro.com","headers":{"Authorization":"Bearer
+    {API_KEY}"}}}}
+- client: Claude Code
+  command: >-
+    claude mcp add --transport http ppro-global-api-sandbox https://mcp.sandbox.eu.ppro.com --header
+    "Authorization: Bearer ${API_KEY}"
+- client: Claude Desktop
+  note: >-
+    Bridged with npx -y mcp-remote@latest https://mcp.sandbox.eu.ppro.com --header "Authorization: Bearer {API_KEY}".
+    This is a generic remote-to-stdio bridge, not a PPRO-published stdio package, so deployment.mode stays remote.
+coverage_gap: >-
+  The MCP surface covers the four core payment objects only. Fund statuses, disputes, chargebacks,
+  dispute reports, merchant onboarding and enrollment are REST-only — see mcp/ppro-tool-crosswalk.yml.

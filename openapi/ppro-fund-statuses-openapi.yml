@@ -1,0 +1,73 @@
+openapi: 3.1.0
+info:
+  title: GPG Funds
+  description: GPG Funds API
+  version: v1
+servers:
+- url: https://api.sandbox.eu.ppro.com
+  description: Production - Sandbox environment for integration testing
+- url: https://api.eu.ppro.com
+  description: Production
+tags:
+- name: Funds State API
+paths:
+  /v1/payment-charges/{paymentChargeId}/funds-statuses:
+    get:
+      tags:
+      - payment-charge-controller
+      summary: Fetch latest available funds statuses for payment charge captures and refunds
+      operationId: getFundsStatuses
+      parameters:
+      - name: paymentChargeId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FundsStateDetailsResponse'
+components:
+  schemas:
+    FundsStateDetailsResponse:
+      type: object
+      properties:
+        operationId:
+          type: string
+          description: Capture ID or refund ID)
+        operationType:
+          type: string
+          description: 'Operation type: CAPTURE or REFUND'
+          enum:
+          - CAPTURE
+          - REFUND
+        fundsStatus:
+          type: string
+          description: Funds status
+          enum:
+          - CAPTURE_FUNDS_NOT_EXPECTED
+          - CAPTURE_FUNDS_MISSING
+          - CAPTURE_FUNDS_WAITING
+          - CAPTURE_FUNDS_RECEIVED
+          - REFUND_FUNDS_NOT_EXPECTED
+          - REFUND_FUNDS_REJECTED
+          - REFUND_FUNDS_WAITING
+          - REFUND_FUNDS_SENT
+        merchantPaymentChargeReference:
+          type: string
+          description: Merchant's payment-charge reference. This field is available only when the operation type is `CAPTURE`
+        merchantRefundReference:
+          type: string
+          description: Merchant's refund reference. This field is available only when the operation type is `REFUND`

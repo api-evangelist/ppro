@@ -1,0 +1,174 @@
+generated: '2026-08-26'
+method: searched
+source: >-
+  https://developerhub.ppro.com/global-api/reference/api-authentication,
+  https://developerhub.ppro.com/global-api/reference/data-standards,
+  https://developerhub.ppro.com/global-api/reference/api-idempotency,
+  https://developerhub.ppro.com/global-api/reference/api-rate-limit,
+  https://developerhub.ppro.com/global-api/reference/error-representation,
+  https://developerhub.ppro.com/global-api/docs/webhooks, plus openapi/*.yml
+api: PPRO Global API
+base_urls:
+  live: https://api.eu.ppro.com
+  sandbox: https://api.sandbox.eu.ppro.com
+auth:
+  style: bearer-token
+  header: 'Authorization: Bearer {API_KEY}'
+  additional_headers:
+  - header: Merchant-Id
+    description: Identifies the merchant account associated with the request; required on selected endpoints, typically payments.
+    note: PPRO warns that sending it where it is not required may cause the request to fail.
+  key_prefix: key_sandbox_ / key_live_ style keys issued per environment; sandbox keys do not work against the live host.
+  failure: 401 with body {"message":"Unauthorized"}
+  docs: https://developerhub.ppro.com/global-api/reference/api-authentication
+idempotency:
+  supported: true
+  header: Request-Idempotency-Key
+  applies_to: [POST, PATCH]
+  inherently_idempotent: [GET, PUT, DELETE]
+  key_format: version 4 (random) UUID, one per request
+  required: false
+  recommended: true
+  retention: 24 hours
+  replay_response_header: 'Request-Idempotency: true'
+  conflict_behavior:
+  - condition: same key replayed while the original request is still in flight
+    result: 409 Conflict
+  - condition: same key replayed with a DIFFERENT request body
+    result: 409 Conflict
+  - condition: same key replayed after the original succeeded
+    result: original response replayed, with Request-Idempotency=true
+  - condition: original request failed with a 4xx
+    result: key is NOT stored, so the same key may be reused for a different request
+  scope: consistently supported across all entities in the PPRO API
+  docs: https://developerhub.ppro.com/global-api/reference/api-idempotency
+  spec_evidence: >-
+    Every POST/PATCH in openapi/*.yml declares a 409 response described as "Duplicate request received with
+    the same idempotency key." (47 occurrences).
+reversibility:
+  grade: documented
+  grade_reason: >-
+    PPRO documents genuine reversal operations for every write on the money-movement surface and states the
+    STATE boundary for each (void only before capture, refund only after capture, up to the captured amount).
+    It does NOT state a universal TIME window: the refund page says "The support for refunds and their
+    validity periods are detailed in the properties of each payment method", pushing the window into the
+    per-payment-method pages rather than a platform-wide guarantee. A stated window is what would lift this
+    to verified, so it is graded documented rather than verified. No window has been invented here.
+  docs: https://developerhub.ppro.com/global-api/docs/refund
+  surfaces:
+  - write_operation: authorize
+    write_http: POST /v1/payment-charges
+    reversal: processVoid
+    reversal_http: POST /v1/payment-charges/{paymentChargeId}/voids
+    window: >-
+      State-bounded, not time-bounded. A charge can be voided only while authorized funds remain uncaptured;
+      once the charge status is CAPTURED it can no longer be voided and must be refunded instead. Partial and
+      multiple voids are allowed up to the authorized amount, where the payment method supports them.
+    window_stated: false
+    docs: https://developerhub.ppro.com/global-api/docs/void
+  - write_operation: capture
+    write_http: POST /v1/payment-charges/{paymentChargeId}/captures
+    reversal: refund
+    reversal_http: POST /v1/payment-charges/{paymentChargeId}/refunds
+    window: >-
+      Refund is available once a capture has succeeded, in full or in multiple partial amounts, provided the
+      total refunded does not exceed the captured amount. Validity periods are payment-method-specific and are
+      published on each payment method page, not as a single platform-wide window.
+    window_stated: false
+    docs: https://developerhub.ppro.com/global-api/docs/refund
+  - write_operation: createAgreement
+    write_http: POST /v1/payment-agreements
+    reversal: revokeAgreement
+    reversal_http: POST /v1/payment-agreements/{agreement-id}/revocations
+    window: >-
+      An agreement can be revoked at any time while active; after revocation no further charges can be created
+      under it. No expiry window is stated.
+    window_stated: false
+    docs: https://developerhub.ppro.com/global-api/docs/recurring-payments
+  - write_operation: createPaymentInstrument
+    write_http: POST /v1/payment-instruments
+    reversal: deletePaymentInstrument
+    reversal_http: DELETE /v1/payment-instruments/{instrument-id}
+    window: No window stated. Deletion is permanent; PPRO advises confirming no active agreements or pending charges depend on the instrument first.
+    window_stated: false
+  - write_operation: createMerchant
+    write_http: POST /v1/merchants
+    reversal: deactivateMerchant
+    reversal_http: DELETE /v1/merchants/{merchant-id}
+    window: No window stated.
+    window_stated: false
+  not_reversible:
+  - operation: disputeReports
+    note: Report generation is additive and expires on its own (Report Expired webhook); there is no undo.
+  - operation: actionDispute
+    note: >-
+      Accept / challenge / offer on a dispute is a terminal merchant decision routed to the scheme; PPRO
+      documents no reversal endpoint for it.
+dry_run_mode:
+  supported: false
+  note: >-
+    No dry-run / simulate / preview parameter exists in any published operation. The equivalent rehearsal
+    surface is the full sandbox environment (api.sandbox.eu.ppro.com) with deterministic test cards — see
+    sandbox/ppro-sandbox.yml.
+pagination:
+  style: cursor-and-filter
+  operations: [searchPaymentCharge, getDisputes, getChargebacks, getChargebackReversals, listPlatforms, listPsps, list]
+  note: >-
+    LIST_PAYMENT_CHARGES is documented as paginated and the search endpoint filters on exactly one of
+    merchant payment charge reference or agreement ID. Page-size / cursor parameter names are declared
+    per-operation in the specs rather than in a single cross-cutting pagination reference page.
+  docs: https://developerhub.ppro.com/global-api/reference/listpaymentcharges
+data_standards:
+  identifiers:
+    style: prefixed opaque string
+    max_length_after_prefix: 21
+    prefixes: [charge_, refund_, capture_, void_, authz_, instr_, agree_, merch_]
+    note: Prefixes charge_ and refund_ are stated in the docs; the others are read from published example payloads.
+  timestamps: ISO 8601, YYYY-MM-DDTHH:mm:ss.sssZ, always UTC
+  currency: ISO 4217 three-letter codes
+  amounts: integer minor units per the currency's ISO 4217 minor-unit definition
+  encoding: UTF-8, maximum 512 characters for any string value
+  field_order: grouped by function for readability; consumers must not depend on JSON field order
+  hypermedia: responses carry a _links object with relative hrefs (e.g. _links.payment_charge.href)
+  docs: https://developerhub.ppro.com/global-api/reference/data-standards
+error_envelope:
+  transport_errors:
+    shape: '{"status": <int>, "failureMessage": "<string>", "timestamp": "<ISO 8601>"}'
+    format: custom-json
+    rfc9457: false
+  operation_failures:
+    note: >-
+      A request may be accepted (2xx) while the underlying money movement is declined. The created entity then
+      carries a failure object.
+    shape: '{"failureType","failureCode","providerFailureCode","failureMessage","isRetryable"}'
+    catalog: errors/ppro-failure-codes.yml
+  docs: https://developerhub.ppro.com/global-api/reference/error-representation
+rate_limit_signalling:
+  headers: [X-RateLimit-Remaining, X-RateLimit-Requested-Tokens, X-RateLimit-Burst-Capacity, X-RateLimit-Replenish-Rate]
+  exhausted_status: 429
+  detail: rate-limits/ppro-rate-limits.yml
+versioning:
+  path_prefix: /v1
+  spec_version: v1 across every published OpenAPI document
+  policy: >-
+    No formal versioning or deprecation policy is published yet. PPRO's own developer-resources page states
+    "We are planning API versioning to ensure smooth updates and backwards compatibility. Details will be
+    shared as the API evolves."
+  docs: https://developerhub.ppro.com/global-api/docs/developer-resources
+webhooks:
+  envelope: CloudEvents 1.0.2
+  signature_header: PPRO-Signature
+  signature_algorithm: sha256(t + "." + rawPayload) keyed with the pre-shared secret; t is the UNIX timestamp in the header
+  deprecated_signature_header: Webhook-Signature (sha256(payload + "." + signingSecret)) — deprecated for new customers
+  configuration: webhooksUrl parameter on charge/agreement creation, or an account-level default set by the PPRO account manager
+  retries: exponential backoff, first retry at 15s, doubling, maximum 15 deliveries, ~68 hour total window
+  ack_requirement: respond 2xx immediately and store before processing
+  catalog: asyncapi/ppro-webhooks.yml
+  docs: https://developerhub.ppro.com/global-api/docs/webhooks
+cross_links:
+  errors: errors/ppro-problem-types.yml
+  decline_codes: errors/ppro-failure-codes.yml
+  lifecycle: lifecycle/ppro-lifecycle.yml
+  authentication: authentication/ppro-authentication.yml
+  rate_limits: rate-limits/ppro-rate-limits.yml
+  sandbox: sandbox/ppro-sandbox.yml
