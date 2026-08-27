@@ -31,69 +31,304 @@ tags:
 - Chargebacks
 - Company
 apis:
-- name: PPRO Global API
-  description: 'PPRO''s current-generation REST payments platform. Payment charges, payment instruments,
-    payment agreements and payment sessions are the four core objects; captures, refunds and voids are
-    sub-resources of a charge; fund statuses, disputes, chargebacks and dispute reports complete the
-    money-movement and risk surface. All requests are Bearer-token authenticated, POST and PATCH accept
-    a Request-Idempotency-Key, and every asynchronous state change is delivered as a CloudEvents 1.0.2
-    webhook.'
+- aid: ppro:ppro-authorization-endpoints-api
+  name: PPRO Authorization Endpoints API
+  description: The Authorization Endpoints API from PPRO — 5 operation(s) for authorization endpoints.
   humanURL: https://developerhub.ppro.com/global-api/docs/welcome
   baseURL: https://api.eu.ppro.com
   tags:
-  - Payments
-  - Local Payment Methods
-  - Checkout
-  - Disputes
+  - Authorization Endpoints
   properties:
   - type: OpenAPI
-    url: openapi/ppro-payment-charges-openapi.yml
-  - type: OpenAPI
-    url: openapi/ppro-payment-instruments-openapi.yml
-  - type: OpenAPI
-    url: openapi/ppro-payment-agreements-openapi.yml
-  - type: OpenAPI
-    url: openapi/ppro-payment-sessions-openapi.yml
-  - type: OpenAPI
-    url: openapi/ppro-fund-statuses-openapi.yml
-  - type: OpenAPI
-    url: openapi/ppro-risk-management-openapi.yml
-  - type: OpenAPI
-    url: openapi/ppro-chargebacks-openapi.yml
-  - type: OpenAPI
-    url: openapi/ppro-dispute-reports-openapi.yml
-  - type: OpenAPI
-    url: openapi/ppro-webhooks-openapi.yml
+    url: openapi/ppro-authorization-endpoints-api-openapi.yml
   - type: APIReference
     url: https://developerhub.ppro.com/global-api/reference
-  - type: MCPServer
-    url: mcp/ppro-mcp.yml
   - type: ToolCrosswalk
     url: mcp/ppro-tool-crosswalk.yml
   - type: Webhooks
     url: asyncapi/ppro-webhooks.yml
-- name: PPRO Onboarding API
-  description: 'Merchant boarding and enrollment for PPRO platforms and PSPs — create and amend
-    merchants, people, platforms and PSP records, and enroll merchants onto payment methods. The
-    boarding contract publishes only the sandbox server block; PPRO''s own authentication reference
-    names https://api.eu.ppro.com as the live host for the platform, and production boarding access is
-    arranged through a PPRO account manager.'
-  humanURL: https://developerhub.ppro.com/global-api/reference
+- aid: ppro:ppro-capture-endpoints-api
+  name: PPRO Capture Endpoints API
+  description: The Capture Endpoints API from PPRO — 2 operation(s) for capture endpoints.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
   baseURL: https://api.eu.ppro.com
   tags:
-  - Onboarding
+  - Capture Endpoints
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-capture-endpoints-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-dispute-reports-api
+  name: PPRO Dispute Reports API
+  description: Endpoints for generating and retrieving dispute reports
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Dispute Reports
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-dispute-reports-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-disputes-api
+  name: PPRO Disputes API
+  description: The Disputes API from PPRO — 6 operation(s) for disputes.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Disputes
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-disputes-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-enrollment-endpoints-api
+  name: PPRO Enrollment Endpoints API
+  description: The Enrollment Endpoints API from PPRO — 2 operation(s) for enrollment endpoints.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Enrollment Endpoints
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-enrollment-endpoints-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-internal-api
+  name: PPRO Internal API
+  description: The Internal API from PPRO — 4 operation(s) for internal.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Internal
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-internal-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-merchants-api
+  name: PPRO Merchants API
+  description: Merchant management
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
   - Merchants
   properties:
   - type: OpenAPI
-    url: openapi/ppro-onboarding-openapi.yml
+    url: openapi/ppro-merchants-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-payment-agreement-revocations-api
+  name: PPRO Payment Agreement Revocations API
+  description: >-
+    The Payment Agreement Revocations API from PPRO — 1 operation(s) for payment agreement revocations.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Payment Agreement Revocations
+  properties:
   - type: OpenAPI
-    url: openapi/ppro-enrollment-openapi.yml
+    url: openapi/ppro-payment-agreement-revocations-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-payment-agreements-api
+  name: PPRO Payment Agreements API
+  description: The Payment Agreements API from PPRO — 2 operation(s) for payment agreements.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Payment Agreements
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-payment-agreements-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-payment-charge-controller-api
+  name: PPRO Payment Charge Controller API
+  description: >-
+    The payment-charge-controller API from PPRO — 1 operation(s) for payment-charge-controller.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - payment-charge-controller
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-payment-charge-controller-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-payment-charges-api
+  name: PPRO Payment Charges API
+  description: The Payment Charges API from PPRO — 1 operation(s) for payment charges.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Payment Charges
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-payment-charges-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-payment-instruments-api
+  name: PPRO Payment Instruments API
+  description: The Payment Instruments API from PPRO — 2 operation(s) for payment instruments.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Payment Instruments
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-payment-instruments-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-payment-sessions-api
+  name: PPRO Payment Sessions API
+  description: The Payment Sessions API from PPRO — 3 operation(s) for payment sessions.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Payment Sessions
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-payment-sessions-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-people-api
+  name: PPRO People API
+  description: Person management
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - People
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-people-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-platforms-api
+  name: PPRO Platforms API
+  description: Platform management
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Platforms
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-platforms-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-psps-api
+  name: PPRO PS Ps API
+  description: PSP management
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - PSPs
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-psps-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-refund-endpoints-api
+  name: PPRO Refund Endpoints API
+  description: The Refund Endpoints API from PPRO — 2 operation(s) for refund endpoints.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Refund Endpoints
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-refund-endpoints-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
+- aid: ppro:ppro-void-endpoints-api
+  name: PPRO Void Endpoints API
+  description: The Void Endpoints API from PPRO — 2 operation(s) for void endpoints.
+  humanURL: https://developerhub.ppro.com/global-api/docs/welcome
+  baseURL: https://api.eu.ppro.com
+  tags:
+  - Void Endpoints
+  properties:
+  - type: OpenAPI
+    url: openapi/ppro-void-endpoints-api-openapi.yml
+  - type: APIReference
+    url: https://developerhub.ppro.com/global-api/reference
+  - type: ToolCrosswalk
+    url: mcp/ppro-tool-crosswalk.yml
+  - type: Webhooks
+    url: asyncapi/ppro-webhooks.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: MCPServer
+  url: mcp/ppro-mcp.yml
 - type: Website
   url: https://www.ppro.com/
 - type: DeveloperPortal
