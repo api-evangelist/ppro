@@ -1,0 +1,111 @@
+slug: ppro
+provider: PPRO
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Banking & Capital Markets
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 10
+edges:
+- tag: Authorization Endpoints
+  spec_file: ppro-authorization-endpoints-api-openapi.yml
+  capability_id: BC-1340.70
+  capability_id_l1: BC-1340
+  capability_name: Card Transaction Processing Management
+  confidence: 0.8
+  evidence: POST /v1/payment-charges  authorize  Create a payment charge; GET /v1/payment-charges/{paymentChargeId}/authorizations  getAuthorizations
+  reason: Payment charge creation and authorisation lifecycle including 3DS authentication (ExternalThreeDs,
+    AuthenticationResult, RawCardInstrument) — card/payment transaction authorisation processing.
+- tag: Capture Endpoints
+  spec_file: ppro-capture-endpoints-api-openapi.yml
+  capability_id: BC-1340.70
+  capability_id_l1: BC-1340
+  capability_name: Card Transaction Processing Management
+  confidence: 0.8
+  evidence: POST /v1/payment-charges/{paymentChargeId}/captures  capture  Create capture
+  reason: Capture of authorised payment charges is core transaction processing on the acquiring/card rail,
+    within Payments & Card Management.
+- tag: Disputes
+  spec_file: ppro-disputes-api-openapi.yml
+  capability_id: BC-1340.70
+  capability_id_l1: BC-1340
+  capability_name: Card Transaction Processing Management
+  confidence: 0.8
+  evidence: POST /v1/disputes/{disputeId}/actions  actionDispute  Merchant action; schemas ChargebackDetails,
+    DisputeReason, ChallengeActionDto
+  reason: Chargeback/dispute case handling with evidence upload and merchant challenge or accept actions
+    — explicitly chargeback processing within card transaction processing.
+- tag: Internal
+  spec_file: ppro-internal-api-openapi.yml
+  capability_id: BC-1340.70
+  capability_id_l1: BC-1340
+  capability_name: Card Transaction Processing Management
+  confidence: 0.8
+  evidence: GET /v1/chargebacks  getChargebacks; GET /v1/chargeback-reversals  getChargebackReversals
+  reason: Despite the generic 'Internal' tag, the operations retrieve chargebacks and chargeback reversals
+    — chargeback handling within card transaction processing.
+- tag: Payment Charges
+  spec_file: ppro-payment-charges-api-openapi.yml
+  capability_id: BC-1340.10
+  capability_id_l1: BC-1340
+  capability_name: Payment Initiation Management
+  confidence: 0.8
+  evidence: POST /v1/payment-agreements/{agreement-id}/payment-charges createCharge Create a Payment Charge;
+    schemas AgreementChargeRequest, PaymentChargeAuthorization
+  reason: Initiating and authorising a payment charge against an agreement is payment instruction capture,
+    validation and authorisation.
+- tag: Payment Sessions
+  spec_file: ppro-payment-sessions-api-openapi.yml
+  capability_id: BC-1340.10
+  capability_id_l1: BC-1340
+  capability_name: Payment Initiation Management
+  confidence: 0.78
+  evidence: POST /v1/payment-sessions/{session-id}/authorizations authorizeSession Authorize payment charge
+    or agreement
+  reason: Payment session creation and authorisation of the payment charge is capture/validation/authorisation
+    of payment instructions.
+- tag: Payment Agreements
+  spec_file: ppro-payment-agreements-api-openapi.yml
+  capability_id: BC-1340.10
+  capability_id_l1: BC-1340
+  capability_name: Payment Initiation Management
+  confidence: 0.75
+  evidence: POST /v1/payment-agreements createAgreement Create a Payment Agreement; schemas AuthenticationSettings,
+    ExternalThreeDs, RawCardInstrument
+  reason: Creation and retrieval of payment agreements (recurring payment mandates with authentication
+    settings) — capture and authorisation of payment instructions for local payment methods.
+- tag: Payment Instruments
+  spec_file: ppro-payment-instruments-api-openapi.yml
+  capability_id: BC-1340
+  capability_id_l1: BC-1340
+  capability_name: Payments & Card Management
+  confidence: 0.72
+  evidence: POST /v1/payment-instruments createPaymentInstrument; schemas CardNetworkTokenInstrumentRequest,
+    BankAccountInstrumentRequest, TwintWalletInstrumentRequest, UpiAutoPayInstrumentRequest
+  reason: Lifecycle of stored payment instruments (card network tokens, wallets, bank accounts) used to
+    initiate payments; clearly Payments & Card Management at L1 but no single L2 (initiation vs card)
+    is plainly indicated.
+- tag: Payment Agreement Revocations
+  spec_file: ppro-payment-agreement-revocations-api-openapi.yml
+  capability_id: BC-1340.10
+  capability_id_l1: BC-1340
+  capability_name: Payment Initiation Management
+  confidence: 0.7
+  evidence: POST /v1/payment-agreements/{agreement-id}/revocations revokeAgreement Revoke a Payment Agreement
+  reason: Revocation of a payment agreement (mandate/consent used to initiate future payments) is part
+    of payment instruction authorisation lifecycle under Payment Initiation Management.
+- tag: Refund Endpoints
+  spec_file: ppro-refund-endpoints-api-openapi.yml
+  capability_id: BC-1340.20
+  capability_id_l1: BC-1340
+  capability_name: Payment Processing Management
+  confidence: 0.7
+  evidence: POST /v1/payment-charges/{paymentChargeId}/refunds refund Create refund; schema PaymentChargeRefundResponse
+  reason: Processing refunds against captured payment charges is part of payment processing operations
+    on the payment rails.

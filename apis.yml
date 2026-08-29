@@ -339,6 +339,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/ppro-capability-edges.yml
+  name: PPRO Business Capability Map
 - type: MCPServer
   url: mcp/ppro-mcp.yml
 - type: Website
