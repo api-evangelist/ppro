@@ -11,6 +11,18 @@ description: 'PPRO is a local payments infrastructure company that lets payment 
   idempotency-key contract, a documented token-bucket rate limit, a Drop-in Checkout component library
   and a hosted Model Context Protocol server so coding agents can call the platform directly.'
 url: https://raw.githubusercontent.com/api-evangelist/ppro/refs/heads/main/apis.yml
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://files.readme.io/920bf80-ppro_logo_black.svg
 x-type: company
 x-source: harvest:secondary-market
