@@ -1,0 +1,551 @@
+openapi: 3.2.0
+info:
+  title: Ppro People API
+  version: 1.0.0
+  license:
+    name: Proprietary
+    identifier: Proprietary
+  description: 'Operations tagged People across 2 of this provider''s published API definitions: ppro-onboarding-openapi.yml, ppro-openapi-boarding-v2.yaml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.sandbox.eu.ppro.com
+  description: Production
+security: []
+tags:
+- name: People
+  description: Person management
+paths:
+  /v1/people:
+    post:
+      summary: Create a Person
+      operationId: createPerson
+      tags:
+      - People
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePersonRequest'
+      responses:
+        '201':
+          description: Person created successfully
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production
+  /v1/people/{person-id}:
+    get:
+      summary: Get a Person
+      operationId: getPerson
+      tags:
+      - People
+      parameters:
+      - $ref: '#/components/parameters/person-id'
+      responses:
+        '200':
+          description: Details of the specified Person
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    patch:
+      summary: Update part of a Person
+      operationId: updatePerson
+      tags:
+      - People
+      parameters:
+      - $ref: '#/components/parameters/person-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePersonRequest'
+      responses:
+        '200':
+          description: Person updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    put:
+      summary: Replace a Person
+      operationId: replacePerson
+      tags:
+      - People
+      parameters:
+      - $ref: '#/components/parameters/person-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplacePersonRequest'
+      responses:
+        '200':
+          description: Person replaced successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    delete:
+      summary: Deactivate a Person
+      operationId: deactivatePerson
+      tags:
+      - People
+      parameters:
+      - $ref: '#/components/parameters/person-id'
+      responses:
+        '204':
+          description: Person deactivated or already deactivated.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production
+components:
+  responses:
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    MethodNotAllowed:
+      description: Method not allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    GatewayTimeout:
+      description: Gateway Timeout
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    ExternalReference:
+      type: string
+      pattern: ^[A-Z0-9]{1,32}$
+      description: Unique reference, assigned by external client.
+      example: ENTITY1234567890
+    UpdatePersonRequest:
+      title: UpdatePersonRequest
+      type: object
+      properties:
+        firstName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal given name of the person.
+          example: John
+        lastName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal surname or family name of the person.
+          example: Doe
+        middleName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: An optional middle name of the person, if applicable.
+          example: Michael
+        nativeName:
+          type: string
+          pattern: ^[\p{L}\p{M}\p{Zs}'\-\.]{1,255}$
+          description: The person’s name in their native script (e.g., Cyrillic, Kanji), if different from Latin characters.
+          example: 道
+        birthDate:
+          type: string
+          format: date
+          description: The person’s birth date, in ISO-8601 format YYYY-MM-DD.
+          example: '2000-01-01'
+        address:
+          $ref: '#/components/schemas/Address'
+        email:
+          allOf:
+          - $ref: '#/components/schemas/EmailAddress'
+      example:
+        firstName: John
+        lastName: Doe
+        middleName: Michael
+        nativeName: 道
+        birthDate: '2000-01-01'
+        address:
+          street: 123 Main St
+          city: Anytown
+          region: CA
+          postalCode: '12345'
+          country: US
+        email: john.doe@example.com
+    CreatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    ReplacePersonRequest:
+      title: ReplacePersonRequest
+      type: object
+      properties:
+        firstName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal given name of the person.
+          example: John
+        lastName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal surname or family name of the person.
+          example: Doe
+        middleName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: An optional middle name of the person, if applicable.
+          example: Michael
+        nativeName:
+          type: string
+          pattern: ^[\p{L}\p{M}\p{Zs}'\-\.]{1,255}$
+          description: The person’s name in their native script (e.g., Cyrillic, Kanji), if different from Latin characters.
+          example: 道
+        birthDate:
+          type: string
+          format: date
+          description: The person’s birth date, in ISO-8601 format YYYY-MM-DD.
+          example: '2000-01-01'
+        address:
+          $ref: '#/components/schemas/Address'
+        email:
+          $ref: '#/components/schemas/EmailAddress'
+      required:
+      - firstName
+      - lastName
+      - birthDate
+      - address
+      example:
+        firstName: John
+        lastName: Doe
+        middleName: Michael
+        nativeName: 道
+        birthDate: '2000-01-01'
+        address:
+          street: 123 Main St
+          city: Anytown
+          region: CA
+          postalCode: '12345'
+          country: US
+        email: john.doe@example.com
+    CreatePersonRequest:
+      title: CreatePersonRequest
+      type: object
+      properties:
+        externalPersonReference:
+          $ref: '#/components/schemas/ExternalReference'
+        firstName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal given name of the person.
+          example: John
+        lastName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal surname or family name of the person.
+          example: Doe
+        middleName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: An optional middle name of the person, if applicable.
+          example: Michael
+        nativeName:
+          type: string
+          pattern: ^[\p{L}\p{M}\p{Zs}'\-\.]{1,255}$
+          description: The person’s name in their native script (e.g., Cyrillic, Kanji), if different from Latin characters.
+          example: 道
+        birthDate:
+          type: string
+          format: date
+          description: The person’s birth date, in ISO-8601 format YYYY-MM-DD.
+          example: '2000-01-01'
+        address:
+          $ref: '#/components/schemas/Address'
+        email:
+          $ref: '#/components/schemas/EmailAddress'
+      required:
+      - firstName
+      - lastName
+      - birthDate
+      - address
+      example:
+        externalPersonReference: REF123
+        firstName: John
+        lastName: Doe
+        middleName: Michael
+        nativeName: 道
+        birthDate: '2000-01-01'
+        address:
+          street: 123 Main St
+          city: Anytown
+          region: CA
+          postalCode: '12345'
+          country: US
+        email: john.doe@example.com
+    Error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      title: Error
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the error occurred
+      required:
+      - status
+      - failureMessage
+      - timestamp
+    Address:
+      title: Address
+      type: object
+      properties:
+        street:
+          type: string
+          pattern: ^[0-9a-zA-Z\s\-\.,'/#]{1,255}$
+          example: 123 Main St
+        city:
+          type: string
+          pattern: ^[0-9a-zA-Z\s\-\.,'/#]{1,255}$
+          example: Anytown
+        region:
+          type: string
+          pattern: ^[0-9a-zA-Z\s\-\.,'/#]{1,255}$
+          example: CA
+        postalCode:
+          type: string
+          pattern: ^[0-9A-Z\s\-]{1,20}$
+          description: 'Required for countries that use postal codes. This field can be omitted for the following country codes: AO,AI,AG,AW,BS,BZ,BJ,BM,BO,BQ,BW,CF,TD,KM,CG,CD,CK,CI,CW,DJ,DM,TL,GQ,ER,FJ,TF,GA,GM,GY,GD,HK,HM,IO,MO,MH,MS,NR,NU,NF,PW,PA,WS,KN,LC,VC,ST,SC,SL,SX,SB,SS,GS,SH,TC,TK,TO,TV,UG,AE,VA,VU,YE,ZW'
+          example: '12345'
+        country:
+          $ref: '#/components/schemas/CountryCode'
+      required:
+      - street
+      - city
+      - country
+      example:
+        street: 123 Main St
+        city: Anytown
+        region: CA
+        postalCode: '12345'
+        country: US
+    PersonDetails:
+      title: PersonDetails
+      type: object
+      description: Person record with audit timestamps aligned to Entity .
+      properties:
+        id:
+          $ref: '#/components/schemas/PersonId'
+        externalPersonReference:
+          $ref: '#/components/schemas/ExternalReference'
+        firstName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal given name of the person.
+          example: John
+        lastName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal surname or family name of the person.
+          example: Doe
+        middleName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: An optional middle name of the person, if applicable.
+        nativeName:
+          type: string
+          pattern: ^[\p{L}\p{M}\p{Zs}'\-\.]{1,255}$
+          description: The person’s name in their native script (e.g., Cyrillic, Kanji), if different from Latin characters.
+        birthDate:
+          type: string
+          format: date
+          description: The person’s birth date, in ISO-8601 format YYYY-MM-DD.
+        address:
+          $ref: '#/components/schemas/Address'
+        email:
+          $ref: '#/components/schemas/EmailAddress'
+        createdAt:
+          $ref: '#/components/schemas/CreatedAt'
+        updatedAt:
+          $ref: '#/components/schemas/UpdatedAt'
+      required:
+      - id
+      - firstName
+      - lastName
+      - address
+      - createdAt
+      - updatedAt
+      example:
+        id: person_abcdefghijklmno123456
+        externalPersonReference: REF123
+        firstName: John
+        lastName: Doe
+        address:
+          street: 123 Main St
+          city: Anytown
+          region: CA
+          postalCode: '12345'
+          country: US
+        birthDate: '2000-01-01'
+        email: john.doe@ppro.com
+        createdAt: '2023-01-01T00:00:00Z'
+        updatedAt: '2023-01-01T00:00:00Z'
+    EmailAddress:
+      type: string
+      format: email
+      pattern: ^.{1,255}$
+      description: An email address.
+      example: john.doe@example.com
+    PersonId:
+      type: string
+      pattern: ^person_[a-zA-Z0-9-]{21}$
+      description: Unique identifier for the person
+      example: person_abcdefghijklmno123456
+    UpdatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    CountryCode:
+      type: string
+      pattern: ^[A-Z]{2}$
+      description: ISO 3166-1 alpha-2 Country Code
+      example: US
+  headers:
+    Location:
+      description: Path of the created resource.
+      schema:
+        type: string
+        format: uri-reference
+        example: /api/merchants/ABC123XYZ
+  parameters:
+    person-id:
+      name: person-id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/PersonId'
+x-refined-from:
+- ppro-onboarding-openapi.yml
+- ppro-openapi-boarding-v2.yaml

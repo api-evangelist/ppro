@@ -1,0 +1,1093 @@
+openapi: 3.2.0
+info:
+  title: Ppro Disputes API
+  version: v1
+  description: 'Operations tagged Disputes across 2 of this provider''s published API definitions: ppro-risk-management-2.json, ppro-risk-management-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.sandbox.eu.ppro.com
+  description: Sandbox environment for integration testing
+- url: https://api.eu.ppro.com
+  description: Production
+tags:
+- name: Disputes
+paths:
+  /v1/disputes/{disputeId}/messages:
+    post:
+      tags:
+      - Disputes
+      summary: Post Message
+      description: Use this endpoint to post messages to a dispute when the POST MESSAGE capability is allowed
+      operationId: postMessage
+      parameters:
+      - name: disputeId
+        in: path
+        description: Dispute ID starting with 'dispute_' followed by 21 alpha-numeric characters.
+        required: true
+        schema:
+          type: string
+          pattern: ^dispute_[a-zA-Z0-9]{21}
+        example: dispute_20240619XYZabcdefghij
+      - name: Request-Reference
+        in: header
+        description: Optional Reference for the request. This is used to identify the request in debugging.
+        schema:
+          type: string
+        example: unique-value-for-request-reference
+      - name: Request-Idempotency-Key
+        in: header
+        description: Optional Idempotency Key for the request. Sending duplicate requests will result in 409 HTTP status code.
+        schema:
+          type: string
+        example: unique-value-for-idempotency
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageRequest'
+        required: true
+      responses:
+        '201':
+          description: Successfully posted the message for a dispute
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDto'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Target event could not be reset due to a concurrent update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Sandbox environment for integration testing
+    - url: https://api.eu.ppro.com
+      description: Production
+  /v1/disputes/{disputeId}/files:
+    post:
+      tags:
+      - Disputes
+      summary: Upload File
+      description: 'Upload a file to a dispute as `multipart/form-data` when the `UPLOAD_FILE` capability is allowed.
+
+
+        The `file` part must contain raw binary data (for example PDF or image bytes). Base64-encoded file content is not supported, including when indicated via `Content-Transfer-Encoding: base64`. Omit Content-Transfer-Encoding or use `binary`.
+
+
+        Set an appropriate Content-Type on the file part, such as `application/pdf` or `image/png`.
+
+        '
+      operationId: uploadFile
+      parameters:
+      - name: disputeId
+        in: path
+        description: Dispute ID starting with 'dispute_' followed by 21 alpha-numeric characters.
+        required: true
+        schema:
+          type: string
+          pattern: ^dispute_[a-zA-Z0-9]{21}
+        example: dispute_20240619XYZabcdefghij
+      - name: Request-Reference
+        in: header
+        description: Optional Reference for the request. This is used to identify the request in debugging.
+        schema:
+          type: string
+        example: unique-value-for-request-reference
+      - name: Request-Idempotency-Key
+        in: header
+        description: Optional Idempotency Key for the request. Sending duplicate requests will result in 409 HTTP status code.
+        schema:
+          type: string
+        example: unique-value-for-idempotency
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadFileRequest'
+            encoding:
+              file:
+                contentType: application/octet-stream, image/*, application/pdf
+              fileReference:
+                contentType: text/plain
+        required: true
+      responses:
+        '201':
+          description: Successfully uploaded the file and linked to a dispute
+          headers:
+            Location:
+              description: URI of the uploaded file resource
+              required: true
+              style: simple
+              schema:
+                type: string
+                example: /v1/disputes/dispute_20240619XYZabcdefghij/files/file_20240619XYZabcdefghi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Target event could not be reset due to a concurrent update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Sandbox environment for integration testing
+    - url: https://api.eu.ppro.com
+      description: Production
+  /v1/disputes/{disputeId}/actions:
+    post:
+      tags:
+      - Disputes
+      summary: Merchant action
+      description: Use this endpoint to perform actions like accept, challenge or offer on a dispute
+      operationId: actionDispute
+      parameters:
+      - name: disputeId
+        in: path
+        description: Dispute ID starting with 'dispute_' followed by 21 alpha-numeric characters.
+        required: true
+        schema:
+          type: string
+          pattern: ^dispute_[a-zA-Z0-9]{21}
+        example: dispute_20240619XYZabcdefghij
+      - name: Request-Reference
+        in: header
+        description: Optional Reference for the request. This is used to identify the request in debugging.
+        schema:
+          type: string
+        example: unique-value-for-request-reference
+      - name: Request-Idempotency-Key
+        in: header
+        description: Optional Idempotency Key for the request. Sending duplicate requests will result in 409 HTTP status code.
+        schema:
+          type: string
+        example: unique-value-for-idempotency
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MerchantActionRequest'
+        required: true
+      responses:
+        '202':
+          description: Success with status as ACCEPT_PROCESSING, CHALLENGE_PROCESSING or OFFER_PROCESSING depending on the action
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchantActionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Target event could not be reset due to a concurrent update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Sandbox environment for integration testing
+    - url: https://api.eu.ppro.com
+      description: Production
+  /v1/disputes:
+    get:
+      tags:
+      - Disputes
+      summary: Get Disputes
+      description: 'Endpoint to fetch information of all the disputes corresponding to a PPRO Payment Charge ID.
+
+        Only authenticated users can call this endpoint via Global API (GAPI).
+
+        '
+      operationId: getDisputes
+      parameters:
+      - name: paymentChargeId
+        in: query
+        description: Payment Charge starting with 'charge_' followed by 21 characters.
+        required: true
+        schema:
+          type: string
+          pattern: ^charge_.{21}
+        example: charge_7s8FcBoJxMwVkWFR3B41p
+      - name: Request-Reference
+        in: header
+        description: Optional Reference for the request. This is used to identify the request in debugging.
+        schema:
+          type: string
+        example: unique-value-for-request-reference
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisputeListResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Target event could not be reset due to a concurrent update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Sandbox environment for integration testing
+    - url: https://api.eu.ppro.com
+      description: Production
+  /v1/disputes/{disputeId}/files/{fileId}:
+    get:
+      tags:
+      - Disputes
+      summary: Download File
+      description: Use this endpoint to download file linked to a dispute. Returns the file as a binary stream.
+      operationId: downloadFile
+      parameters:
+      - name: disputeId
+        in: path
+        description: Dispute ID starting with 'dispute_' followed by 21 alpha-numeric characters.
+        required: true
+        schema:
+          type: string
+          pattern: ^dispute_[a-zA-Z0-9]{21}
+        example: dispute_20240619XYZabcdefghij
+      - name: fileId
+        in: path
+        description: File ID starting with 'file_' followed by 21 alpha-numeric characters.
+        required: true
+        schema:
+          type: string
+          pattern: ^file_[a-zA-Z0-9]{21}
+        example: file_20240619XYZabcdefghi
+      - name: Request-Reference
+        in: header
+        description: Optional Reference for the request. This is used to identify the request in debugging.
+        schema:
+          type: string
+        example: unique-value-for-request-reference
+      responses:
+        '200':
+          description: File downloaded successfully. The response body contains the raw file data as a binary stream.
+          headers:
+            Content-Disposition:
+              description: Indicates how the content should be displayed
+              style: simple
+              schema:
+                type: string
+                example: attachment; filename="document.pdf"
+            Content-Type:
+              description: The MIME type of the file
+              style: simple
+              schema:
+                type: string
+                example: application/pdf
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Target event could not be reset due to a concurrent update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Sandbox environment for integration testing
+    - url: https://api.eu.ppro.com
+      description: Production
+  /v1/disputes/{disputeId}:
+    get:
+      tags:
+      - Disputes
+      summary: Get Dispute
+      description: Use this endpoint to fetch information from a single dispute, based on a Dispute ID
+      operationId: getById
+      parameters:
+      - name: disputeId
+        in: path
+        description: Dispute ID starting with 'dispute_' followed by 21 alpha-numeric characters.
+        required: true
+        schema:
+          type: string
+          pattern: ^dispute_[a-zA-Z0-9]{21}
+        example: dispute_20240619XYZabcdefghij
+      - name: Request-Reference
+        in: header
+        description: Optional Reference for the request. This is used to identify the request in debugging.
+        schema:
+          type: string
+        example: unique-value-for-request-reference
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisputeResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Target event could not be reset due to a concurrent update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Sandbox environment for integration testing
+    - url: https://api.eu.ppro.com
+      description: Production
+components:
+  schemas:
+    CapabilityConfigDto:
+      type: object
+      description: Capability configuration for dispute operations
+      discriminator:
+        propertyName: type
+        mapping:
+          UPLOAD_FILE: '#/components/schemas/FileUploadCapabilityDto'
+          POST_MESSAGES: '#/components/schemas/PostMessageCapabilityDto'
+      properties:
+        statusAllowedIn:
+          type: array
+          description: The status in which this capability is allowed
+          items:
+            type: string
+            enum:
+            - VALIDATION_PENDING
+            - UNMATCHED
+            - OPEN
+            - ACCEPT_PROCESSING
+            - CHALLENGE_PROCESSING
+            - OFFER_PROCESSING
+            - UNDER_REVIEW
+            - LOST
+            - WON
+            - OFFER_ACCEPTED
+            - OFFER_REJECTED
+            - VOIDED
+          uniqueItems: true
+        url:
+          type: string
+          description: URL to perform this capability
+          readOnly: true
+        type:
+          type: string
+      required:
+      - type
+    Links:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Link'
+    ChargebackDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier.
+          example: cb_20240619XYZabcdefghij or cr_20240619XYZabcdefghij
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Defines the value and currency.
+        reason:
+          type: string
+          description: Defines the reason.
+          enum:
+          - PDSP_AUTH_001
+          - PDSP_AUTH_002
+          - PDSP_AUTH_003
+          - PDSP_AUTH_004
+          - PDSP_PROD_001
+          - PDSP_PROD_002
+          - PDSP_PROD_003
+          - PDSP_PROD_004
+          - PDSP_PROD_005
+          - PDSP_CANC_001
+          - PDSP_CANC_002
+          - PDSP_CANC_003
+          - PDSP_CANC_004
+          - PDSP_SUBS_001
+          - PDSP_SUBS_002
+          - PDSP_SUBS_003
+          - PDSP_SUBS_004
+          - PDSP_GEN_001
+          - PDSP_GEN_002
+          - PDSP_GEN_003
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when the entity was created in PPRO.
+          example: '2025-06-19T12:34:56.789Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Date and Time when the entity was last updated.
+          example: '2025-06-19T12:34:56.789Z'
+        _links:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+    MessageDto:
+      type: object
+      description: Message details
+      properties:
+        content:
+          type: string
+          description: The message content
+          example: We have reviewed your claim and require additional documentation
+          minLength: 1
+        sender:
+          type: string
+          description: Sender of the message
+          enum:
+          - MERCHANT
+          - PROVIDER
+          readOnly: true
+        phase:
+          type: string
+          description: Phase of the dispute when message was created
+          enum:
+          - PRE_DISPUTE
+          - DISPUTE
+          - PRE_ARBITRATION
+          - ARBITRATION
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when the message was created
+          example: '2025-06-19T12:34:56.789Z'
+      required:
+      - content
+      - createdAt
+    PostMessageCapabilityDto:
+      allOf:
+      - $ref: '#/components/schemas/CapabilityConfigDto'
+      - type: object
+        properties:
+          minLength:
+            type: integer
+            format: int32
+            description: Minimum length of the message content
+            example: 1
+          maxLength:
+            type: integer
+            format: int32
+            description: Maximum length of the message content
+            example: 2000
+          type:
+            type: string
+            description: Post messages operation type
+            enum:
+            - POST_MESSAGES
+      description: Post messages operation configuration
+      title: Capability Config Dto (POST_MESSAGES)
+    MerchantActionRequest:
+      type: object
+      description: Request body for merchant action
+      properties:
+        type:
+          type: string
+          description: Action that can be performed on the dispute
+          enum:
+          - ACCEPT
+          - CHALLENGE
+          - OFFER
+        resolution:
+          type: string
+          description: The resolution chosen by the merchant for this action. Required if defined in the config for certain action types.
+          example: partial-refund
+        message:
+          type: string
+          description: Message text. Required if defined in the config for certain action types.
+          example: We offer a partial refund of $80 for this transaction.
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Amount to be used for the action. Required if defined in the config for certain action types.
+      required:
+      - type
+    UploadFileRequest:
+      type: object
+      description: Request to upload a file to a dispute
+      properties:
+        file:
+          type: string
+          format: binary
+          description: The file to upload as a multipart form part with name 'file'
+      required:
+      - file
+    FileUploadCapabilityDto:
+      allOf:
+      - $ref: '#/components/schemas/CapabilityConfigDto'
+      - type: object
+        properties:
+          allowedFileTypes:
+            type: string
+            description: File types allowed for upload as comma separated values
+          maxFileSizeInMb:
+            type: number
+            description: Maximum individual file size allowed (in Mb)
+          maxNumberOfFiles:
+            type: integer
+            format: int32
+            description: Total number of files allowed
+          type:
+            type: string
+            description: File upload operation type.
+            enum:
+            - UPLOAD_FILE
+      description: File upload operation configuration
+      title: Capability Config Dto (UPLOAD_FILE)
+    DisputeListResponse:
+      type: object
+      description: Response containing a list of disputes
+      properties:
+        data:
+          type: array
+          description: List of disputes
+          items:
+            $ref: '#/components/schemas/DisputeResponse'
+      required:
+      - data
+    MerchantActionDto:
+      type: object
+      description: Details of a merchant action (ACCEPT, CHALLENGE, or OFFER) taken on a dispute
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this merchant action
+          example: action_20240619XYZabcdefghij
+        phase:
+          type: string
+          description: Phase of the dispute when this action was taken
+          enum:
+          - PRE_DISPUTE
+          - DISPUTE
+          - PRE_ARBITRATION
+          - ARBITRATION
+        type:
+          type: string
+          description: Type of action taken by the merchant
+          enum:
+          - ACCEPT
+          - CHALLENGE
+          - OFFER
+          example: ACCEPT
+        resolution:
+          type:
+          - string
+          - 'null'
+          description: Resolution chosen for this action (e.g., FULL, PARTIAL)
+          example: FULL
+        message:
+          type:
+          - string
+          - 'null'
+          description: Message provided by the merchant with this action
+          example: We accept this dispute and will refund the customer.
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Amount associated with this action (for OFFER actions)
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when this action was created
+          example: '2025-06-19T12:34:56.789Z'
+    MerchantActionResponse:
+      type: object
+      properties:
+        disputeId:
+          type: string
+        status:
+          type: string
+    Amount:
+      type: object
+      description: Amount in ISO 4217 format
+      properties:
+        value:
+          type: integer
+          format: int64
+          description: The monetary value to be charged or processed, expressed in the smallest currency unit (e.g., cents for EUR).
+          example: 5000
+        currency:
+          type: string
+          description: The three-letter ISO 4217 currency code representing the currency in which the amount is denominated.
+          example: EUR
+          maxLength: 3
+          minLength: 3
+      required:
+      - currency
+      - value
+    DisputeResponse:
+      type: object
+      description: 'Dispute resource response. Contains dispute details and HATEOAS links. Links returned: ''self'' (link to the dispute resource), ''payment_charge'' (link to the associated payment charge)'
+      properties:
+        id:
+          type: string
+          description: The unique dispute identifier.
+          example: dispute_20240619XYZabcdefghij
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Defines the value and currency of the dispute.
+        merchantPaymentChargeReference:
+          type: string
+          description: A merchant-defined identifier that represents a payment charge.
+          example: merchant_order_12345
+        paymentChargeId:
+          type: string
+          description: The payment charge identifier.
+          example: charge_7s8FcBoJxMwVkWFR3B41p
+        paymentSource:
+          type: string
+          description: Payment source for the payment
+          enum:
+          - GAPI
+          - SAPI
+          - ACI
+          example: GAPI
+        merchantId:
+          type: string
+          description: The merchant ID for the payment.
+          example: merch_1234567890
+        phase:
+          type: string
+          description: Current phase of the dispute.
+          enum:
+          - PRE_DISPUTE
+          - DISPUTE
+          - PRE_ARBITRATION
+          - ARBITRATION
+        status:
+          type: string
+          description: Current status of the dispute
+          enum:
+          - OPEN
+          - ACCEPT_PROCESSING
+          - CHALLENGE_PROCESSING
+          - OFFER_PROCESSING
+          - UNDER_REVIEW
+          - LOST
+          - WON
+          - OFFER_ACCEPTED
+          - OFFER_REJECTED
+          example: OPEN
+        allowedActions:
+          type: array
+          description: Actions available to the merchant
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/AcceptActionDto'
+            - $ref: '#/components/schemas/ChallengeActionDto'
+            - $ref: '#/components/schemas/OfferActionDto'
+          uniqueItems: true
+        allowedCapabilities:
+          type: array
+          description: Additional capabilities available to the merchant
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/FileUploadCapabilityDto'
+            - $ref: '#/components/schemas/PostMessageCapabilityDto'
+          uniqueItems: true
+        files:
+          type: array
+          description: Files associated with the dispute
+          items:
+            $ref: '#/components/schemas/FileResponse'
+        reason:
+          $ref: '#/components/schemas/DisputeReason'
+          description: Defines the reason for the dispute.
+        closingReason:
+          type:
+          - string
+          - 'null'
+          description: Reason provided by the provider for closing the dispute (e.g., accepted by merchant, closed by consumer)
+        closingNote:
+          type:
+          - string
+          - 'null'
+          description: A note provided while closing the dispute.
+        openedAt:
+          type: string
+          format: date-time
+          description: Date and time when the dispute was created by the consumer.
+          example: '2025-06-19T12:34:56.789Z'
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when the dispute was created in PPRO.
+          example: '2025-06-19T12:34:56.789Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Date and time when the dispute was last updated.
+          example: '2025-06-19T12:34:56.789Z'
+        openingNote:
+          type:
+          - string
+          - 'null'
+          description: A note provided when opening the dispute by the consumer.
+          example: Customer claims product never arrived
+        merchantActions:
+          type: array
+          description: List of merchant actions taken on the dispute (ACCEPT, CHALLENGE, OFFER) including resolution, message, and amount.
+          items:
+            $ref: '#/components/schemas/MerchantActionDto'
+        messages:
+          type: array
+          description: Messages added by consumers or merchants for this dispute.
+          items:
+            $ref: '#/components/schemas/MessageDto'
+        chargebacks:
+          type: array
+          description: Chargebacks associated with this dispute.
+          items:
+            $ref: '#/components/schemas/ChargebackDetails'
+        chargebackReversals:
+          type: array
+          description: Chargeback reversals associated with this dispute.
+          items:
+            $ref: '#/components/schemas/ChargebackDetails'
+        _links:
+          $ref: '#/components/schemas/Links'
+      required:
+      - amount
+      - id
+      - merchantId
+      - merchantPaymentChargeReference
+      - paymentChargeId
+      - phase
+      - status
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        hreflang:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+        templated:
+          type: boolean
+    FileResponse:
+      type: object
+      description: File resource response with HATEOAS links
+      example:
+        id: file_17574868
+        name: some_policy_document.pdf
+        createdAt: '2025-06-19T12:34:56.789Z'
+        _links:
+          self:
+            href: /v1/disputes/dispute_20240619XYZabcdefghij/files/file_17574868
+      properties:
+        id:
+          type: string
+          description: The unique file identifier starting with file_.
+          example: file_17574868
+        name:
+          type: string
+          description: Name of the file.
+          example: some_policy_document.pdf
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when the file was created.
+          example: '2025-06-19T12:34:56.789Z'
+        phase:
+          type: string
+          description: Phase when the file was added.
+          enum:
+          - PRE_DISPUTE
+          - DISPUTE
+          - PRE_ARBITRATION
+          - ARBITRATION
+        sender:
+          type: string
+          description: Sender of the file.
+          enum:
+          - MERCHANT
+          - PROVIDER
+        status:
+          type: string
+          description: Status of the file.
+          enum:
+          - PENDING
+          - FAILED
+          - AVAILABLE
+          - SYNCED_WITH_PROVIDER
+        _links:
+          $ref: '#/components/schemas/Links'
+      required:
+      - phase
+      - sender
+    ChallengeActionDto:
+      allOf:
+      - $ref: '#/components/schemas/ActionConfigDto'
+      - type: object
+        properties:
+          dueByInDays:
+            type: integer
+            format: int32
+            deprecated: true
+            description: 'Number of days by when this action is due. Deprecated: use dueBy instead.'
+            example: 7
+            writeOnly: true
+          filesRequired:
+            type: boolean
+            description: Are files required for the challenge? if yes, file upload capability config should also be provided.
+            writeOnly: true
+          amountRequired:
+            type: boolean
+            description: Is the amount required for the challenge. If not specified, the full disputed amount will be challenged.
+          type:
+            type: string
+            description: Challenge action type
+            enum:
+            - CHALLENGE
+      description: Challenge action configuration
+      title: Action Config Dto (CHALLENGE)
+    DisputeReason:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Reason code for the dispute
+          example: PDSP_PROD_001
+          minLength: 1
+        message:
+          type: string
+          description: Reason description for the dispute
+          example: Product not as described
+      required:
+      - code
+    AcceptActionDto:
+      allOf:
+      - $ref: '#/components/schemas/ActionConfigDto'
+      - type: object
+        properties:
+          dueByInDays:
+            type: integer
+            format: int32
+            deprecated: true
+            description: 'Number of days by when this action is due. Deprecated: use dueBy instead.'
+            example: 7
+            writeOnly: true
+          resolutions:
+            type: array
+            description: The resolution options available for the action. If none are specified, no resolution options are required.
+            example:
+            - full-refund
+            - partial-refund
+            - replacement
+            items:
+              type: string
+          type:
+            type: string
+            description: Accept action type
+            enum:
+            - ACCEPT
+      description: Defines parameters for the ACCEPT action, used when the merchant chooses to accept a dispute.
+      title: Action Config Dto (ACCEPT)
+    ActionConfigDto:
+      type: object
+      description: Action configuration for dispute operations
+      discriminator:
+        propertyName: type
+        mapping:
+          CHALLENGE: '#/components/schemas/ChallengeActionDto'
+          ACCEPT: '#/components/schemas/AcceptActionDto'
+          OFFER: '#/components/schemas/OfferActionDto'
+      properties:
+        dueBy:
+          type: string
+          format: date-time
+          description: Date and time by which this action must be completed.
+          example: '2025-06-19T12:34:56.789Z'
+        messageConfig:
+          $ref: '#/components/schemas/MessageConfigDto'
+          description: Message requirements. If not provided, messaging will be disabled for this action.
+        type:
+          type: string
+      required:
+      - type
+    MessageConfigDto:
+      type: object
+      description: Message configuration details
+      properties:
+        required:
+          type: boolean
+          description: Defines the message requirement
+        minLength:
+          type: integer
+          format: int32
+          description: Minimal length of the message
+        maxLength:
+          type: integer
+          format: int32
+          description: Maximal length of the message
+      required:
+      - maxLength
+      - minLength
+      - required
+    OfferActionDto:
+      allOf:
+      - $ref: '#/components/schemas/ActionConfigDto'
+      - type: object
+        properties:
+          dueByInDays:
+            type: integer
+            format: int32
+            deprecated: true
+            description: 'Number of days by when this action is due. Deprecated: use dueBy instead.'
+            example: 7
+            writeOnly: true
+          type:
+            type: string
+            description: Offer action type
+            enum:
+            - OFFER
+      description: Defines parameters for the OFFER action, used when the merchant chooses to make an offer on a dispute.
+      title: Action Config Dto (OFFER)
+    MessageRequest:
+      type: object
+      description: Request body for merchant message
+      properties:
+        content:
+          type: string
+          description: The message content
+          example: I have attached the requested documentation
+          minLength: 1
+      required:
+      - content
+    ApiError:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        extensions:
+          type: object
+          additionalProperties:
+            type: string
+x-refined-from:
+- ppro-risk-management-2.json
+- ppro-risk-management-openapi.yml

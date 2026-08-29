@@ -1,0 +1,1142 @@
+openapi: 3.2.0
+info:
+  title: Ppro Payment Charges API
+  version: v1
+  description: 'Operations tagged Payment Charges across 2 of this provider''s published API definitions: ppro-payment-agreements-openapi.yml, ppro-payment-agreements.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.sandbox.eu.ppro.com
+  description: Production - Sandbox environment for integration testing
+- url: https://api.qa.eu.ppro.com/v1/payment-agreements
+  description: QA
+security:
+- bearer_token: []
+tags:
+- name: Payment Charges
+paths:
+  /v1/payment-agreements/{agreement-id}/payment-charges:
+    post:
+      tags:
+      - Payment Charges
+      summary: Create a Payment Charge
+      operationId: createCharge
+      parameters:
+      - name: agreement-id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgreementChargeRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AgreementChargeResponse'
+        '504':
+          description: Call to the upstream dependency timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production - Sandbox environment for integration testing
+    - url: https://api.qa.eu.ppro.com/v1/payment-agreements
+      description: QA
+components:
+  schemas:
+    AdditionalData:
+      type: object
+      properties:
+        merchantAdviceCode:
+          type: string
+          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
+        merchantAdviceCodeText:
+          type: string
+          description: Human-readable explanation of the Merchant Advice Code (MAC).
+    AgreementChargeRequest:
+      type: object
+      properties:
+        initiator:
+          type: string
+          description: The charge initiator
+          enum:
+          - MERCHANT
+          - CONSUMER
+        scheduleType:
+          type: string
+          description: Indicates the type of payment charge being processed. Use UNSCHEDULED for a one-off charge not tied to a schedule. Use SCHEDULED for charge that is part of a recurring schedule. Use SCHEDULED_RETRY for a retry attempt of a previously failed scheduled payment. The RECURRING enum is planned for deprecation and should not be used in new implementations.
+          enum:
+          - SCHEDULED
+          - SCHEDULED_RETRY
+          - UNSCHEDULED
+          - RECURRING
+        paymentDescriptor:
+          type: string
+          description: The transaction descriptor (arbitrary string). May be presented to the consumer.
+          example: PPRO - ORDER 1234
+        amount:
+          $ref: '#/components/schemas/Money'
+          description: The amount to be authorized.
+        autoCapture:
+          type: boolean
+          description: Indicates whether the payment charge should be automatically captured after a successful authorization.
+          example: false
+        order:
+          $ref: '#/components/schemas/Order'
+          description: The order details.
+        merchantPaymentChargeReference:
+          type: string
+          description: The merchant payment charge reference. Aka, Transaction Reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        webhooksUrl:
+          type: string
+          description: The URL to which the payment charge state changes will be notified
+          pattern: ^(https)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]
+        authenticationSettings:
+          type: array
+          description: The authorization authentication settings.
+          items:
+            discriminator:
+              propertyName: type
+              mapping:
+                REDIRECT: '#/components/schemas/RedirectAuthenticationSettings'
+                EXTERNAL_3DS: '#/components/schemas/ExternalThreeDsAuthenticationSettings'
+                3DS: '#/components/schemas/ThreeDsAuthenticationSettings'
+                SCAN_CODE: '#/components/schemas/ScanCodeAuthenticationSettings'
+                APP_NOTIFICATION: '#/components/schemas/AppNotificationAuthenticationSettings'
+                MULTI_FACTOR: '#/components/schemas/MultiFactorAuthenticationSettings'
+            oneOf:
+            - allOf:
+              - $ref: '#/components/schemas/RedirectAuthenticationSettings'
+              title: Authentication Settings
+            - allOf:
+              - $ref: '#/components/schemas/ExternalThreeDsAuthenticationSettings'
+              title: Authentication Settings
+            - allOf:
+              - $ref: '#/components/schemas/ThreeDsAuthenticationSettings'
+              title: Authentication Settings
+            - allOf:
+              - $ref: '#/components/schemas/ScanCodeAuthenticationSettings'
+              title: Authentication Settings
+            - allOf:
+              - $ref: '#/components/schemas/AppNotificationAuthenticationSettings'
+              title: Authentication Settings
+            - allOf:
+              - $ref: '#/components/schemas/MultiFactorAuthenticationSettings'
+              title: Authentication Settings
+        consumer:
+          $ref: '#/components/schemas/ConsumerUpdate'
+          description: The consumer details to override the agreement consumer.
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+            example: GTM_Campaign
+            maxLength: 200
+          description: Custom labels associated with the payment agreement charge.
+          maxProperties: 50
+          propertyNames:
+            type: string
+            example: consumer_origin
+            maxLength: 50
+          title: Add Labels
+        initialSchemeAuthorizationReference:
+          type: string
+          description: The initial scheme authorization reference, eg. for cards network transaction identifier (NTI)
+          example: XPTO
+        initialTransactionLinkReference:
+          type: string
+          description: 'Transaction Link Reference or Id (ex: Mastercard TLID) is a unique identifier for a transaction, used by some card networks for transaction chain linking, this is in addition to Network Transaction Identifiers. Provide the initial TLID when creating the subsequent Merchant-Initiated-Transactions.'
+          example: atf3_8msFoZ6klReRDlQwn
+      required:
+      - amount
+    RedirectAuthenticationSettingsDetails:
+      type: object
+      properties:
+        returnUrl:
+          type: string
+          description: The page where the consumer should be redirected to after the payment succeeds.
+          example: https://example.com/order_details?order_id=12345
+    ExternalThreeDs:
+      type: object
+      properties:
+        authenticationStatus:
+          type: string
+          description: The 3DS authentication status code.
+          enum:
+          - SUCCESS
+          - ATTEMPT_ACKNOWLEDGED
+          - FAILED
+          - AUTHENTICATION_UNAVAILABLE
+        authenticationStatusReason:
+          type: string
+          description: The 3DS authentication status reason.
+          enum:
+          - CARD_AUTHENTICATION_FAILED
+          - UNKNOWN_DEVICE
+          - UNSUPPORTED_DEVICE
+          - EXCEEDS_AUTHENTICATION_FREQUENCY_LIMIT
+          - EXPIRED_CARD
+          - INVALID_CARD_NUMBER
+          - INVALID_TRANSACTION
+          - NO_CARD_RECORD
+          - SECURITY_FAILURE
+          - STOLEN_CARD
+          - SUSPECTED_FRAUD
+          - TRANSACTION_NOT_PERMITTED_TO_CARDHOLDER
+          - CARDHOLDER_NOT_ENROLLED_IN_SERVICE
+          - TRANSACTION_TIMED_OUT_AT_THE_ACS
+          - LOW_CONFIDENCE
+          - MEDIUM_CONFIDENCE
+          - HIGH_CONFIDENCE
+          - VERY_HIGH_CONFIDENCE
+          - EXCEEDS_ACS_MAXIMUM_CHALLENGES
+          - NON_PAYMENT_TRANSACTION_NOT_SUPPORTED
+          - THREE_RI_TRANSACTION_NOT_SUPPORTED
+        authenticationValue:
+          type: string
+          description: The 3DS authentication CAVV.
+        authenticationAlgorithm:
+          type: string
+          description: The 3DS authentication CAVV algorithm used.
+        authenticationMode:
+          type: string
+          description: The 3DS authentication mode.
+          enum:
+          - SCA
+          - FRICTIONLESS
+        eci:
+          type: string
+          description: The 3DS authentication ECI.
+        version:
+          type: string
+          description: The 3DS authentication version.
+        externalId:
+          type: string
+          description: The 3DS authentication transaction identifier.
+        externalAcsId:
+          type: string
+          description: The 3DS universally unique transaction identifier assigned by the ACS to identify a single transaction. Canonical format as defined in IETF RFC 4122.
+          example: 4dc406b0-038d-43ef-a96c-c85352c5e2c0
+        score:
+          type: string
+          description: The 3DS score.
+        challenge:
+          $ref: '#/components/schemas/Challenge'
+          description: The 3DS authentication challenge details.
+        outOfScope:
+          $ref: '#/components/schemas/OutOfScope'
+          description: The 3DS out of scope object, to be used if the payment is out of scope of SCA
+    MultiFactorAuthenticationSettingsDetails:
+      type: object
+      properties:
+        verificationCode:
+          type: string
+          description: Code generated to authenticate the user.
+          example: '777123'
+    AirlineIndustryData:
+      allOf:
+      - $ref: '#/components/schemas/IndustryData'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/AirlineDetails'
+            description: The airline industry specific details.
+          type:
+            type: string
+            description: The AIRLINE industry data type.
+            enum:
+            - AIRLINE
+      required:
+      - details
+      title: Industry Data (AIRLINE)
+    AgreementChargeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The payment charge identifier.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        paymentMethod:
+          type: string
+          description: The payment method which was used to process the payment charge.
+          example: klarna_bnpl
+        currency:
+          type: string
+          description: ISO 4217 3-letter code of the payment charge currency.
+          example: EUR
+          maxLength: 3
+          minLength: 3
+        country:
+          type: string
+          description: The payment charge country.
+          example: DE
+        paymentDescriptor:
+          type: string
+          description: The payment charge transaction descriptor.
+          example: PPRO - ORDER 1234
+        instrumentId:
+          type: string
+          description: The ID of the payment instrument associated with this charge.
+        instrumentUpdated:
+          type: boolean
+          description: Indicates that the Payment Instrument has been updated during processing. Query Payment Instruments to retrieve the new details.
+        status:
+          type: string
+          description: The payment charge status.
+          enum:
+          - AUTHORIZATION_PROCESSING
+          - AUTHORIZATION_ASYNC
+          - AUTHENTICATION_PENDING
+          - CAPTURE_PENDING
+          - CAPTURE_PROCESSING
+          - CAPTURED
+          - REFUND_PROCESSING
+          - REFUNDED
+          - VOID_PROCESSING
+          - VOIDED
+          - DISCARDED
+          - FAILED
+        consumer:
+          $ref: '#/components/schemas/Consumer'
+          description: The payment charge consumer details.
+        order:
+          $ref: '#/components/schemas/Order'
+          description: The payment charge order details.
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+          description: The latest payment charge processing failure.
+        authorizations:
+          type: array
+          description: The payment charge authorizations.
+          items:
+            $ref: '#/components/schemas/PaymentChargeAuthorization'
+        captures:
+          type: array
+          description: The payment charge captures.
+          items:
+            $ref: '#/components/schemas/PaymentChargeCapture'
+        refunds:
+          type: array
+          description: The payment charge refunds.
+          items:
+            $ref: '#/components/schemas/PaymentChargeRefund'
+        voids:
+          type: array
+          description: The payment charge voids.
+          items:
+            $ref: '#/components/schemas/PaymentChargeVoid'
+        createdAt:
+          type: string
+          format: date-time
+          description: The payment charge creation timestamp in ISO 8601 format.
+        updatedAt:
+          type: string
+          format: date-time
+          description: The payment charge update timestamp in ISO 8601 format.
+        networkTransactionIdentifier:
+          type: string
+          deprecated: true
+          description: The NTI (Network Transaction Identifier)
+          example: XPTO
+        initialTransactionLinkReference:
+          type: string
+          description: 'Transaction Link Reference or Id (ex: Mastercard TLID) is a unique identifier for a transaction, used by some card networks for transaction chain linking, this is in addition to Network Transaction Identifiers. Provide the initial TLID when creating the subsequent Merchant-Initiated-Transactions.'
+          example: atf3_8msFoZ6klReRDlQwn
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+            example: GTM_Campaign
+            maxLength: 200
+          description: Custom labels associated with the payment agreement charge.
+          maxProperties: 50
+          propertyNames:
+            type: string
+            example: consumer_origin
+            maxLength: 50
+    Challenge:
+      type: object
+      properties:
+        preference:
+          type: string
+          description: The 3DS authentication challenge initialization preference.
+          enum:
+          - NO_PREFERENCE
+          - NO_CHALLENGE_REQUESTED
+          - CHALLENGE_REQUESTED
+          - CHALLENGE_MANDATED
+          - DATA_ONLY
+        outcome:
+          type: string
+          description: The 3DS authentication challenge outcome.
+          enum:
+          - CHALLENGE
+          - FRICTIONLESS
+          - DATA_ONLY
+        exemptionReason:
+          type: string
+          description: The 3DS authentication challenge exemption reason.
+          enum:
+          - LOW_VALUE
+          - LOW_RISK
+          - TRUSTED_BENEFICIARY
+          - FIXED_RECURRING
+        cancellationReason:
+          type: string
+          description: The 3DS challenge cancellation indicator.Mandatory for CB transactions.
+          enum:
+          - CARDHOLDER_CANCELLED
+          - REQUESTOR_CANCELLED
+          - TRANSACTION_ABANDONED
+          - TRANSACTION_TIMEOUT_ACS_OTHER
+          - TRANSACTION_TIMEOUT_ACS_CREQ_NOT_RECEIVED
+          - TRANSACTION_ERROR
+          - UNKNOWN
+    ProcessingFailure:
+      type: object
+      properties:
+        failureType:
+          type: string
+          description: The failure type.
+          enum:
+          - INTERNAL_ERROR
+          - INTERNAL_DECLINE
+          - PROVIDER_ERROR
+          - PROVIDER_DECLINE
+        failureCode:
+          type: string
+          description: The failure code.
+        providerFailureCode:
+          type: string
+          description: The payment provider failure code.
+        failureMessage:
+          type: string
+          description: The failure message.
+        isRetryable:
+          type: boolean
+          description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
+        additionalData:
+          $ref: '#/components/schemas/AdditionalData'
+    TravelDetails:
+      type: object
+      properties:
+        travelType:
+          type: string
+          description: The travel type
+          enum:
+          - UNKNOWN
+          - ONE_WAY
+          - TWO_WAY
+          - MULTIPLE
+          example: MULTIPLE
+        departureDate:
+          type: string
+          format: date
+          description: Departure date
+          example: '2025-06-10'
+        returnDate:
+          type: string
+          format: date
+          description: Return date
+          example: '2025-06-15'
+        departureLocation:
+          type: string
+          description: Departure location, if flight then provide IATA Airport Code
+          example: Berlin
+        arrivalLocation:
+          type: string
+          description: Arrival location, if flight then provide IATA Airport Code
+          example: Madrid
+        destinationCountry:
+          type: string
+          description: Destination country
+          example: ES
+        travelCompany:
+          type: string
+          description: Travel company name
+          example: My Travel Company GmbH
+        travelerCount:
+          type: integer
+          format: int64
+          description: Total number of travelers
+          example: 4
+        buyerAmongTravelers:
+          type: boolean
+          description: Is the buyer consumer among travelers?
+          example: true
+        travelClass:
+          type: string
+          description: The class of travel
+          example: PREMIUM
+        travelInsured:
+          type: boolean
+          description: Whether the travel is insured?
+          example: true
+        travelDiscountVoucher:
+          type: string
+          description: Travel discount voucher
+          example: TWENTY-OFF
+        luggageSupplement:
+          type: boolean
+          description: Whether availing luggage supplement?
+          example: true
+        travelCanBeModifiedOrCanceled:
+          type: boolean
+          description: Can the travel be modified or canceled?
+          example: true
+        stayCompany:
+          type: string
+          description: Stay company name
+          example: Hotel XYZ
+        stayDestination:
+          type: string
+          description: Stay destination
+          example: Madrid
+        stayNightsCount:
+          type: integer
+          format: int64
+          description: Stay nights count
+          example: 4
+        stayRoomRange:
+          type: string
+          description: Stay room category
+          example: 4_STARS
+    AirlineDetails:
+      type: object
+      properties:
+        pnr:
+          type: string
+          description: The passenger number record
+          example: SKJ2NS01AS
+          minLength: 1
+        numberOfPassengers:
+          type: integer
+          format: int32
+          description: The number of passengers
+          example: 1
+          minimum: 1
+        airlineCode:
+          type: string
+          description: The airline code
+          example: '016'
+        passengerEmail:
+          type: string
+          description: The passenger email
+          example: john@gmail.com
+        passengerPhone:
+          type: string
+          description: The passenger phone number
+          example: '14082319231'
+        passengerName:
+          type: string
+          description: The passenger name
+          example: John Doe
+        carrierCode:
+          type: string
+          description: The airline carrier code
+          example: '016'
+        tripSegments:
+          type: array
+          description: The trip segment details
+          items:
+            $ref: '#/components/schemas/AirlineTripSegment'
+      required:
+      - pnr
+    ScanCodeAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/ScanCodeAuthenticationSettingsDetails'
+            description: The SCAN_CODE authentication settings.
+          type:
+            type: string
+            description: The SCAN_CODE authentication type settings.
+            enum:
+            - SCAN_CODE
+      title: Authentication Settings (SCAN_CODE)
+    RedirectAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/RedirectAuthenticationSettingsDetails'
+            description: The REDIRECT authentication settings.
+          type:
+            type: string
+            description: The REDIRECT authentication type settings.
+            enum:
+            - REDIRECT
+      title: Authentication Settings (REDIRECT)
+    AuthenticationSettings:
+      discriminator:
+        propertyName: type
+        mapping:
+          3DS: '#/components/schemas/ThreeDsAuthenticationSettings'
+          SCAN_CODE: '#/components/schemas/ScanCodeAuthenticationSettings'
+          EXTERNAL_3DS: '#/components/schemas/ExternalThreeDsAuthenticationSettings'
+          MULTI_FACTOR: '#/components/schemas/MultiFactorAuthenticationSettings'
+          APP_NOTIFICATION: '#/components/schemas/AppNotificationAuthenticationSettings'
+          REDIRECT: '#/components/schemas/RedirectAuthenticationSettings'
+      properties:
+        type:
+          type: string
+      required:
+      - type
+    AppNotificationAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/AppNotificationAuthenticationSettingsDetails'
+            description: The APP_NOTIFICATION authentication settings.
+          type:
+            type: string
+            description: The APP_NOTIFICATION authentication type settings.
+            enum:
+            - APP_NOTIFICATION
+      title: Authentication Settings (APP_NOTIFICATION)
+    PaymentChargeAuthorization:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum:
+          - AUTHORIZED
+          - AUTHENTICATION_PENDING
+          - PROVIDER_CONFIRMATION_PENDING
+          - FAILED
+        merchantPaymentChargeReference:
+          type: string
+        schemeAuthorizationReference:
+          type: string
+          description: The scheme authorization reference post successful authorization, eg. for cards network transaction identifier (NTI)
+          example: XPTO
+        transactionLinkReference:
+          type: string
+          description: 'Transaction Link Reference or Id (ex: Mastercard TLID) is a unique identifier for a transaction, used by some card networks for transaction chain linking, this is in addition to Network Transaction Identifiers. This value will be present if it is returned by the financial network in the authorization response, and null otherwise.'
+          example: atf3_8msFoZ6klReRDlQwn
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ExternalThreeDsAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/ExternalThreeDs'
+            description: The EXTERNAL_3DS authentication settings.
+          type:
+            type: string
+            description: The `EXTERNAL_3DS` authentication type.
+            enum:
+            - EXTERNAL_3DS
+      title: Authentication Settings (EXTERNAL_3DS)
+    Client:
+      type: object
+      properties:
+        ip:
+          type: string
+          description: The IP address of the client
+          example: 11.22.22.33
+        userAgent:
+          type: string
+          description: The user agent of the client device
+          example: Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36
+          maxLength: 500
+          minLength: 0
+    MultiFactorAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/MultiFactorAuthenticationSettingsDetails'
+            description: The MULTI_FACTOR authentication settings.
+          type:
+            type: string
+            description: The MULTI_FACTOR authentication type settings.
+            enum:
+            - MULTI_FACTOR
+      title: Authentication Settings (MULTI_FACTOR)
+    Consumer:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The consumer name.
+          example: John Smith
+        email:
+          type: string
+          description: The consumer email.
+          example: johnsmith@example.com
+        phone:
+          type: string
+          description: The consumer phone number.
+          example: '+491521111111'
+        birthDate:
+          type: string
+          format: date
+          description: The consumer birth date.
+          example: '1995-06-06'
+        country:
+          type: string
+          description: 2-letter ISO code of the country where the payment instrument or account has been issued or established (for example GB, US, DE).
+          example: DE
+        locale:
+          type: string
+          description: The locale describing the preferred language of the consumer
+          example: de-DE
+        client:
+          $ref: '#/components/schemas/Client'
+          description: Consumer's client data
+        taxIdentification:
+          type: string
+          description: The consumer's tax identification number, like CUIT in Argentina, CPF in Brazil, RUT in Chile, NIF in Spain or Portugal, Numéro fiscal in France, and Codice Fiscale in Italy, or the equivalent tax identifier applicable in the consumer's country.
+          example: 0798154336790
+        merchantConsumerReference:
+          type: string
+          description: The merchant provided reference for the consumer.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+          description: The consumer's billing address.
+        profile:
+          $ref: '#/components/schemas/Profile'
+          description: The consumer's profile details as available from the merchant
+      required:
+      - country
+    PaymentChargeVoid:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum:
+          - VOIDED
+          - FAILED
+        merchantVoidReference:
+          type: string
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AirlineTripSegment:
+      type: object
+      properties:
+        fareBasisCode:
+          type: string
+          description: The fare basis code
+          example: YE3MGB
+        departureAirportCode:
+          type: string
+          description: The departure airport code
+          example: MAN
+        destinationAirportCode:
+          type: string
+          description: The destination airport code
+          example: SYD
+        flightNumber:
+          type: string
+          description: The flight number
+          example: BA98
+        departureDate:
+          type: string
+          format: date
+          description: The departure date
+          example: '2025-01-01'
+        flightCarrierCode:
+          type: string
+          description: The flight carrier code
+          example: '016'
+        segmentId:
+          type: string
+          description: The trip segment ID
+          example: '1'
+    ConsumerUpdate:
+      type: object
+      properties:
+        taxIdentification:
+          type: string
+          description: The consumer's tax identification number, like CUIT in Argentina, CPF in Brazil, RUT in Chile, NIF in Spain or Portugal, Numéro fiscal in France, and Codice Fiscale in Italy, or the equivalent tax identifier applicable in the consumer's country.
+          example: '798154336790'
+        client:
+          $ref: '#/components/schemas/Client'
+          description: Consumer's client data
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
+    PaymentChargeCapture:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum:
+          - CAPTURED
+          - FAILED
+        merchantCaptureReference:
+          type: string
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ThreeDsAuthenticationSettingsDetails:
+      type: object
+      properties:
+        returnUrl:
+          type: string
+          description: The URL to which the consumer is redirected after completing the 3D Secure authentication flow.
+          example: https://www.ppro.com/
+        preference:
+          type: string
+          description: The preferred 3D Secure authentication flow.
+          enum:
+          - CHALLENGE
+          - FRICTIONLESS
+    ThreeDsAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/ThreeDsAuthenticationSettingsDetails'
+            description: The 3DS authentication settings.
+          type:
+            type: string
+            description: The `3DS` authentication type.
+            enum:
+            - 3DS
+      title: Authentication Settings (3DS)
+    PaymentChargeRefund:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum:
+          - REFUNDED
+          - FAILED
+        merchantRefundReference:
+          type: string
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Profile:
+      type: object
+      properties:
+        createdDate:
+          type: string
+          format: date
+          description: Profile creation date
+          example: '2025-01-01'
+        firstOrderDate:
+          type: string
+          format: date
+          description: Date of first order
+          example: '2025-01-05'
+        lastOrderDate:
+          type: string
+          format: date
+          description: Date of recent order
+          example: '2025-06-06'
+        lifetimeOrderCount:
+          type: integer
+          format: int64
+          description: Total number of successful orders
+          example: 10
+        lifetimeOrderValue:
+          type: integer
+          format: int64
+          description: Total lifetime order value
+          example: 1000
+        lifetimeCanceledOrderCount:
+          type: integer
+          format: int64
+          description: Total number of canceled orders
+          example: 1
+    ScanCodeAuthenticationSettingsDetails:
+      type: object
+      properties:
+        scanBy:
+          type: string
+          format: date-time
+          description: Custom expiry date in ISO 8601 format.
+          example: '2023-03-26T20:24:27.123Z'
+    Address:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: The address first name.
+          example: John
+        lastName:
+          type: string
+          description: The address last name.
+          example: Smith
+        phoneNumber:
+          type: string
+          description: The address phone number.
+          example: '01522113356'
+        street:
+          type: string
+          description: Street name, house number and other details such as apartment number or door number
+          example: Maple Street 102/B
+        postalCode:
+          type: string
+          description: The address postal code.
+          example: '41460'
+        city:
+          type: string
+          description: The address city.
+          example: Berlin
+        region:
+          type: string
+          description: The address region.
+          example: Berlin
+        country:
+          type: string
+          description: The address country.
+          example: DE
+    AppNotificationAuthenticationSettingsDetails:
+      type: object
+      properties:
+        instrumentProviderIdentity:
+          type: string
+          description: App identifier, for instance email, phone number
+          example: '+34700000000'
+    IndustryData:
+      discriminator:
+        propertyName: type
+        mapping:
+          AIRLINE: '#/components/schemas/AirlineIndustryData'
+          TRAVEL: '#/components/schemas/TravelIndustryData'
+          EDUCATION: '#/components/schemas/EducationIndustryData'
+      properties:
+        type:
+          type: string
+      required:
+      - type
+    OutOfScope:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: The 3DS out of scope reason, to be used to indicate the reason if the payment is out of scope of SCA
+          enum:
+          - MIT
+          - MOTO
+          - ONE_LEG_OUT
+          - ANONYMOUS
+    OrderItem:
+      type: object
+      properties:
+        sku:
+          type: string
+          description: The order item SKU.
+          example: LS123456789
+        category:
+          type: string
+          description: The order item category.
+          example: Apparel
+        subCategory:
+          type: string
+          description: The order item sub category.
+          example: Sports Wear
+        name:
+          type: string
+          description: The order item name.
+          example: Runnershub DryFit
+          minLength: 1
+        quantity:
+          type: integer
+          format: int32
+          description: The order item quantity.
+          example: 1
+        amount:
+          type: integer
+          format: int64
+          description: The amount to pay for each individual item in the payment charge currency's smallest unit.
+          example: 1000
+      required:
+      - amount
+      - name
+      - quantity
+    TravelIndustryData:
+      allOf:
+      - $ref: '#/components/schemas/IndustryData'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/TravelDetails'
+            description: The travel industry specific details.
+          type:
+            type: string
+            description: The TRAVEL industry data type.
+            enum:
+            - TRAVEL
+      required:
+      - details
+      title: Industry Data (TRAVEL)
+    Order:
+      type: object
+      properties:
+        orderItems:
+          type: array
+          description: The list of order items.
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        shippingMethod:
+          type: string
+          description: 'Digital goods/services: VIRTUAL, Physical goods:TRACKED_DELIVERY, UNTRACKED_DELIVERY, IN_STORE_PICKUP, LOCKER_PICKUP or HYBRID'
+          example: VIRTUAL
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+          description: The shipping address details.
+        industryData:
+          type: array
+          description: The list of industry specific data.
+          items:
+            discriminator:
+              propertyName: type
+              mapping:
+                AIRLINE: '#/components/schemas/AirlineIndustryData'
+                EDUCATION: '#/components/schemas/EducationIndustryData'
+                TRAVEL: '#/components/schemas/TravelIndustryData'
+            oneOf:
+            - allOf:
+              - $ref: '#/components/schemas/AirlineIndustryData'
+              title: Industry Data
+            - allOf:
+              - $ref: '#/components/schemas/EducationIndustryData'
+              title: Industry Data
+            - allOf:
+              - $ref: '#/components/schemas/TravelIndustryData'
+              title: Industry Data
+        orderReferenceNumber:
+          type: string
+          description: The merchant's internal order reference (if different from merchantPaymentChargeReference)
+        totalTaxAmount:
+          type: integer
+          format: int64
+          description: The total tax value paid by the consumer for the order (in same currency units as specified by amount.currency)
+        installmentPlan:
+          $ref: '#/components/schemas/InstallmentPlan'
+          description: Describes the financing details chosen by the consumer for this order
+    InstallmentPlan:
+      type: object
+      properties:
+        numberOfInstallments:
+          type: integer
+          format: int32
+          description: The number of installments the consumer will split the payment into.
+          example: 1
+        feePaidBy:
+          type: string
+          description: 'Indicates which party bears the installment fees (e.g.: for BNPL installments).'
+          enum:
+          - MERCHANT
+          - CONSUMER
+          example: MERCHANT
+      required:
+      - numberOfInstallments
+    Money:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+          description: The amount in the payment charge currency's smallest unit.
+          example: 1000
+        currency:
+          type: string
+          description: ISO 4217 3-letter currency code.
+          example: EUR
+          maxLength: 3
+          minLength: 3
+      required:
+      - currency
+      - value
+    EducationIndustryData:
+      allOf:
+      - $ref: '#/components/schemas/IndustryData'
+      - type: object
+        properties:
+          type:
+            type: string
+            description: The EDUCATION industry data type.
+            enum:
+            - EDUCATION
+      title: Industry Data (EDUCATION)
+  securitySchemes:
+    bearer_token:
+      type: http
+      scheme: bearer
+x-refined-from:
+- ppro-payment-agreements-openapi.yml
+- ppro-payment-agreements.json

@@ -1,0 +1,783 @@
+openapi: 3.2.0
+info:
+  title: Ppro Payment Instruments API
+  version: v1
+  description: 'Operations tagged Payment Instruments across 2 of this provider''s published API definitions: ppro-payment-instruments-openapi.yml, ppro-payment-instruments.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.sandbox.eu.ppro.com
+  description: Production - Sandbox environment for integration testing
+- url: https://api.ppro.com
+  description: Production
+security:
+- bearer_token: []
+tags:
+- name: Payment Instruments
+paths:
+  /v1/payment-instruments/{instrument-id}:
+    get:
+      tags:
+      - Payment Instruments
+      summary: Retrieve a Payment Instrument
+      operationId: fetchPaymentInstrument
+      parameters:
+      - name: instrument-id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AmazonPayInstrumentResponse'
+                - $ref: '#/components/schemas/BancontactAccountInstrumentResponse'
+                - $ref: '#/components/schemas/BankAccountInstrumentResponse'
+                - $ref: '#/components/schemas/CardNetworkTokenInstrumentResponse'
+                - $ref: '#/components/schemas/KlarnaAccountInstrumentResponse'
+                - $ref: '#/components/schemas/MockInstrumentResponse'
+                - $ref: '#/components/schemas/PassthroughWalletInstrumentResponse'
+                - $ref: '#/components/schemas/TwintWalletInstrumentResponse'
+                - $ref: '#/components/schemas/UpiAutoPayInstrumentResponse'
+                - $ref: '#/components/schemas/VaultedCardInstrumentResponse'
+    put:
+      tags:
+      - Payment Instruments
+      summary: Update an existing Payment Instrument
+      operationId: updatePaymentInstrument
+      parameters:
+      - name: instrument-id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - $ref: '#/components/schemas/AmazonPayInstrumentRequest'
+              - $ref: '#/components/schemas/BancontactAccountInstrumentRequest'
+              - $ref: '#/components/schemas/BankAccountInstrumentRequest'
+              - $ref: '#/components/schemas/CardNetworkTokenInstrumentRequest'
+              - $ref: '#/components/schemas/KlarnaAccountInstrumentRequest'
+              - $ref: '#/components/schemas/MockInstrumentRequest'
+              - $ref: '#/components/schemas/PassthroughWalletInstrumentRequest'
+              - $ref: '#/components/schemas/TwintWalletInstrumentRequest'
+              - $ref: '#/components/schemas/UpiAutoPayInstrumentRequest'
+              - allOf:
+                - $ref: '#/components/schemas/RawCardInstrumentRequest'
+                title: Payment Instrument Request (RAW_CARD)
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AmazonPayInstrumentResponse'
+                - $ref: '#/components/schemas/BancontactAccountInstrumentResponse'
+                - $ref: '#/components/schemas/BankAccountInstrumentResponse'
+                - $ref: '#/components/schemas/CardNetworkTokenInstrumentResponse'
+                - $ref: '#/components/schemas/KlarnaAccountInstrumentResponse'
+                - $ref: '#/components/schemas/MockInstrumentResponse'
+                - $ref: '#/components/schemas/PassthroughWalletInstrumentResponse'
+                - $ref: '#/components/schemas/TwintWalletInstrumentResponse'
+                - $ref: '#/components/schemas/UpiAutoPayInstrumentResponse'
+                - $ref: '#/components/schemas/VaultedCardInstrumentResponse'
+    delete:
+      tags:
+      - Payment Instruments
+      summary: Delete a Payment Instrument
+      operationId: deletePaymentInstrument
+      parameters:
+      - name: instrument-id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      responses:
+        '204':
+          description: No Content
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production - Sandbox environment for integration testing
+    - url: https://api.ppro.com
+      description: Production
+  /v1/payment-instruments:
+    post:
+      tags:
+      - Payment Instruments
+      summary: Create a Payment Instrument
+      operationId: createPaymentInstrument
+      parameters:
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - $ref: '#/components/schemas/AmazonPayInstrumentRequest'
+              - $ref: '#/components/schemas/BancontactAccountInstrumentRequest'
+              - $ref: '#/components/schemas/BankAccountInstrumentRequest'
+              - $ref: '#/components/schemas/CardNetworkTokenInstrumentRequest'
+              - $ref: '#/components/schemas/KlarnaAccountInstrumentRequest'
+              - $ref: '#/components/schemas/MockInstrumentRequest'
+              - $ref: '#/components/schemas/PassthroughWalletInstrumentCreationRequest'
+              - $ref: '#/components/schemas/TwintWalletInstrumentRequest'
+              - $ref: '#/components/schemas/UpiAutoPayInstrumentRequest'
+              - allOf:
+                - $ref: '#/components/schemas/RawCardInstrumentRequest'
+                title: Payment Instrument Request (RAW_CARD)
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AmazonPayInstrumentResponse'
+                - $ref: '#/components/schemas/BancontactAccountInstrumentResponse'
+                - $ref: '#/components/schemas/BankAccountInstrumentResponse'
+                - $ref: '#/components/schemas/CardNetworkTokenInstrumentResponse'
+                - $ref: '#/components/schemas/KlarnaAccountInstrumentResponse'
+                - $ref: '#/components/schemas/MockInstrumentResponse'
+                - $ref: '#/components/schemas/PassthroughWalletInstrumentResponse'
+                - $ref: '#/components/schemas/TwintWalletInstrumentResponse'
+                - $ref: '#/components/schemas/UpiAutoPayInstrumentResponse'
+                - $ref: '#/components/schemas/VaultedCardInstrumentResponse'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production - Sandbox environment for integration testing
+    - url: https://api.ppro.com
+      description: Production
+components:
+  schemas:
+    CardNetworkTokenInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/CardNetworkTokenDetails'
+            description: The card network token instrument details
+          type:
+            type: string
+            description: The CARD_NETWORK_TOKEN instrument type.
+            enum:
+            - CARD_NETWORK_TOKEN
+      required:
+      - details
+      title: Payment Instrument Request (CARD_NETWORK_TOKEN)
+    VaultedCardInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/VaultedCardDetails'
+            description: The vaulted payment card details
+          type:
+            type: string
+            description: The CARD_PPRO_VAULTED instrument type.
+            enum:
+            - CARD_PPRO_VAULTED
+    PassthroughWalletInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/PassthroughWalletDetails'
+            description: The PASSTHROUGH_WALLET payment details
+          type:
+            type: string
+            description: The PASSTHROUGH_WALLET payment instrument can be associated to payments where the money is debited directly from the card or bank account linked to it
+            enum:
+            - PASSTHROUGH_WALLET
+      title: Payment Instrument Request (PASSTHROUGH_WALLET)
+    UpiAutoPayInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/UpiAutoPayDetails'
+            description: The UPI payment details
+          type:
+            type: string
+            description: The UPI AutoPay instrument type.
+            enum:
+            - UPI_AUTOPAY
+      title: Payment Instrument Request (UPI_AUTOPAY)
+    TwintWalletInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - type: object
+        properties:
+          type:
+            type: string
+            description: The TWINT_WALLET instrument type.
+            enum:
+            - TWINT_WALLET
+      title: Payment Instrument Request (TWINT_WALLET)
+    BancontactAccountDetails:
+      type: object
+      properties:
+        bin:
+          type: string
+          description: The card BIN number
+          example: '411111'
+          maxLength: 8
+          minLength: 6
+          pattern: ^(\d{6}|\d{8})$
+        last4Digits:
+          type: string
+          description: The last 4 digits of the card
+          example: '1234'
+          maxLength: 4
+          minLength: 4
+          pattern: ^\d+$
+        expiryMonth:
+          type: integer
+          format: int32
+          description: The card expiration month
+          example: 1
+          maximum: 12
+          minimum: 1
+        expiryYear:
+          type: integer
+          format: int32
+          description: The card expiration year
+          example: 2024
+          minimum: 2000
+        panAlias:
+          type: string
+          description: The card PAN alias
+          example: ppro_tkn_06cf6d1
+          minLength: 1
+        iban:
+          type: string
+          description: The IBAN
+          example: BE75271001359951
+        swiftCode:
+          type: string
+          description: The SWIFT code
+          example: GEBABEBBXXX
+      required:
+      - bin
+      - expiryMonth
+      - expiryYear
+      - last4Digits
+      - panAlias
+    BancontactAccountInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/BancontactAccountDetails'
+            description: The bancontact account details
+          type:
+            type: string
+            description: The BANCONTACT_ACCOUNT instrument type.
+            enum:
+            - BANCONTACT_ACCOUNT
+      title: Payment Instrument Request (BANCONTACT_ACCOUNT)
+    BancontactAccountInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/BancontactAccountDetails'
+            description: The bancontact account details
+          type:
+            type: string
+            description: The BANCONTACT_ACCOUNT instrument type.
+            enum:
+            - BANCONTACT_ACCOUNT
+    AmazonPayInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/AmazonPayDetails'
+            description: The AMAZON_PAY payment details
+          type:
+            type: string
+            description: The AMAZON_PAY instrument type.
+            enum:
+            - AMAZON_PAY
+      title: Payment Instrument Request (AMAZON_PAY)
+    PassthroughWalletInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/PassthroughWalletDetails'
+          type:
+            type: string
+            description: The PASSTHROUGH_WALLET instrument type.
+            enum:
+            - PASSTHROUGH_WALLET
+    CardNetworkTokenInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/CardNetworkTokenDetails'
+            description: The card network token instrument details
+          type:
+            type: string
+            description: The CARD_NETWORK_TOKEN instrument type.
+            enum:
+            - CARD_NETWORK_TOKEN
+    PaymentInstrumentCreationRequest:
+      discriminator:
+        propertyName: type
+        mapping:
+          TWINT_WALLET: '#/components/schemas/TwintWalletInstrumentRequest'
+          RAW_CARD: '#/components/schemas/RawCardInstrumentRequest'
+          BANK_ACCOUNT: '#/components/schemas/BankAccountInstrumentRequest'
+          AMAZON_PAY: '#/components/schemas/AmazonPayInstrumentRequest'
+          UPI_AUTOPAY: '#/components/schemas/UpiAutoPayInstrumentRequest'
+          CARD_NETWORK_TOKEN: '#/components/schemas/CardNetworkTokenInstrumentRequest'
+          KLARNA_ACCOUNT: '#/components/schemas/KlarnaAccountInstrumentRequest'
+          PASSTHROUGH_WALLET: '#/components/schemas/PassthroughWalletInstrumentCreationRequest'
+          MOCK: '#/components/schemas/MockInstrumentRequest'
+          BANCONTACT_ACCOUNT: '#/components/schemas/BancontactAccountInstrumentRequest'
+      properties:
+        type:
+          type: string
+      required:
+      - type
+    UpiAutoPayDetails:
+      type: object
+      properties:
+        uniqueMandateNumber:
+          type: string
+          description: The UPI unique mandate number
+          example: testumn@upi
+    KlarnaAccountDetails:
+      type: object
+      properties:
+        authorizedPaymentMethod:
+          type: string
+          description: Klarna authorized payment method
+          example: DIRECT_BANK_TRANSFER
+        billingCategory:
+          type: string
+          description: Klarna billing category
+          example: PAY_LATER
+    MockInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          details:
+            type: object
+            additionalProperties: {}
+            description: The MOCK payment details
+          type:
+            type: string
+            description: The MOCK instrument type.
+            enum:
+            - MOCK
+    BankAccountInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/BankAccountDetails'
+            description: The bank account details
+          type:
+            type: string
+            description: The BANK_ACCOUNT instrument type.
+            enum:
+            - BANK_ACCOUNT
+      title: Payment Instrument Request (BANK_ACCOUNT)
+    KlarnaAccountInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/KlarnaAccountDetails'
+            description: The Klarna account payment details
+          type:
+            type: string
+            description: The Klarna account instrument type.
+            enum:
+            - KLARNA_ACCOUNT
+      title: Payment Instrument Request (KLARNA_ACCOUNT)
+    UpiAutoPayInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/UpiAutoPayDetails'
+            description: The UPI payment details
+          type:
+            type: string
+            description: The UPI_AUTOPAY instrument type.
+            enum:
+            - UPI_AUTOPAY
+    PassthroughWalletDetails:
+      type: object
+      properties:
+        fingerprint:
+          type: string
+          description: The unique identity of the instrument given by a provider (masked with md5 hashing)
+        paymentReference:
+          type: string
+          description: Payment reference linked with the instrument
+        displayIdentifier:
+          type: string
+          description: An identifier (for example phone number, email or username) for the consumer’s account with the provider information
+        country:
+          type: string
+          description: Consumer's actual country returned by the provider.
+          example: DE
+        fundingType:
+          type: string
+          description: The type of funding to be used by the provider for the agreement or the charge
+          enum:
+          - CREDIT
+          - DEBIT
+    CardNetworkTokenDetails:
+      type: object
+      properties:
+        brand:
+          type: string
+          description: The card brand
+          example: VISA
+          minLength: 1
+        holderName:
+          type: string
+          description: The card holder name
+          example: John Doe
+        expiryMonth:
+          type: integer
+          format: int32
+          description: The network token expiration month
+          example: 10
+          maximum: 12
+          minimum: 1
+        expiryYear:
+          type: integer
+          format: int32
+          description: The network token expiration year
+          example: 2026
+          minimum: 2000
+        tokenNumber:
+          type: string
+          description: The network token number defined by the card network
+          example: '5598880000008001'
+        eci:
+          type: string
+          description: The electronic commerce indicator from the card issuer
+          example: '07'
+        cryptogram:
+          type: string
+          description: The network token cryptogram
+          example: CCADBxYzRTBBXXXXXXXYZa0AbZD=
+          writeOnly: true
+      required:
+      - brand
+    MockInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - type: object
+        properties:
+          details:
+            type: object
+            additionalProperties: {}
+            description: The MOCK payment details
+          type:
+            type: string
+            description: The MOCK instrument type.
+            enum:
+            - MOCK
+      title: Payment Instrument Request (MOCK)
+    KlarnaAccountInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/KlarnaAccountDetails'
+            description: The Klarna account payment details
+          type:
+            type: string
+            description: The Klarna account instrument type.
+            enum:
+            - KLARNA_ACCOUNT
+    AmazonPayDetails:
+      type: object
+      properties:
+        consumerEmail:
+          type: string
+          description: The consumer's email for Amazon Pay
+    PaymentInstrumentResponse:
+      type: object
+      discriminator:
+        propertyName: type
+      properties:
+        id:
+          type: string
+          description: The payment instrument ID
+          example: instr_FlTZQyHL4DeUYLYtXmOdq
+        details: {}
+        type:
+          type: string
+      required:
+      - type
+      title: PaymentInstrumentResponse
+    BankAccountInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/BankAccountDetails'
+            description: The bank account card details
+          type:
+            type: string
+            description: The BANK_ACCOUNT instrument type.
+            enum:
+            - BANK_ACCOUNT
+    PaymentInstrumentRequest:
+      discriminator:
+        propertyName: type
+        mapping:
+          TWINT_WALLET: '#/components/schemas/TwintWalletInstrumentRequest'
+          RAW_CARD: '#/components/schemas/RawCardInstrumentRequest'
+          BANK_ACCOUNT: '#/components/schemas/BankAccountInstrumentRequest'
+          AMAZON_PAY: '#/components/schemas/AmazonPayInstrumentRequest'
+          UPI_AUTOPAY: '#/components/schemas/UpiAutoPayInstrumentRequest'
+          CARD_NETWORK_TOKEN: '#/components/schemas/CardNetworkTokenInstrumentRequest'
+          KLARNA_ACCOUNT: '#/components/schemas/KlarnaAccountInstrumentRequest'
+          PASSTHROUGH_WALLET: '#/components/schemas/PassthroughWalletInstrumentRequest'
+          MOCK: '#/components/schemas/MockInstrumentRequest'
+          BANCONTACT_ACCOUNT: '#/components/schemas/BancontactAccountInstrumentRequest'
+      properties:
+        type:
+          type: string
+      required:
+      - type
+    VaultedCardDetails:
+      type: object
+      properties:
+        brand:
+          type: string
+          description: The card brand
+          example: VISA
+        bin:
+          type: string
+          description: The card BIN number
+          example: '411111'
+        last4Digits:
+          type: string
+          description: The last 4 digits of the card
+          example: '1234'
+          maxLength: 4
+          minLength: 4
+          pattern: ^\d+$
+        expiryMonth:
+          type: integer
+          format: int32
+          description: The card expiration month
+          example: 1
+          maximum: 12
+          minimum: 1
+        expiryYear:
+          type: integer
+          format: int32
+          description: The card expiration year
+          example: 2024
+          minimum: 2000
+        holderName:
+          type: string
+          description: The card holder name
+          example: <John Doe>
+        panAlias:
+          type: string
+          description: The card PAN alias
+          example: ppro_tkn_06cf6d1
+        cvvAlias:
+          type: string
+          description: The card CVV alias
+          example: ppro_tkn_a2cf6d1
+    AmazonPayInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/AmazonPayDetails'
+          type:
+            type: string
+            description: The Amazon Pay instrument type.
+            enum:
+            - AMAZON_PAY
+    BankAccountDetails:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          description: The account number.
+          example: '007123456'
+        holderName:
+          type: string
+          description: The account holder name name.
+          example: John Doe
+        iban:
+          type: string
+          description: The IBAN.
+          example: DE75512108001245126199
+        swiftCode:
+          type: string
+          description: The SWIFT code.
+          example: DEUTDEFF123
+        bankName:
+          type: string
+          description: The bank name.
+          example: My Bank
+        bankCode:
+          type: string
+          description: The bank code.
+          example: '12341234'
+        debitMandateId:
+          type: string
+          description: The reference id for a mandate that allows debit charges on the bank account.
+        debitMandateIdMigrated:
+          type: boolean
+          description: A merchant-provided indicator specifying whether the payment instrument was migrated from a different provider.
+        country:
+          type: string
+          description: The bank account country.
+          example: DE
+    TwintWalletInstrumentResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentResponse'
+      - type: object
+        properties:
+          type:
+            type: string
+            description: The Twint wallet instrument type.
+            enum:
+            - TWINT_WALLET
+    RawCardInstrumentRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentRequest'
+      - properties:
+          details:
+            $ref: '#/components/schemas/RawCardDetails'
+          validate:
+            $ref: '#/components/schemas/InstrumentValidation'
+          type:
+            description: The `RAW_CARD` payment instrument type.
+            enum:
+            - RAW_CARD
+      required:
+      - details
+      - type
+    PassthroughWalletInstrumentCreationRequest:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrumentCreationRequest'
+      - properties:
+          type:
+            description: The PASSTHROUGH_WALLET payment instrument can be associated to payments where the money is debited directly from the card or bank account linked to it
+            enum:
+            - PASSTHROUGH_WALLET
+      title: Payment Instrument Request (PASSTHROUGH_WALLET)
+    InstrumentValidation:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: ISO 4217 3-letter currency code.
+          example: EUR
+          maxLength: 3
+          minLength: 3
+        taxIdentification:
+          type: string
+          description: The consumer's tax identification number, like CUIT in Argentina, CPF in Brazil, RUT in Chile, NIF in Spain or Portugal, Numéro fiscal in France, and Codice Fiscale in Italy, or the equivalent tax identifier applicable in the consumer's country.
+          example: '798154336790'
+      required:
+      - currency
+    RawCardDetails:
+      description: The card details
+      properties:
+        brand:
+          description: The card brand.<br>The value must be provided in uppercase.
+          example: VISA
+        number:
+          description: The primary account number (PAN) of the card used for the payment.
+          example: '4444333322221111'
+        cvv:
+          description: Card Verification Value used to authenticate the card during a payment.
+          example: '123'
+        holderName:
+          description: The full name of the cardholder as it appears on the card.
+          example: John Smith
+        expiryMonth:
+          format: int32
+          description: The two-digit expiration month of the card.
+          example: '1'
+          maximum: 12
+          minimum: 1
+        expiryYear:
+          format: int32
+          description: The four-digit expiration year of the card.
+          example: '2031'
+          minimum: 2000
+      required:
+      - expiryMonth
+      - expiryYear
+      - holderName
+      - number
+  securitySchemes:
+    bearer_token:
+      type: http
+      scheme: bearer
+x-refined-from:
+- ppro-payment-instruments-openapi.yml
+- ppro-payment-instruments.json

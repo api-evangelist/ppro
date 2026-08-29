@@ -1,0 +1,199 @@
+openapi: 3.2.0
+info:
+  title: Ppro PS Ps API
+  version: 1.0.0
+  license:
+    name: Proprietary
+    identifier: Proprietary
+  description: 'Operations tagged PSPs across 2 of this provider''s published API definitions: ppro-onboarding-openapi.yml, ppro-openapi-boarding-v2.yaml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.sandbox.eu.ppro.com
+  description: Production
+security: []
+tags:
+- name: PSPs
+  description: PSP management
+paths:
+  /v1/psps:
+    get:
+      summary: List PSPs
+      description: List Payment Service Providers if the Organization is set up with PSPs in their model.
+      operationId: listPsps
+      tags:
+      - PSPs
+      responses:
+        '200':
+          description: List of PSPs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PspDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production
+  /v1/psps/{psp-id}:
+    get:
+      summary: Get PSP Details
+      operationId: getPsp
+      tags:
+      - PSPs
+      parameters:
+      - $ref: '#/components/parameters/psp-id'
+      responses:
+        '200':
+          description: PSP details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PspDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production
+components:
+  responses:
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    GatewayTimeout:
+      description: Gateway Timeout
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    MethodNotAllowed:
+      description: Method not allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    PspDetails:
+      title: PspDetails
+      allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/components/schemas/PspId'
+          name:
+            type: string
+            pattern: ^.{1,255}$
+            description: The name of the PSP.
+          createdAt:
+            $ref: '#/components/schemas/CreatedAt'
+          updatedAt:
+            $ref: '#/components/schemas/UpdatedAt'
+        required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+    CreatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    UpdatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    PspId:
+      type: string
+      pattern: ^([a-zA-Z0-9]{3,41}|psp_[a-zA-Z0-9-]{21})$
+      description: Unique identifier for the PSP
+      example: psp_abcdefghijklmno123456
+    Error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      title: Error
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the error occurred
+      required:
+      - status
+      - failureMessage
+      - timestamp
+  parameters:
+    psp-id:
+      name: psp-id
+      in: path
+      required: true
+      description: The unique identifier for the Payment Service Provider.
+      schema:
+        $ref: '#/components/schemas/PspId'
+x-refined-from:
+- ppro-onboarding-openapi.yml
+- ppro-openapi-boarding-v2.yaml

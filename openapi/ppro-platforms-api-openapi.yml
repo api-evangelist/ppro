@@ -1,0 +1,389 @@
+openapi: 3.2.0
+info:
+  title: Ppro Platforms API
+  version: 1.0.0
+  license:
+    name: Proprietary
+    identifier: Proprietary
+  description: 'Operations tagged Platforms across 2 of this provider''s published API definitions: ppro-onboarding-openapi.yml, ppro-openapi-boarding-v2.yaml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.sandbox.eu.ppro.com
+  description: Production
+security: []
+tags:
+- name: Platforms
+  description: Platform management
+paths:
+  /v1/platforms:
+    get:
+      summary: List Platforms
+      description: List Platforms if the Organization is set up with Platforms in their model. Ordering is by creation date.
+      operationId: listPlatforms
+      tags:
+      - Platforms
+      parameters:
+      - $ref: '#/components/parameters/limit'
+        description: The maximum number of items to return in this page.
+      - $ref: '#/components/parameters/page'
+        description: The page number to return. 1-indexed
+      responses:
+        '200':
+          description: List of platforms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    post:
+      summary: Create a Platform
+      operationId: createPlatform
+      tags:
+      - Platforms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlatformRequest'
+      responses:
+        '201':
+          description: Platform created successfully
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production
+  /v1/platforms/{platform-id}:
+    get:
+      summary: Get Platform Details
+      operationId: getPlatform
+      tags:
+      - Platforms
+      parameters:
+      - $ref: '#/components/parameters/platform-id'
+      responses:
+        '200':
+          description: Details of the specified platform
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    patch:
+      summary: Update part of a Platform
+      operationId: updatePlatform
+      tags:
+      - Platforms
+      parameters:
+      - $ref: '#/components/parameters/platform-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlatformRequest'
+      responses:
+        '200':
+          description: Platform updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production
+components:
+  responses:
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    MethodNotAllowed:
+      description: Method not allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    GatewayTimeout:
+      description: Gateway Timeout
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    PlatformPage:
+      title: PlatformPage
+      allOf:
+      - $ref: '#/components/schemas/ResponsePageDetails'
+      - type: object
+        properties:
+          content:
+            type: array
+            items:
+              $ref: '#/components/schemas/PlatformDetails'
+        required:
+        - content
+    ExternalReference:
+      type: string
+      pattern: ^[A-Z0-9]{1,32}$
+      description: Unique reference, assigned by external client.
+      example: ENTITY1234567890
+    CreatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    UpdatePlatformRequest:
+      title: UpdatePlatformRequest
+      type: object
+      properties:
+        legalEntityName:
+          $ref: '#/components/schemas/LegalEntityName'
+    PlatformId:
+      type: string
+      pattern: ^([A-Z0-9]{5,32}|platform_[a-zA-Z0-9-]{21})$
+      description: Unique identifier for the platform
+      example: PLATFORMID123456
+    Error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      title: Error
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the error occurred
+      required:
+      - status
+      - failureMessage
+      - timestamp
+    ResponsePageDetails:
+      title: ResponsePageDetails
+      type: object
+      description: Pagination details for boarding API (without total counts)
+      properties:
+        page:
+          type: integer
+          format: int32
+          description: The current page number
+        limit:
+          type: integer
+          format: int32
+          description: The size of the page (matches limit request parameter)
+        nextPage:
+          type: integer
+          format: int32
+          description: The next page number
+        previousPage:
+          type: integer
+          format: int32
+          description: The previous page number
+        links:
+          type: object
+          properties:
+            next:
+              type: string
+              description: The link to the next page
+            previous:
+              type: string
+              description: The link to the previous page
+          required:
+          - next
+          - previous
+      required:
+      - page
+      - limit
+      - nextPage
+      - previousPage
+      - links
+    LegalEntityName:
+      type: string
+      pattern: ^(?=.{1,255}$).*\S.*
+      description: The officially registered name of the business as recorded in legal or governmental registries.
+      example: Example LLC
+    PlatformDetails:
+      title: PlatformDetails
+      allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/components/schemas/PlatformId'
+          pspId:
+            $ref: '#/components/schemas/PspId'
+          externalPlatformReference:
+            description: Unique reference, assigned by external client. Note that the same reference cannot be used for both a Merchant and a Platform.
+            $ref: '#/components/schemas/ExternalReference'
+          legalEntityName:
+            $ref: '#/components/schemas/LegalEntityName'
+          createdAt:
+            $ref: '#/components/schemas/CreatedAt'
+          updatedAt:
+            $ref: '#/components/schemas/UpdatedAt'
+        required:
+        - id
+        - externalPlatformReference
+        - legalEntityName
+        - createdAt
+        - updatedAt
+    CreatePlatformRequest:
+      title: CreatePlatformRequest
+      type: object
+      properties:
+        pspId:
+          $ref: '#/components/schemas/PspId'
+        externalPlatformReference:
+          description: Unique reference, assigned by external client. Note that the same reference cannot be used for both a Merchant and a Platform.
+          $ref: '#/components/schemas/ExternalReference'
+        legalEntityName:
+          $ref: '#/components/schemas/LegalEntityName'
+      required:
+      - legalEntityName
+    UpdatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    PspId:
+      type: string
+      pattern: ^([a-zA-Z0-9]{3,41}|psp_[a-zA-Z0-9-]{21})$
+      description: Unique identifier for the PSP
+      example: psp_abcdefghijklmno123456
+  parameters:
+    page:
+      name: page
+      description: The page number to return. 1-indexed
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    limit:
+      name: limit
+      description: The maximum number of items to return in this page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 10
+        minimum: 1
+        maximum: 100
+    platform-id:
+      name: platform-id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/PlatformId'
+  headers:
+    Location:
+      description: Path of the created resource.
+      schema:
+        type: string
+        format: uri-reference
+        example: /api/merchants/ABC123XYZ
+x-refined-from:
+- ppro-onboarding-openapi.yml
+- ppro-openapi-boarding-v2.yaml

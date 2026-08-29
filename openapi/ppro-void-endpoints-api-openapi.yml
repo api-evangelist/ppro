@@ -1,0 +1,332 @@
+openapi: 3.2.0
+info:
+  title: Ppro Void Endpoints API
+  version: v1
+  description: 'Operations tagged Void Endpoints across 2 of this provider''s published API definitions: ppro-payment-charges-openapi.yml, ppro-payment-charges.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.sandbox.eu.ppro.com
+  description: Production - Sandbox environment for integration testing
+- url: https://api.eu.ppro.com
+  description: Production endpoint for EU customers
+security:
+- bearer_token: []
+tags:
+- name: Void Endpoints
+paths:
+  /v1/payment-charges/{paymentChargeId}/voids:
+    get:
+      tags:
+      - Void Endpoints
+      summary: List voids
+      description: Return all voids associated with the payment charge.
+      operationId: getVoids
+      parameters:
+      - name: paymentChargeId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      - name: Request-Reference
+        in: header
+        description: Unique request reference to facilitate debugging.
+        schema:
+          type: string
+        example: abc-unique-value-for-tracing
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GetVoidsResponse'
+        '409':
+          description: Duplicate request received with the same idempotency key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+        '504':
+          description: Call to the upstream dependency timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+    post:
+      tags:
+      - Void Endpoints
+      summary: Create void
+      description: 'Void all or part of an authorization on a payment charge that has not yet been captured. '
+      operationId: processVoid
+      parameters:
+      - name: paymentChargeId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      - name: Request-Reference
+        in: header
+        description: Unique request reference to facilitate debugging.
+        schema:
+          type: string
+        example: abc-unique-value-for-tracing
+      - name: Request-Idempotency-Key
+        in: header
+        description: Optional Idempotency Key for the request. Sending duplicate requests will result in 409 HTTP status code.
+        schema:
+          type: string
+        example: xyz-unique-value-for-idempotency
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoidRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaymentChargeVoidResponse'
+        '409':
+          description: Duplicate request received with the same idempotency key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+        '504':
+          description: Call to the upstream dependency timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production - Sandbox environment for integration testing
+    - url: https://api.eu.ppro.com
+      description: Production endpoint for EU customers
+  /v1/payment-charges/{paymentChargeId}/voids/{voidId}:
+    get:
+      tags:
+      - Void Endpoints
+      summary: Get void
+      description: Returns a specific void operation associated with the payment charge.
+      operationId: getVoid
+      parameters:
+      - name: paymentChargeId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: voidId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Merchant-Id
+        in: header
+        description: The merchant identifier.
+        required: true
+        schema:
+          type: string
+        example: merch_cb6RQnZbBwSBkn34QYXhr
+      - name: Request-Reference
+        in: header
+        description: Unique request reference to facilitate debugging.
+        schema:
+          type: string
+        example: abc-unique-value-for-tracing
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaymentChargeVoidResponse'
+        '409':
+          description: Duplicate request received with the same idempotency key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+        '504':
+          description: Call to the upstream dependency timed out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponseBody'
+    servers:
+    - url: https://api.sandbox.eu.ppro.com
+      description: Production - Sandbox environment for integration testing
+    - url: https://api.eu.ppro.com
+      description: Production endpoint for EU customers
+components:
+  schemas:
+    GatewayProcessingFailureResponse:
+      type: object
+      properties:
+        failureType:
+          type: string
+          description: The failure type.
+          enum:
+          - INTERNAL_ERROR
+          - INTERNAL_DECLINE
+          - PROVIDER_ERROR
+          - PROVIDER_DECLINE
+        failureCode:
+          type: string
+          description: The failure code.
+        providerFailureCode:
+          type: string
+          description: The payment provider failure code.
+        failureMessage:
+          type: string
+          description: The failure message.
+        isRetryable:
+          type: boolean
+          description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
+        additionalData:
+          $ref: '#/components/schemas/AdditionalData'
+    AdditionalData:
+      type: object
+      properties:
+        merchantAdviceCode:
+          type: string
+          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
+        merchantAdviceCodeText:
+          type: string
+          description: Human-readable explanation of the Merchant Advice Code (MAC).
+    Links:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Link'
+    PaymentChargeVoidResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The void identifier.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        amount:
+          type: integer
+          format: int64
+          description: The void amount in the payment charge currency's smallest unit.
+          example: 1000
+        status:
+          type: string
+          description: The void status.
+          enum:
+          - VOIDED
+          - FAILED
+        merchantVoidReference:
+          type: string
+          description: The merchant provided void reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        failure:
+          $ref: '#/components/schemas/GatewayProcessingFailureResponse'
+          description: The void processing failure if the void operation failed.
+        createdAt:
+          type: string
+          format: date-time
+          description: The void creation timestamp in ISO 8601 format.
+          example: '2022-11-03T11:23:47.123Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: The void update timestamp in ISO 8601 format.
+          example: '2022-11-03T11:23:47.123Z'
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom labels associated with the void.
+          example:
+            consumer_origin: GTM_Campaign
+        _links:
+          $ref: '#/components/schemas/Links'
+          readOnly: true
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
+    GetVoidsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The payment charge voids.
+          items:
+            $ref: '#/components/schemas/PaymentChargeVoidResponse'
+        _links:
+          $ref: '#/components/schemas/Links'
+          readOnly: true
+    VoidRequest:
+      type: object
+      properties:
+        merchantVoidReference:
+          type: string
+          description: The merchant provided void reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        amount:
+          type: integer
+          format: int64
+          description: The void amount in the payment charge currency's smallest unit.
+          example: 1000
+          minimum: 1
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom labels associated with the void.
+      required:
+      - amount
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        hreflang:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+        templated:
+          type: boolean
+  securitySchemes:
+    bearer_token:
+      type: http
+      scheme: bearer
+x-refined-from:
+- ppro-payment-charges-openapi.yml
+- ppro-payment-charges.json
