@@ -303,6 +303,8 @@ apis:
   humanURL: https://developerhub.ppro.com/global-api/docs/welcome
   baseURL: https://api.eu.ppro.com
   tags:
+  - Platform
+  tags_raw:
   - Platforms
   properties:
   - type: OpenAPI
