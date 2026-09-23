@@ -1,8 +1,8 @@
 openapi: 3.2.0
 info:
-  title: Ppro Payment Charge Controller API
+  title: GPG Funds Payment Charge Controller API
+  description: GPG Funds API
   version: v1
-  description: 'Operations tagged payment-charge-controller across 2 of this provider''s published API definitions: ppro-fund-statuses-openapi.yml, ppro-gpg-funds.json. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.sandbox.eu.ppro.com
   description: Production - Sandbox environment for integration testing
@@ -39,11 +39,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FundsStateDetailsResponse'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Production - Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production
 components:
   schemas:
     FundsStateDetailsResponse:
@@ -76,6 +71,3 @@ components:
         merchantRefundReference:
           type: string
           description: Merchant's refund reference. This field is available only when the operation type is `REFUND`
-x-refined-from:
-- ppro-fund-statuses-openapi.yml
-- ppro-gpg-funds.json

@@ -1,8 +1,8 @@
 openapi: 3.2.0
 info:
-  title: Ppro Refund Endpoints API
+  title: Payment Charges Refund Endpoints API
+  description: PPRO's One-time Payments
   version: v1
-  description: 'Operations tagged Refund Endpoints across 2 of this provider''s published API definitions: ppro-payment-charges-openapi.yml, ppro-payment-charges.json. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.sandbox.eu.ppro.com
   description: Production - Sandbox environment for integration testing
@@ -114,11 +114,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponseBody'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Production - Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production endpoint for EU customers
   /v1/payment-charges/{paymentChargeId}/refunds/{refundId}:
     get:
       tags:
@@ -169,47 +164,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponseBody'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Production - Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production endpoint for EU customers
 components:
   schemas:
-    GatewayProcessingFailureResponse:
+    RefundRequest:
       type: object
       properties:
-        failureType:
+        merchantRefundReference:
           type: string
-          description: The failure type.
+          description: The merchant provided refund reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        amount:
+          type: integer
+          format: int64
+          description: The refund amount in the payment charge currency's smallest unit.
+          example: 1000
+          minimum: 1
+        refundDescriptor:
+          type: string
+          description: The refund descriptor (arbitrary string). To provide consumer's bank account details
+          example: 'Name: Jamie Shopper CPF:12345678909 Bank Name: Scotland Bank Agency Number: 1234 Account Number: 123456789'
+        refundReason:
+          type: string
+          description: The reason for the refund request.
           enum:
-          - INTERNAL_ERROR
-          - INTERNAL_DECLINE
-          - PROVIDER_ERROR
-          - PROVIDER_DECLINE
-        failureCode:
-          type: string
-          description: The failure code.
-        providerFailureCode:
-          type: string
-          description: The payment provider failure code.
-        failureMessage:
-          type: string
-          description: The failure message.
-        isRetryable:
-          type: boolean
-          description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
-        additionalData:
-          $ref: '#/components/schemas/AdditionalData'
-    AdditionalData:
-      type: object
-      properties:
-        merchantAdviceCode:
-          type: string
-          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
-        merchantAdviceCodeText:
-          type: string
-          description: Human-readable explanation of the Merchant Advice Code (MAC).
+          - RETURN
+          - DUPLICATE
+          - FRAUD
+          - CUSTOMER_REQUEST
+          - PRE_DISPUTE
+          - OTHER
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom labels associated with the refund.
+      required:
+      - amount
     PaymentChargeRefundResponse:
       type: object
       properties:
@@ -270,69 +260,15 @@ components:
           description: Custom labels associated with the refund.
           example:
             consumer_origin: GTM_Campaign
-    RefundRequest:
+    AdditionalData:
       type: object
       properties:
-        merchantRefundReference:
+        merchantAdviceCode:
           type: string
-          description: The merchant provided refund reference.
-          example: 5c019979-0751-469e-96e0-b67f1d95c577
-        amount:
-          type: integer
-          format: int64
-          description: The refund amount in the payment charge currency's smallest unit.
-          example: 1000
-          minimum: 1
-        refundDescriptor:
+          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
+        merchantAdviceCodeText:
           type: string
-          description: The refund descriptor (arbitrary string). To provide consumer's bank account details
-          example: 'Name: Jamie Shopper CPF:12345678909 Bank Name: Scotland Bank Agency Number: 1234 Account Number: 123456789'
-        refundReason:
-          type: string
-          description: The reason for the refund request.
-          enum:
-          - RETURN
-          - DUPLICATE
-          - FRAUD
-          - CUSTOMER_REQUEST
-          - PRE_DISPUTE
-          - OTHER
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-          description: Custom labels associated with the refund.
-      required:
-      - amount
-    Links:
-      type: object
-      additionalProperties:
-        $ref: '#/components/schemas/Link'
-    GetRefundsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          description: The payment charge refunds.
-          items:
-            $ref: '#/components/schemas/PaymentChargeRefundResponse'
-        _links:
-          $ref: '#/components/schemas/Links'
-          readOnly: true
-    ExceptionResponseBody:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}
+          description: Human-readable explanation of the Merchant Advice Code (MAC).
     Link:
       type: object
       properties:
@@ -352,10 +288,61 @@ components:
           type: string
         templated:
           type: boolean
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
+    GatewayProcessingFailureResponse:
+      type: object
+      properties:
+        failureType:
+          type: string
+          description: The failure type.
+          enum:
+          - INTERNAL_ERROR
+          - INTERNAL_DECLINE
+          - PROVIDER_ERROR
+          - PROVIDER_DECLINE
+        failureCode:
+          type: string
+          description: The failure code.
+        providerFailureCode:
+          type: string
+          description: The payment provider failure code.
+        failureMessage:
+          type: string
+          description: The failure message.
+        isRetryable:
+          type: boolean
+          description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
+        additionalData:
+          $ref: '#/components/schemas/AdditionalData'
+    Links:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Link'
+    GetRefundsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The payment charge refunds.
+          items:
+            $ref: '#/components/schemas/PaymentChargeRefundResponse'
+        _links:
+          $ref: '#/components/schemas/Links'
+          readOnly: true
   securitySchemes:
     bearer_token:
       type: http
       scheme: bearer
-x-refined-from:
-- ppro-payment-charges-openapi.yml
-- ppro-payment-charges.json

@@ -1,8 +1,8 @@
 openapi: 3.2.0
 info:
-  title: Ppro Payment Agreement Revocations API
+  title: Payment Agreements Payment Agreement Revocations API
+  description: Payment Agreements API
   version: v1
-  description: 'Operations tagged Payment Agreement Revocations across 2 of this provider''s published API definitions: ppro-payment-agreements-openapi.yml, ppro-payment-agreements.json. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.sandbox.eu.ppro.com
   description: Production - Sandbox environment for integration testing
@@ -46,26 +46,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgreementRevocationResponse'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Production - Sandbox environment for integration testing
-    - url: https://api.qa.eu.ppro.com/v1/payment-agreements
-      description: QA
 components:
   schemas:
-    AgreementRevocationResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          description: The status of agreement revocation request
-          enum:
-          - REVOKED
-          - FAILED
-          example: REVOKED
-        failure:
-          $ref: '#/components/schemas/ProcessingFailure'
-          description: The latest payment agreement processing failure.
     AdditionalData:
       type: object
       properties:
@@ -100,11 +82,21 @@ components:
           description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
         additionalData:
           $ref: '#/components/schemas/AdditionalData'
+    AgreementRevocationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The status of agreement revocation request
+          enum:
+          - REVOKED
+          - FAILED
+          example: REVOKED
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+          description: The latest payment agreement processing failure.
     AgreementRevocationRequest: {}
   securitySchemes:
     bearer_token:
       type: http
       scheme: bearer
-x-refined-from:
-- ppro-payment-agreements-openapi.yml
-- ppro-payment-agreements.json

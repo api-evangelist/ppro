@@ -1,8 +1,8 @@
 openapi: 3.2.0
 info:
-  title: Ppro Payment Sessions API
+  title: Payment Sessions API
+  description: Payment Sessions API
   version: v1
-  description: 'Operations tagged Payment Sessions across 2 of this provider''s published API definitions: ppro-payment-sessions-openapi.yml, ppro-payment-sessions.json. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.sandbox.eu.ppro.com
   description: Production - Sandbox
@@ -46,11 +46,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponseBody'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Production - Sandbox
-    - url: https://api.eu.ppro.com
-      description: Production
   /v1/payment-sessions/{session-id}/authorizations:
     post:
       tags:
@@ -83,11 +78,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponseBody'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Production - Sandbox
-    - url: https://api.eu.ppro.com
-      description: Production
   /v1/payment-sessions/{session-id}:
     get:
       tags:
@@ -153,13 +143,526 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponseBody'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Production - Sandbox
-    - url: https://api.eu.ppro.com
-      description: Production
 components:
   schemas:
+    FetchResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The payment session ID
+          example: sess_FlTZQyHL4DeUYLYtXmOdq
+        amount:
+          $ref: '#/components/schemas/Money'
+          description: The max or exact amount that can be authorized during the session.
+        recurring:
+          type: boolean
+        consumer:
+          $ref: '#/components/schemas/Consumer'
+        expiresAt:
+          type: string
+          format: date-time
+          description: The payment session expiry timestamp in ISO 8601 format.
+          example: '2022-11-03T11:23:47.123Z'
+        createdAt:
+          type: string
+          format: date-time
+          description: The payment session creation timestamp in ISO 8601 format.
+          example: '2022-11-03T11:23:47.123Z'
+        status:
+          type: string
+          description: The payment-session status
+          enum:
+          - INITIATED
+          - AUTHORIZING_INFLIGHT
+          - AUTHENTICATION_PENDING
+          - SUCCEEDED
+          - FAILED
+          - EXPIRED
+          - REUSE_LIMIT_EXCEEDED
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+            example: GTM_Campaign
+            maxLength: 200
+          description: Custom labels associated with the payment charge or payment agreement
+          maxProperties: 50
+          propertyNames:
+            type: string
+            example: consumer_origin
+            maxLength: 50
+        paymentCharge:
+          $ref: '#/components/schemas/ChargeAuthorizationResponse'
+          description: Underlying payment-charge
+        paymentAgreement:
+          $ref: '#/components/schemas/AgreementAuthorizationResponse'
+          description: Underlying payment-agreement
+    ScanCodeAuthenticationSettingsDetails:
+      type: object
+      properties:
+        scanBy:
+          type: string
+          format: date-time
+          description: Custom expiry date in ISO 8601 format.
+          example: '2022-11-03T11:23:47.123Z'
+    RedirectAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/RedirectAuthenticationSettingsDetails'
+            description: The REDIRECT authentication settings.
+          type:
+            type: string
+            description: The REDIRECT authentication type settings.
+            enum:
+            - REDIRECT
+    AppNotificationAuthenticationSettingsDetails:
+      type: object
+      properties:
+        instrumentProviderIdentity:
+          type: string
+          description: App identifier, for instance email, phone number
+          example: '+34700000000'
+    IndustryData:
+      discriminator:
+        propertyName: type
+      properties:
+        type:
+          type: string
+      required:
+      - type
+    RedirectAuthenticationSettingsDetails:
+      type: object
+      properties:
+        returnUrl:
+          type: string
+          description: The page where the consumer should be redirected to after the payment succeeds.
+          example: https://example.com/order_details?order_id=12345
+    InitialPaymentChargeForUpdate:
+      type: object
+      properties:
+        initiator:
+          type: string
+          description: The charge initiator
+          enum:
+          - MERCHANT
+          - CONSUMER
+        paymentDescriptor:
+          type: string
+          description: The transaction descriptor (arbitrary string). May be presented to the consumer.
+          example: PPRO - ORDER 1234
+        amount:
+          $ref: '#/components/schemas/Money'
+          description: The amount to be authorized.
+        autoCapture:
+          type: boolean
+          description: Indicates whether the payment charge should be automatically captured after a successful authorization.
+          example: true
+        merchantPaymentChargeReference:
+          type: string
+          description: The merchant payment charge reference. Aka, Transaction Reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        webhooksUrl:
+          type: string
+          description: The URL to which the payment charge state changes will be notified
+          pattern: ^(https)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]
+    ChargeAuthorizationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        paymentMethod:
+          type: string
+        currency:
+          type: string
+        country:
+          type: string
+        paymentDescriptor:
+          type: string
+        status:
+          type: string
+          enum:
+          - AUTHORIZATION_PROCESSING
+          - AUTHORIZATION_ASYNC
+          - AUTHENTICATION_PENDING
+          - CAPTURE_PENDING
+          - CAPTURE_PROCESSING
+          - CAPTURED
+          - REFUND_PROCESSING
+          - REFUNDED
+          - VOID_PROCESSING
+          - VOIDED
+          - DISCARDED
+          - FAILED
+        authenticationMethods:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/AppIntentAuthenticationMethod'
+            - $ref: '#/components/schemas/AppNotificationAuthenticationMethod'
+            - $ref: '#/components/schemas/MultiFactorAuthenticationMethod'
+            - $ref: '#/components/schemas/RedirectAuthenticationMethod'
+            - $ref: '#/components/schemas/ScanCodeAuthenticationMethod'
+            - $ref: '#/components/schemas/ThreeDsAuthenticationMethod'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+    BancontactAccountInstrument:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrument'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/BancontactAccount'
+            description: The Bancontact account details.
+          type:
+            type: string
+            description: The BANCONTACT_ACCOUNT payment instrument type.
+            enum:
+            - BANCONTACT_ACCOUNT
+      required:
+      - details
+      title: Payment Instrument (BANCONTACT_ACCOUNT)
+    CardNetworkTokenDetails:
+      type: object
+      properties:
+        brand:
+          type: string
+        holderName:
+          type: string
+        expiryMonth:
+          type: integer
+          format: int32
+        expiryYear:
+          type: integer
+          format: int32
+        tokenNumber:
+          type: string
+        eci:
+          type: string
+        cryptogram:
+          type: string
+    Address:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: The address first name.
+          example: John
+        lastName:
+          type: string
+          description: The address last name.
+          example: Smith
+        phoneNumber:
+          type: string
+          description: The address phone number.
+          example: '01522113356'
+        street:
+          type: string
+          description: Street name, house number and other details such as apartment number or door number
+          example: Maple Street 102/B
+        postalCode:
+          type: string
+          description: The address postal code.
+          example: '41460'
+        city:
+          type: string
+          description: The address city.
+          example: Berlin
+        region:
+          type: string
+          description: The address region.
+          example: Berlin
+        country:
+          type: string
+          description: The address country.
+          example: DE
+    OrderItem:
+      type: object
+      properties:
+        sku:
+          type: string
+          description: The order item SKU.
+          example: LS123456789
+        category:
+          type: string
+          description: The order item category.
+          example: bicycle
+        subCategory:
+          type: string
+          description: The sub category or classification of the product or service in the order.
+          example: Sports Wear
+        name:
+          type: string
+          description: The order item name.
+          example: White T-Shirt
+          minLength: 1
+        quantity:
+          type: integer
+          format: int32
+          description: The order item quantity.
+          example: 1
+        amount:
+          type: integer
+          format: int64
+          description: The amount to pay for each individual item in the payment charge currency's smallest unit.
+          example: 1000
+      required:
+      - amount
+      - name
+      - quantity
+    EducationDetails:
+      type: object
+      properties:
+        admissionNoticeUrl:
+          type: string
+          description: The admission notice URL
+        courseStartDate:
+          type: string
+          format: date
+          description: Course start date
+          example: '2025-06-10'
+        courseEndDate:
+          type: string
+          format: date
+          description: Course end date
+          example: '2025-10-10'
+        financedCourse:
+          type: boolean
+          description: Whether the course is financed?
+          example: true
+        diplomaCourse:
+          type: boolean
+          description: Whether the course is diploma?
+          example: true
+        postHighSchoolCourse:
+          type: boolean
+          description: Whether the course is post high school?
+          example: true
+    PatchRequest:
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/MoneyWithType'
+          description: The amount to be authorized.
+        amountType:
+          type: string
+          description: 'Defines if the provided ''amount'' is a maximum value or an exact value. This field is relevant only for recurring payments. '
+          enum:
+          - MAX
+          - EXACT
+          - VARIABLE
+        paymentDescriptor:
+          type: string
+          description: The payment descriptor (arbitrary string). May be presented to the consumer.
+          example: Acme - ORDER 1234
+        order:
+          $ref: '#/components/schemas/Order'
+          description: The order details.
+        initialPaymentCharge:
+          $ref: '#/components/schemas/InitialPaymentChargeForUpdate'
+          description: An initial payment charge to be created when initializing the agreement in a "link and pay" journey
+    Profile:
+      type: object
+      properties:
+        createdDate:
+          type: string
+          format: date
+          description: The date when the consumer profile was created.
+          example: '2025-01-01'
+        firstOrderDate:
+          type: string
+          format: date
+          description: The consumer's first order date.
+          example: '2025-01-05'
+        lastOrderDate:
+          type: string
+          format: date
+          description: The consumer's last order date.
+          example: '2025-06-06'
+        lifetimeOrderCount:
+          type: integer
+          format: int64
+          description: The consumer's total number of orders.
+          example: 10
+        lifetimeOrderValue:
+          type: integer
+          format: int64
+          description: The consumer's total value of orders, expressed in the smallest currency unit.
+          example: 1000
+        lifetimeCanceledOrderCount:
+          type: integer
+          format: int64
+          description: The consumer's total number of canceled orders.
+          example: 1
+    AuthorizationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The id of instance of payment type
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        status:
+          type: string
+          description: The status of payment session
+          enum:
+          - INITIATED
+          - AUTHORIZING_INFLIGHT
+          - AUTHENTICATION_PENDING
+          - SUCCEEDED
+          - FAILED
+          - EXPIRED
+          - REUSE_LIMIT_EXCEEDED
+          example: SUCCEEDED
+        data:
+          description: 'The authorization details. '
+          oneOf:
+          - $ref: '#/components/schemas/PaymentAgreementDetails'
+          - $ref: '#/components/schemas/PaymentChargeDetails'
+        authenticationMethods:
+          type: array
+          description: The available authentication methods for the authorization.
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/AppIntentAuthenticationMethod'
+            - $ref: '#/components/schemas/AppNotificationAuthenticationMethod'
+            - $ref: '#/components/schemas/MultiFactorAuthenticationMethod'
+            - $ref: '#/components/schemas/RedirectAuthenticationMethod'
+            - $ref: '#/components/schemas/ScanCodeAuthenticationMethod'
+            - $ref: '#/components/schemas/ThreeDsAuthenticationMethod'
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+          description: Payment session authorization error message
+    ThreeDsAuthenticationSettingsDetails:
+      type: object
+      properties:
+        returnUrl:
+          type: string
+          description: The URL to which the consumer is redirected after completing the 3D Secure authentication flow.
+          example: https://www.ppro.com/
+        preference:
+          type: string
+          description: The preferred 3D Secure authentication flow.
+          enum:
+          - CHALLENGE
+          - FRICTIONLESS
+    AppNotificationAuthenticationMethod:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationMethod'
+      title: Authentication Method (APP_NOTIFICATION)
+    PaymentMethod:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The payment method name
+          example: BANCOMATPAY
+        recommended:
+          type: boolean
+          description: Smart, context-aware recommendation flag to tailor payment method visibility and ordering on the merchant’s checkout page
+          example: true
+    AirlineTripSegment:
+      type: object
+      properties:
+        fareBasisCode:
+          type: string
+          description: The fare basis code
+          example: YE3MGB
+        departureAirportCode:
+          type: string
+          description: The departure airport code
+          example: MAN
+        destinationAirportCode:
+          type: string
+          description: The destination airport code
+          example: SYD
+        flightNumber:
+          type: string
+          description: The flight number
+          example: BA98
+        departureDate:
+          type: string
+          format: date
+          description: The departure date
+          example: '2025-01-01'
+        flightCarrierCode:
+          type: string
+          description: The flight carrier code
+          example: '016'
+        segmentId:
+          type: string
+          description: The trip segment ID
+          example: '1'
+    AppIntentAuthenticationMethod:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationMethod'
+      - type: object
+        properties:
+          type:
+            type: string
+            description: The APP_INTENT authentication type.
+            enum:
+            - APP_INTENT
+          details:
+            $ref: '#/components/schemas/AppIntentAuthenticationDetails'
+            description: The APP_INTENT authentication details.
+      title: Authentication Method (APP_INTENT)
+    AppNotificationAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/AppNotificationAuthenticationSettingsDetails'
+            description: The APP_NOTIFICATION authentication details.
+          type:
+            type: string
+            description: The APP_NOTIFICATION authentication type.
+            enum:
+            - APP_NOTIFICATION
+    BancontactAccount:
+      type: object
+      properties:
+        bin:
+          type: string
+        last4Digits:
+          type: string
+        expiryMonth:
+          type: integer
+          format: int32
+        expiryYear:
+          type: integer
+          format: int32
+        panAlias:
+          type: string
+    BankAccountInstrument:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrument'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/BankAccountDetails'
+            description: The bank account details
+          type:
+            type: string
+            description: The BANK_ACCOUNT payment instrument type
+            enum:
+            - BANK_ACCOUNT
+      required:
+      - details
+      title: Payment Instrument (BANK_ACCOUNT)
     AdditionalData:
       type: object
       properties:
@@ -169,52 +672,61 @@ components:
         merchantAdviceCodeText:
           type: string
           description: Human-readable explanation of the Merchant Advice Code (MAC).
-    AuthenticationMethod:
-      discriminator:
-        propertyName: type
-        mapping:
-          APP_INTENT: '#/components/schemas/AppIntentAuthenticationMethod'
-          3DS: '#/components/schemas/ThreeDsAuthenticationMethod'
-          SCAN_CODE: '#/components/schemas/ScanCodeAuthenticationMethod'
-          MULTI_FACTOR: '#/components/schemas/MultiFactorAuthenticationMethod'
-          APP_NOTIFICATION: '#/components/schemas/AppNotificationAuthenticationMethod'
-          REDIRECT: '#/components/schemas/RedirectAuthenticationMethod'
-      properties:
-        type:
-          type: string
+    ThreeDsAuthenticationMethod:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationMethod'
+      - type: object
+        properties:
+          type:
+            type: string
+            description: The `3DS` authentication type.
+            enum:
+            - 3DS
+          details:
+            $ref: '#/components/schemas/ThreeDsAuthenticationDetails'
+            description: The 3DS authentication details.
+      title: Authentication Method (3DS)
+    CardNetworkTokenInstrument:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrument'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/CardNetworkTokenDetails'
+            description: The card network token details
+          type:
+            type: string
+            description: The CARD_NETWORK_TOKEN payment instrument type
+            enum:
+            - CARD_NETWORK_TOKEN
       required:
-      - type
-    PaymentObjectDetails:
+      - details
+      title: Payment Instrument (CARD_NETWORK_TOKEN)
+    MoneyWithType:
       type: object
-      discriminator:
-        propertyName: type
       properties:
+        value:
+          type: integer
+          format: int64
+          description: The amount in currency's smallest unit.
+          example: 1000
+        currency:
+          type: string
+          description: ISO 4217 3-letter currency code.
+          example: EUR
+          maxLength: 3
+          minLength: 3
         type:
           type: string
-          description: The underlying payment type
+          deprecated: true
+          description: Defines if the provided 'amount' is a maximum value or an exact value. This field is relevant only for recurring payments.
           enum:
-          - CHARGE
-          - AGREEMENT
-          example: CHARGE
-        id:
-          type: string
-          description: The id of the instance of underlying payment type
-          example: charge_HsLB04iFFsr9tvWcjNPqW
-          minLength: 1
-        status:
-          type: string
-          description: The status of the instance of underlying payment type
-          example: CAPTURED
+          - MAX
+          - EXACT
+          - VARIABLE
       required:
-      - id
-      - status
-    RedirectAuthenticationSettingsDetails:
-      type: object
-      properties:
-        returnUrl:
-          type: string
-          description: The page where the consumer should be redirected to after the payment succeeds.
-          example: https://example.com/order_details?order_id=12345
+      - currency
+      - value
     ExternalThreeDs:
       type: object
       properties:
@@ -282,30 +794,1047 @@ components:
         challenge:
           $ref: '#/components/schemas/Challenge'
           description: The 3DS authentication challenge details.
-    PaymentMethod:
+    VaultedCardInstrument:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrument'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/VaultedCardDetails'
+            description: The vaulted card details.
+          type:
+            type: string
+            description: The CARD_PPRO_VAULTED payment instrument type.
+            enum:
+            - CARD_PPRO_VAULTED
+      required:
+      - details
+      title: Payment Instrument (CARD_PPRO_VAULTED)
+    Consumer:
       type: object
       properties:
         name:
           type: string
-          description: The payment method name
-          example: BANCOMATPAY
-        recommended:
-          type: boolean
-          description: Smart, context-aware recommendation flag to tailor payment method visibility and ordering on the merchant’s checkout page
-          example: true
-    RedirectAuthenticationDetails:
+          description: The consumer name.
+          example: John Smith
+        email:
+          type: string
+          description: The consumer email.
+          example: johnsmith@example.com
+        phone:
+          type: string
+          description: The consumer phone number.
+          example: '+491521111111'
+        country:
+          type: string
+          description: 2-letter ISO code of the country where the payment instrument or account has been issued or established (for example GB, US, DE).
+          example: DE
+        locale:
+          type: string
+          description: The locale describing the preferred language of the consumer
+          example: de-DE
+        taxIdentification:
+          type: string
+          description: The consumer's tax identification number, like CUIT in Argentina, CPF in Brazil, RUT in Chile, NIF in Spain or Portugal, Numéro fiscal in France, and Codice Fiscale in Italy, or the equivalent tax identifier applicable in the consumer's country.
+          example: 0798154336790
+        merchantConsumerReference:
+          type: string
+          description: The merchant provided consumer reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+          description: The billing address details.
+        client:
+          $ref: '#/components/schemas/Client'
+          description: Consumer's client data
+        profile:
+          $ref: '#/components/schemas/Profile'
+          description: Defines the consumers order history.
+        birthDate:
+          type: string
+          format: date
+          description: The date of birth of the consumer making the payment.
+          example: '1995-06-06'
+    AuthenticationMethod:
+      discriminator:
+        propertyName: type
+        mapping:
+          APP_INTENT: '#/components/schemas/AppIntentAuthenticationMethod'
+          3DS: '#/components/schemas/ThreeDsAuthenticationMethod'
+          SCAN_CODE: '#/components/schemas/ScanCodeAuthenticationMethod'
+          MULTI_FACTOR: '#/components/schemas/MultiFactorAuthenticationMethod'
+          APP_NOTIFICATION: '#/components/schemas/AppNotificationAuthenticationMethod'
+          REDIRECT: '#/components/schemas/RedirectAuthenticationMethod'
+      properties:
+        type:
+          type: string
+      required:
+      - type
+    AuthenticationSettings:
+      discriminator:
+        propertyName: type
+      properties:
+        type:
+          type: string
+      required:
+      - type
+    AgreementAuthorizationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum:
+          - INITIALIZING
+          - AUTHENTICATION_PENDING
+          - ACTIVE
+          - REVOKED_BY_CONSUMER
+          - REVOKED_BY_MERCHANT
+          - PROVIDER_CONFIRMATION_ASYNC
+          - FAILED
+        description:
+          type: string
+        paymentMethod:
+          type: string
+        frequency:
+          $ref: '#/components/schemas/Frequency'
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        amount:
+          $ref: '#/components/schemas/Money'
+        instrumentId:
+          type: string
+        amountType:
+          type: string
+          enum:
+          - MAX
+          - EXACT
+          - VARIABLE
+        consumer:
+          $ref: '#/components/schemas/Consumer'
+        authenticationMethods:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/AppIntentAuthenticationMethod'
+            - $ref: '#/components/schemas/AppNotificationAuthenticationMethod'
+            - $ref: '#/components/schemas/MultiFactorAuthenticationMethod'
+            - $ref: '#/components/schemas/RedirectAuthenticationMethod'
+            - $ref: '#/components/schemas/ScanCodeAuthenticationMethod'
+            - $ref: '#/components/schemas/ThreeDsAuthenticationMethod'
+        initialPaymentChargeId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+    Money:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+          description: The amount in currency's smallest unit.
+          example: 1000
+        currency:
+          type: string
+          description: ISO 4217 3-letter currency code.
+          example: EUR
+          maxLength: 3
+          minLength: 3
+      required:
+      - currency
+      - value
+    PassthroughWallet:
+      type: object
+      properties:
+        fingerprint:
+          type: string
+        paymentReference:
+          type: string
+        displayIdentifier:
+          type: string
+        country:
+          type: string
+        fundingType:
+          type: string
+          enum:
+          - CREDIT
+          - DEBIT
+    PaymentInstrument:
+      discriminator:
+        propertyName: type
+        mapping:
+          BANK_ACCOUNT: '#/components/schemas/BankAccountInstrument'
+          CARD_NETWORK_TOKEN: '#/components/schemas/CardNetworkTokenInstrument'
+          PASSTHROUGH_WALLET: '#/components/schemas/PassthroughWalletInstrument'
+          CARD_PPRO_VAULTED: '#/components/schemas/VaultedCardInstrument'
+          MOCK: '#/components/schemas/MockInstrument'
+          BANCONTACT_ACCOUNT: '#/components/schemas/BancontactAccountInstrument'
+      properties:
+        type:
+          type: string
+      required:
+      - type
+    PaymentAgreementDetails:
+      allOf:
+      - $ref: '#/components/schemas/PaymentObjectDetails'
+      - type: object
+        properties:
+          instrumentId:
+            type: string
+          initialPaymentChargeId:
+            type: string
+            deprecated: true
+            description: The payment charge ID of the initial charge generated by the agreement
+          initialPaymentCharge:
+            $ref: '#/components/schemas/InitialPaymentChargeResponse'
+            description: The initial payment charge details echoed from the session.
+      required:
+      - id
+      - status
+    ConsumerWithCountry:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The consumer name. This is a required field for a payment charge. If you already collect the consumer’s name in the checkout, it’s recommended to always use this parameter to avoid duplicate fields.
+          example: John Smith
+        email:
+          type: string
+          description: The consumer email.
+          example: johnsmith@example.com
+        phone:
+          type: string
+          description: The consumer phone number.
+          example: '+491521111111'
+        country:
+          type: string
+          description: 2-letter ISO code of the country where the payment instrument or account has been issued or established (for example GB, US, DE).
+          example: DE
+          minLength: 1
+        locale:
+          type: string
+          description: The locale describing the preferred language of the consumer
+          example: de-DE
+        taxIdentification:
+          type: string
+          description: The consumer's tax identification number, like CUIT in Argentina, CPF in Brazil, RUT in Chile, NIF in Spain or Portugal, Numéro fiscal in France, and Codice Fiscale in Italy, or the equivalent tax identifier applicable in the consumer's country.
+          example: 0798154336790
+        merchantConsumerReference:
+          type: string
+          description: The merchant provided consumer reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+          description: The billing address details.
+        client:
+          $ref: '#/components/schemas/Client'
+          description: Consumer's client data
+        profile:
+          $ref: '#/components/schemas/Profile'
+          description: Defines the consumers order history.
+        birthDate:
+          type: string
+          format: date
+          description: The date of birth of the consumer making the payment.
+          example: '1995-06-06'
+      required:
+      - country
+    ExternalThreeDsAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/ExternalThreeDs'
+            description: The EXTERNAL_3DS authentication settings.
+          type:
+            type: string
+            description: The `EXTERNAL_3DS` authentication type.
+            enum:
+            - EXTERNAL_3DS
+    ThreeDsAuthenticationDetails:
       type: object
       properties:
         requestUrl:
           type: string
-          description: The URL where the consumer should be redirected in order to authenticate the payment.
-          example: https://pay.playground.klarna.com/eu/hpp/payments/123abc
+          description: The URL where the consumer should be redirected in order to complete the 3D Secure authentication.
+          example: https://authman.sandbox.lp-pl.ppro.com/v0/pages/?redirection_token=token
         requestMethod:
           type: string
           description: The redirect HTTP method.
           enum:
           - GET
           - POST
+    ProcessingFailure:
+      type: object
+      properties:
+        failureType:
+          type: string
+          description: The failure type.
+          enum:
+          - INTERNAL_ERROR
+          - INTERNAL_DECLINE
+          - PROVIDER_ERROR
+          - PROVIDER_DECLINE
+        failureCode:
+          type: string
+          description: The failure code.
+        providerFailureCode:
+          type: string
+          description: The payment provider failure code.
+        failureMessage:
+          type: string
+          description: The failure message.
+        isRetryable:
+          type: boolean
+          description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
+        additionalData:
+          $ref: '#/components/schemas/AdditionalData'
+    InitialPaymentChargeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The payment charge ID of the initial charge generated by the agreement
+        paymentDescriptor:
+          type: string
+          description: The transaction descriptor (arbitrary string). May be presented to the consumer.
+          example: PPRO - ORDER 1234
+        amount:
+          $ref: '#/components/schemas/Money'
+          description: The initial payment charge amount.
+    AirlineDetails:
+      type: object
+      properties:
+        pnr:
+          type: string
+          description: The passenger number record
+          example: SKJ2NS01AS
+        numberOfPassengers:
+          type: integer
+          format: int32
+          description: The number of passengers
+          example: 1
+          minimum: 1
+        airlineCode:
+          type: string
+          description: The airline code
+          example: '016'
+        passengerEmail:
+          type: string
+          description: The passenger email
+          example: john@gmail.com
+        passengerPhone:
+          type: string
+          description: The passenger phone number
+          example: '14082319231'
+        passengerName:
+          type: string
+          description: The passenger name
+          example: John Doe
+        carrierCode:
+          type: string
+          description: The airline carrier code
+          example: '016'
+        tripSegments:
+          type: array
+          description: The trip segment details
+          items:
+            $ref: '#/components/schemas/AirlineTripSegment'
+    VaultedCardDetails:
+      type: object
+      properties:
+        brand:
+          type: string
+          description: The card brand.
+          example: VISA
+        bin:
+          type: string
+          description: The card BIN number.
+          example: '411111'
+          minLength: 1
+        last4Digits:
+          type: string
+          description: The last 4 digits of the card.
+          example: '1234'
+          maxLength: 4
+          minLength: 4
+          pattern: ^\d+$
+        expiryMonth:
+          type: integer
+          format: int32
+          description: The card expiration month.
+          example: 1
+          maximum: 12
+          minimum: 1
+        expiryYear:
+          type: integer
+          format: int32
+          description: The card expiration year.
+          example: 2024
+          minimum: 2000
+        holderName:
+          type: string
+          description: The card holder name.
+          example: John Smith
+          minLength: 1
+        panAlias:
+          type: string
+          description: The card PAN alias.
+          example: ppro_tkn_06cf6d1
+          minLength: 1
+        cvvAlias:
+          type: string
+          description: The card CVV alias.
+          example: ppro_tkn_a2cf6d1
+      required:
+      - bin
+      - expiryMonth
+      - expiryYear
+      - holderName
+      - last4Digits
+      - panAlias
+    CreationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The payment session ID
+          example: sess_FlTZQyHL4DeUYLYtXmOdq
+        status:
+          type: string
+          description: The payment-session status
+          enum:
+          - INITIATED
+          - AUTHORIZING_INFLIGHT
+          - AUTHENTICATION_PENDING
+          - SUCCEEDED
+          - FAILED
+          - EXPIRED
+          - REUSE_LIMIT_EXCEEDED
+        amount:
+          $ref: '#/components/schemas/Money'
+          description: The max or exact amount that can be authorized during the session.
+        amountType:
+          type: string
+          description: The type of the amount.
+          enum:
+          - MAX
+          - EXACT
+          - VARIABLE
+        paymentDescriptor:
+          type: string
+          description: The payment descriptor (arbitrary string). May be presented to the consumer.
+          example: Acme - ORDER 1234
+        recurring:
+          type: boolean
+          description: Indicates whether this is a recurring payment.
+          example: false
+        consumer:
+          $ref: '#/components/schemas/Consumer'
+          description: The consumer details.
+        hasInitialPaymentCharge:
+          type: boolean
+          deprecated: true
+          description: Indicates whether this has an initialPaymentCharge set.
+          example: false
+        initialPaymentCharge:
+          $ref: '#/components/schemas/InitialPaymentCharge'
+          description: The initial payment charge details for the payment session.
+        availablePaymentMethods:
+          type: array
+          description: List of payment methods enabled for a merchant based on contractual agreements
+          items:
+            $ref: '#/components/schemas/PaymentMethod'
+        expiresAt:
+          type: string
+          format: date-time
+          description: The payment session expiry timestamp in ISO 8601 format.
+          example: '2022-11-03T11:23:47.123Z'
+        createdAt:
+          type: string
+          format: date-time
+          description: The payment session creation timestamp in ISO 8601 format.
+          example: '2022-11-03T11:23:47.123Z'
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+            example: GTM_Campaign
+            maxLength: 200
+          description: Custom labels associated with the payment charge or agreement.
+          maxProperties: 50
+          propertyNames:
+            type: string
+            example: consumer_origin
+            maxLength: 50
+      required:
+      - recurring
+    PaymentChargeDetails:
+      allOf:
+      - $ref: '#/components/schemas/PaymentObjectDetails'
+      required:
+      - id
+      - status
+    ScanCodeAuthenticationDetails:
+      type: object
+      properties:
+        codeType:
+          type: string
+          description: The type of the scan or of the code payload.
+          enum:
+          - QR
+          - UPC
+          - ITF
+          - CODE128
+          - PAYMENT_REFERENCE
+        codeImage:
+          type: string
+          description: The pre-generated scan code image for the ease of integration.
+          example: https://authman-mobileapp.ppro.com/qr.png?payload=dXBpR2xvYmFsOi8vc3RhcnRfdHJhbnNhY3Rpb24/dHI9MTIzJmZyb21fcXI9dHJ1ZQ==
+        codePayload:
+          type: string
+          description: The payload for the scan code or for the reference to construct the image or the UX on the partners side.
+          example: upiGlobal://pay?tr=123&from_desktop=true
+        codeDocument:
+          type: string
+          description: The URL of the pdf/html pay slip document.
+          example: https://urltodocument.com
+        codeProviderEntityId:
+          type: string
+          description: The identifier of the code provider entity.
+          example: '45648'
+        scanBy:
+          type: string
+          format: date-time
+          description: The custom expiry timestamp (ISO 8601 format) before which the consumer is expected to complete the payment.
+          example: '2022-11-03T11:23:47.123Z'
+    Frequency:
+      type: object
+      properties:
+        type:
+          type: string
+          description: The type of frequency between consecutive payment charges.
+          enum:
+          - DAILY
+          - WEEKLY
+          - MONTHLY
+          - YEARLY
+          - UNSCHEDULED
+          example: MONTHLY
+        interval:
+          type: integer
+          format: int32
+          default: 1
+          description: The interval between consecutive payment charges. The unit of the interval depends on the frequency type. For example, if type is MONTHLY and interval is 3, it means every 3 months.
+          example: 3
+          maximum: 1000
+          minimum: 1
+      required:
+      - type
+    InitialPaymentCharge:
+      type: object
+      properties:
+        initiator:
+          type: string
+          description: The charge initiator
+          enum:
+          - MERCHANT
+          - CONSUMER
+        paymentDescriptor:
+          type: string
+          description: The transaction descriptor (arbitrary string). May be presented to the consumer.
+          example: PPRO - ORDER 1234
+        amount:
+          $ref: '#/components/schemas/Money'
+          description: The amount to be authorized.
+        autoCapture:
+          type: boolean
+          description: Indicates whether the payment charge should be automatically captured after a successful authorization.
+          example: true
+        merchantPaymentChargeReference:
+          type: string
+          description: The merchant payment charge reference. Aka, Transaction Reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        webhooksUrl:
+          type: string
+          description: The URL to which the payment charge state changes will be notified
+          pattern: ^(https)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+            example: GTM_Campaign
+            maxLength: 200
+          description: Custom labels associated with the initial payment charge.
+          maxProperties: 50
+          propertyNames:
+            type: string
+            example: consumer_origin
+            maxLength: 50
+          title: Add Labels
+      required:
+      - amount
+    EducationIndustryData:
+      allOf:
+      - $ref: '#/components/schemas/IndustryData'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/EducationDetails'
+            description: The education industry specific details.
+          type:
+            type: string
+            description: The `EDUCATION` industry data type.
+            enum:
+            - EDUCATION
+      required:
+      - details
+    MultiFactorAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/MultiFactorAuthenticationSettingsDetails'
+            description: The MULTI_FACTOR authentication details.
+          type:
+            type: string
+            description: The MULTI_FACTOR authentication type.
+            enum:
+            - MULTI_FACTOR
+    PassthroughWalletInstrument:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrument'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/PassthroughWallet'
+            description: The PASSTHROUGH_WALLET payment details
+          type:
+            type: string
+            description: The PASSTHROUGH_WALLET payment instrument type.
+            enum:
+            - PASSTHROUGH_WALLET
+      required:
+      - details
+      title: Payment Instrument (PASSTHROUGH_WALLET)
+    Order:
+      type: object
+      properties:
+        orderItems:
+          type: array
+          description: The list of order items.
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+          description: The shipping address details.
+        industryData:
+          type: array
+          description: The list of industry specific data.
+          items:
+            discriminator:
+              propertyName: type
+              mapping:
+                AIRLINE: '#/components/schemas/AirlineIndustryData'
+                EDUCATION: '#/components/schemas/EducationIndustryData'
+                TRAVEL: '#/components/schemas/TravelIndustryData'
+            oneOf:
+            - allOf:
+              - $ref: '#/components/schemas/AirlineIndustryData'
+              title: Industry Data
+            - allOf:
+              - $ref: '#/components/schemas/EducationIndustryData'
+              title: Industry Data
+            - allOf:
+              - $ref: '#/components/schemas/TravelIndustryData'
+              title: Industry Data
+        orderReferenceNumber:
+          type: string
+          description: The merchant's internal order reference (if different from merchantPaymentChargeReference)
+        totalTaxAmount:
+          type: integer
+          format: int64
+          description: The total tax value paid by the consumer for the order (in same currency units as specified by amount.currency)
+        installmentPlan:
+          $ref: '#/components/schemas/InstallmentPlan'
+          description: Describes the financing details chosen by the consumer for this order
+        shippingMethod:
+          type: string
+          description: 'Digital goods/services: VIRTUAL, Physical goods: TRACKED_DELIVERY, UNTRACKED_DELIVERY, IN_STORE_PICKUP, LOCKER_PICKUP or HYBRID'
+          enum:
+          - VIRTUAL
+          - TRACKED_DELIVERY
+          - UNTRACKED_DELIVERY
+          - IN_STORE_PICKUP
+          - LOCKER_PICKUP
+          - HYBRID
+          example: VIRTUAL
+    Client:
+      type: object
+      properties:
+        ip:
+          type: string
+          description: The IP address of the client
+          example: 11.22.22.33
+        userAgent:
+          type: string
+          description: The user agent of the client device
+          example: Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36
+          maxLength: 500
+          minLength: 0
+    MultiFactorAuthenticationMethod:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationMethod'
+      title: Authentication Method (MULTI_FACTOR)
+    ThreeDsAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/ThreeDsAuthenticationSettingsDetails'
+            description: The 3DS authentication settings.
+          type:
+            type: string
+            description: The `3DS` authentication type.
+            enum:
+            - 3DS
+    AuthorizationRequest:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          description: The payment method which should be used to process the payment.
+          example: PAYPAL
+          minLength: 1
+        consumer:
+          $ref: '#/components/schemas/Consumer'
+        amount:
+          $ref: '#/components/schemas/MoneyWithType'
+          description: The amount to be authorized.
+        amountType:
+          type: string
+          description: Defines if the provided 'amount' is a maximum value or an exact value. This field is relevant only for recurring payments.
+          enum:
+          - MAX
+          - EXACT
+          - VARIABLE
+        initialPaymentCharge:
+          $ref: '#/components/schemas/InitialPaymentCharge'
+          description: An initial payment charge to be created when initializing the agreement in a "link and pay" journey
+        instrument:
+          description: The payment instrument. This field is required for a subset of PPRO's supported payment methods.
+          oneOf:
+          - $ref: '#/components/schemas/BancontactAccountInstrument'
+          - $ref: '#/components/schemas/BankAccountInstrument'
+          - $ref: '#/components/schemas/CardNetworkTokenInstrument'
+          - $ref: '#/components/schemas/MockInstrument'
+          - $ref: '#/components/schemas/PassthroughWalletInstrument'
+          - $ref: '#/components/schemas/VaultedCardInstrument'
+        authenticationSettings:
+          type: array
+          description: Authorization-time authentication settings overrides.
+          items:
+            discriminator:
+              propertyName: type
+              mapping:
+                MULTI_FACTOR: '#/components/schemas/MultiFactorAuthenticationSettings'
+                APP_NOTIFICATION: '#/components/schemas/AppNotificationAuthenticationSettings'
+            oneOf:
+            - allOf:
+              - $ref: '#/components/schemas/MultiFactorAuthenticationSettings'
+              title: Authentication Settings
+            - allOf:
+              - $ref: '#/components/schemas/AppNotificationAuthenticationSettings'
+              title: Authentication Settings
+        startDate:
+          type: string
+          format: date-time
+          description: The start date of the agreement
+          example: '2023-03-26T20:24:27+00:00'
+        endDate:
+          type: string
+          format: date-time
+          description: The end date of the agreement
+          example: '2023-11-27T09:30:00+00:00'
+        frequency:
+          $ref: '#/components/schemas/Frequency'
+          description: The frequency of the agreement
+          example: MONTHLY
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+            example: GTM_Campaign
+            maxLength: 200
+          description: Custom labels associated with the payment charge or agreement.
+          maxProperties: 50
+          propertyNames:
+            type: string
+            example: consumer_origin
+            maxLength: 50
+          title: Add Labels
+      required:
+      - paymentMethod
+    PaymentObjectDetails:
+      type: object
+      discriminator:
+        propertyName: type
+      properties:
+        type:
+          type: string
+          description: The underlying payment type
+          enum:
+          - CHARGE
+          - AGREEMENT
+          example: CHARGE
+        id:
+          type: string
+          description: The id of the instance of underlying payment type
+          example: charge_HsLB04iFFsr9tvWcjNPqW
+          minLength: 1
+        status:
+          type: string
+          description: The status of the instance of underlying payment type
+          example: CAPTURED
+      required:
+      - id
+      - status
+    MultiFactorAuthenticationSettingsDetails:
+      type: object
+      properties:
+        verificationCode:
+          type: string
+          description: Code generated to authenticate the user.
+          example: '777123'
+    MockInstrument:
+      allOf:
+      - $ref: '#/components/schemas/PaymentInstrument'
+      - type: object
+        properties:
+          details:
+            type: object
+            additionalProperties:
+              type: string
+            description: The MOCK payment details
+          type:
+            type: string
+            description: The MOCK payment instrument type
+            enum:
+            - MOCK
+      title: Payment Instrument (MOCK)
+    BankAccountDetails:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          description: The account number.
+          example: '007123456'
+        holderName:
+          type: string
+          description: The account holder name.
+          example: John Doe
+        iban:
+          type: string
+          description: The IBAN.
+          example: DE75512108001245126199
+        swiftCode:
+          type: string
+          description: The SWIFT code.
+          example: DEUTDEFF123
+        bankName:
+          type: string
+          description: The bank name.
+          example: My Bank
+        bankCode:
+          type: string
+          description: The bank code.
+          example: '12341234'
+        debitMandateId:
+          type: string
+          description: The reference id for a mandate that allows debit charges on the bank account.
+    RedirectAuthenticationMethod:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationMethod'
+      - type: object
+        properties:
+          type:
+            type: string
+            description: The REDIRECT authentication type.
+            enum:
+            - REDIRECT
+          details:
+            $ref: '#/components/schemas/RedirectAuthenticationDetails'
+            description: The REDIRECT authentication details.
+      title: Authentication Method (REDIRECT)
+    AirlineIndustryData:
+      allOf:
+      - $ref: '#/components/schemas/IndustryData'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/AirlineDetails'
+            description: The airline industry specific details.
+          type:
+            type: string
+            description: The AIRLINE industry data type.
+            enum:
+            - AIRLINE
+      required:
+      - details
+    InstallmentPlan:
+      type: object
+      properties:
+        numberOfInstallments:
+          type: integer
+          format: int32
+          description: The number of installments the consumer will split the payment into.
+        feePaidBy:
+          type: string
+          description: 'Indicates which party bears the installment fees (e.g.: for BNPL installments).'
+          enum:
+          - MERCHANT
+          - CONSUMER
+          example: MERCHANT
+      required:
+      - numberOfInstallments
+    TravelDetails:
+      type: object
+      properties:
+        travelType:
+          type: string
+          description: The travel type
+          enum:
+          - UNKNOWN
+          - ONE_WAY
+          - TWO_WAY
+          - MULTIPLE
+          example: MULTIPLE
+        departureDate:
+          type: string
+          format: date
+          description: Departure date
+          example: '2025-06-10'
+        returnDate:
+          type: string
+          format: date
+          description: Return date
+          example: '2025-06-15'
+        departureLocation:
+          type: string
+          description: Departure location, if flight then provide IATA Airport Code
+          example: Berlin
+        arrivalLocation:
+          type: string
+          description: Arrival location, if flight then provide IATA Airport Code
+          example: Madrid
+        destinationCountry:
+          type: string
+          description: Destination country
+          example: ES
+        travelCompany:
+          type: string
+          description: Travel company name
+          example: My Travel Company GmbH
+        travelerCount:
+          type: integer
+          format: int64
+          description: Total number of travelers
+          example: 4
+        buyerAmongTravelers:
+          type: boolean
+          description: Is the buyer consumer among travelers?
+          example: true
+        travelClass:
+          type: string
+          description: The class of travel
+          example: PREMIUM
+        travelInsured:
+          type: boolean
+          description: Whether the travel is insured?
+          example: true
+        travelDiscountVoucher:
+          type: string
+          description: Travel discount voucher
+          example: TWENTY-OFF
+        luggageSupplement:
+          type: boolean
+          description: Whether availing luggage supplement?
+          example: true
+        travelCanBeModifiedOrCanceled:
+          type: boolean
+          description: Can the travel be modified or canceled?
+          example: true
+        stayCompany:
+          type: string
+          description: Stay company name
+          example: Hotel XYZ
+        stayDestination:
+          type: string
+          description: Stay destination
+          example: Madrid
+        stayNightsCount:
+          type: integer
+          format: int64
+          description: Stay nights count
+          example: 4
+        stayRoomRange:
+          type: string
+          description: Stay room category
+          example: 4_STARS
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
+    TravelIndustryData:
+      allOf:
+      - $ref: '#/components/schemas/IndustryData'
+      - type: object
+        properties:
+          details:
+            $ref: '#/components/schemas/TravelDetails'
+            description: The travel industry specific details.
+          type:
+            type: string
+            description: The `TRAVEL` industry data type.
+            enum:
+            - TRAVEL
+      required:
+      - details
+    AppIntentAuthenticationDetails:
+      type: object
+      properties:
+        mobileIntentUri:
+          type: string
+          description: Intent URI to be used for app-to-app mobile flows.
+          example: upiGlobal://pay?tr=123&from_app=true
     CreationRequest:
       type: object
       properties:
@@ -413,81 +1942,46 @@ components:
       - amount
       - consumer
       - recurring
-    MultiFactorAuthenticationSettingsDetails:
+    RedirectAuthenticationDetails:
       type: object
       properties:
-        verificationCode:
+        requestUrl:
           type: string
-          description: Code generated to authenticate the user.
-          example: '777123'
-    FetchResponse:
-      type: object
-      properties:
-        id:
+          description: The URL where the consumer should be redirected in order to authenticate the payment.
+          example: https://pay.playground.klarna.com/eu/hpp/payments/123abc
+        requestMethod:
           type: string
-          description: The payment session ID
-          example: sess_FlTZQyHL4DeUYLYtXmOdq
-        amount:
-          $ref: '#/components/schemas/Money'
-          description: The max or exact amount that can be authorized during the session.
-        recurring:
-          type: boolean
-        consumer:
-          $ref: '#/components/schemas/Consumer'
-        expiresAt:
-          type: string
-          format: date-time
-          description: The payment session expiry timestamp in ISO 8601 format.
-          example: '2022-11-03T11:23:47.123Z'
-        createdAt:
-          type: string
-          format: date-time
-          description: The payment session creation timestamp in ISO 8601 format.
-          example: '2022-11-03T11:23:47.123Z'
-        status:
-          type: string
-          description: The payment-session status
+          description: The redirect HTTP method.
           enum:
-          - INITIATED
-          - AUTHORIZING_INFLIGHT
-          - AUTHENTICATION_PENDING
-          - SUCCEEDED
-          - FAILED
-          - EXPIRED
-          - REUSE_LIMIT_EXCEEDED
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-            example: GTM_Campaign
-            maxLength: 200
-          description: Custom labels associated with the payment charge or payment agreement
-          maxProperties: 50
-          propertyNames:
-            type: string
-            example: consumer_origin
-            maxLength: 50
-        paymentCharge:
-          $ref: '#/components/schemas/ChargeAuthorizationResponse'
-          description: Underlying payment-charge
-        paymentAgreement:
-          $ref: '#/components/schemas/AgreementAuthorizationResponse'
-          description: Underlying payment-agreement
-    AirlineIndustryData:
+          - GET
+          - POST
+    ScanCodeAuthenticationMethod:
       allOf:
-      - $ref: '#/components/schemas/IndustryData'
+      - $ref: '#/components/schemas/AuthenticationMethod'
       - type: object
         properties:
-          details:
-            $ref: '#/components/schemas/AirlineDetails'
-            description: The airline industry specific details.
           type:
             type: string
-            description: The AIRLINE industry data type.
+            description: The SCAN_CODE authentication type.
             enum:
-            - AIRLINE
-      required:
-      - details
+            - SCAN_CODE
+          details:
+            $ref: '#/components/schemas/ScanCodeAuthenticationDetails'
+            description: The SCAN_CODE authentication details.
+      title: Authentication Method (SCAN_CODE)
+    ScanCodeAuthenticationSettings:
+      allOf:
+      - $ref: '#/components/schemas/AuthenticationSettings'
+      - type: object
+        properties:
+          settings:
+            $ref: '#/components/schemas/ScanCodeAuthenticationSettingsDetails'
+            description: The SCAN_CODE authentication details.
+          type:
+            type: string
+            description: The SCAN_CODE authentication type.
+            enum:
+            - SCAN_CODE
     Challenge:
       type: object
       properties:
@@ -526,1519 +2020,7 @@ components:
           - TRANSACTION_TIMEOUT_ACS_CREQ_NOT_RECEIVED
           - TRANSACTION_ERROR
           - UNKNOWN
-    ProcessingFailure:
-      type: object
-      properties:
-        failureType:
-          type: string
-          description: The failure type.
-          enum:
-          - INTERNAL_ERROR
-          - INTERNAL_DECLINE
-          - PROVIDER_ERROR
-          - PROVIDER_DECLINE
-        failureCode:
-          type: string
-          description: The failure code.
-        providerFailureCode:
-          type: string
-          description: The payment provider failure code.
-        failureMessage:
-          type: string
-          description: The failure message.
-        isRetryable:
-          type: boolean
-          description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
-        additionalData:
-          $ref: '#/components/schemas/AdditionalData'
-    TravelDetails:
-      type: object
-      properties:
-        travelType:
-          type: string
-          description: The travel type
-          enum:
-          - UNKNOWN
-          - ONE_WAY
-          - TWO_WAY
-          - MULTIPLE
-          example: MULTIPLE
-        departureDate:
-          type: string
-          format: date
-          description: Departure date
-          example: '2025-06-10'
-        returnDate:
-          type: string
-          format: date
-          description: Return date
-          example: '2025-06-15'
-        departureLocation:
-          type: string
-          description: Departure location, if flight then provide IATA Airport Code
-          example: Berlin
-        arrivalLocation:
-          type: string
-          description: Arrival location, if flight then provide IATA Airport Code
-          example: Madrid
-        destinationCountry:
-          type: string
-          description: Destination country
-          example: ES
-        travelCompany:
-          type: string
-          description: Travel company name
-          example: My Travel Company GmbH
-        travelerCount:
-          type: integer
-          format: int64
-          description: Total number of travelers
-          example: 4
-        buyerAmongTravelers:
-          type: boolean
-          description: Is the buyer consumer among travelers?
-          example: true
-        travelClass:
-          type: string
-          description: The class of travel
-          example: PREMIUM
-        travelInsured:
-          type: boolean
-          description: Whether the travel is insured?
-          example: true
-        travelDiscountVoucher:
-          type: string
-          description: Travel discount voucher
-          example: TWENTY-OFF
-        luggageSupplement:
-          type: boolean
-          description: Whether availing luggage supplement?
-          example: true
-        travelCanBeModifiedOrCanceled:
-          type: boolean
-          description: Can the travel be modified or canceled?
-          example: true
-        stayCompany:
-          type: string
-          description: Stay company name
-          example: Hotel XYZ
-        stayDestination:
-          type: string
-          description: Stay destination
-          example: Madrid
-        stayNightsCount:
-          type: integer
-          format: int64
-          description: Stay nights count
-          example: 4
-        stayRoomRange:
-          type: string
-          description: Stay room category
-          example: 4_STARS
-    AirlineDetails:
-      type: object
-      properties:
-        pnr:
-          type: string
-          description: The passenger number record
-          example: SKJ2NS01AS
-        numberOfPassengers:
-          type: integer
-          format: int32
-          description: The number of passengers
-          example: 1
-          minimum: 1
-        airlineCode:
-          type: string
-          description: The airline code
-          example: '016'
-        passengerEmail:
-          type: string
-          description: The passenger email
-          example: john@gmail.com
-        passengerPhone:
-          type: string
-          description: The passenger phone number
-          example: '14082319231'
-        passengerName:
-          type: string
-          description: The passenger name
-          example: John Doe
-        carrierCode:
-          type: string
-          description: The airline carrier code
-          example: '016'
-        tripSegments:
-          type: array
-          description: The trip segment details
-          items:
-            $ref: '#/components/schemas/AirlineTripSegment'
-    AppIntentAuthenticationMethod:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationMethod'
-      - type: object
-        properties:
-          type:
-            type: string
-            description: The APP_INTENT authentication type.
-            enum:
-            - APP_INTENT
-          details:
-            $ref: '#/components/schemas/AppIntentAuthenticationDetails'
-            description: The APP_INTENT authentication details.
-      title: Authentication Method (APP_INTENT)
-    VaultedCardInstrument:
-      allOf:
-      - $ref: '#/components/schemas/PaymentInstrument'
-      - type: object
-        properties:
-          details:
-            $ref: '#/components/schemas/VaultedCardDetails'
-            description: The vaulted card details.
-          type:
-            type: string
-            description: The CARD_PPRO_VAULTED payment instrument type.
-            enum:
-            - CARD_PPRO_VAULTED
-      required:
-      - details
-      title: Payment Instrument (CARD_PPRO_VAULTED)
-    RedirectAuthenticationSettings:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationSettings'
-      - type: object
-        properties:
-          settings:
-            $ref: '#/components/schemas/RedirectAuthenticationSettingsDetails'
-            description: The REDIRECT authentication settings.
-          type:
-            type: string
-            description: The REDIRECT authentication type settings.
-            enum:
-            - REDIRECT
-    ScanCodeAuthenticationSettings:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationSettings'
-      - type: object
-        properties:
-          settings:
-            $ref: '#/components/schemas/ScanCodeAuthenticationSettingsDetails'
-            description: The SCAN_CODE authentication details.
-          type:
-            type: string
-            description: The SCAN_CODE authentication type.
-            enum:
-            - SCAN_CODE
-    AuthenticationSettings:
-      discriminator:
-        propertyName: type
-      properties:
-        type:
-          type: string
-      required:
-      - type
-    InitialPaymentChargeResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The payment charge ID of the initial charge generated by the agreement
-        paymentDescriptor:
-          type: string
-          description: The transaction descriptor (arbitrary string). May be presented to the consumer.
-          example: PPRO - ORDER 1234
-        amount:
-          $ref: '#/components/schemas/Money'
-          description: The initial payment charge amount.
-    AppNotificationAuthenticationSettings:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationSettings'
-      - type: object
-        properties:
-          settings:
-            $ref: '#/components/schemas/AppNotificationAuthenticationSettingsDetails'
-            description: The APP_NOTIFICATION authentication details.
-          type:
-            type: string
-            description: The APP_NOTIFICATION authentication type.
-            enum:
-            - APP_NOTIFICATION
-    ScanCodeAuthenticationDetails:
-      type: object
-      properties:
-        codeType:
-          type: string
-          description: The type of the scan or of the code payload.
-          enum:
-          - QR
-          - UPC
-          - ITF
-          - CODE128
-          - PAYMENT_REFERENCE
-        codeImage:
-          type: string
-          description: The pre-generated scan code image for the ease of integration.
-          example: https://authman-mobileapp.ppro.com/qr.png?payload=dXBpR2xvYmFsOi8vc3RhcnRfdHJhbnNhY3Rpb24/dHI9MTIzJmZyb21fcXI9dHJ1ZQ==
-        codePayload:
-          type: string
-          description: The payload for the scan code or for the reference to construct the image or the UX on the partners side.
-          example: upiGlobal://pay?tr=123&from_desktop=true
-        codeDocument:
-          type: string
-          description: The URL of the pdf/html pay slip document.
-          example: https://urltodocument.com
-        codeProviderEntityId:
-          type: string
-          description: The identifier of the code provider entity.
-          example: '45648'
-        scanBy:
-          type: string
-          format: date-time
-          description: The custom expiry timestamp (ISO 8601 format) before which the consumer is expected to complete the payment.
-          example: '2022-11-03T11:23:47.123Z'
-    InitialPaymentChargeForUpdate:
-      type: object
-      properties:
-        initiator:
-          type: string
-          description: The charge initiator
-          enum:
-          - MERCHANT
-          - CONSUMER
-        paymentDescriptor:
-          type: string
-          description: The transaction descriptor (arbitrary string). May be presented to the consumer.
-          example: PPRO - ORDER 1234
-        amount:
-          $ref: '#/components/schemas/Money'
-          description: The amount to be authorized.
-        autoCapture:
-          type: boolean
-          description: Indicates whether the payment charge should be automatically captured after a successful authorization.
-          example: true
-        merchantPaymentChargeReference:
-          type: string
-          description: The merchant payment charge reference. Aka, Transaction Reference.
-          example: 5c019979-0751-469e-96e0-b67f1d95c577
-        webhooksUrl:
-          type: string
-          description: The URL to which the payment charge state changes will be notified
-          pattern: ^(https)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]
-    RedirectAuthenticationMethod:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationMethod'
-      - type: object
-        properties:
-          type:
-            type: string
-            description: The REDIRECT authentication type.
-            enum:
-            - REDIRECT
-          details:
-            $ref: '#/components/schemas/RedirectAuthenticationDetails'
-            description: The REDIRECT authentication details.
-      title: Authentication Method (REDIRECT)
-    AuthorizationRequest:
-      type: object
-      properties:
-        paymentMethod:
-          type: string
-          description: The payment method which should be used to process the payment.
-          example: PAYPAL
-          minLength: 1
-        consumer:
-          $ref: '#/components/schemas/Consumer'
-        amount:
-          $ref: '#/components/schemas/MoneyWithType'
-          description: The amount to be authorized.
-        amountType:
-          type: string
-          description: Defines if the provided 'amount' is a maximum value or an exact value. This field is relevant only for recurring payments.
-          enum:
-          - MAX
-          - EXACT
-          - VARIABLE
-        initialPaymentCharge:
-          $ref: '#/components/schemas/InitialPaymentCharge'
-          description: An initial payment charge to be created when initializing the agreement in a "link and pay" journey
-        instrument:
-          description: The payment instrument. This field is required for a subset of PPRO's supported payment methods.
-          oneOf:
-          - $ref: '#/components/schemas/BancontactAccountInstrument'
-          - $ref: '#/components/schemas/BankAccountInstrument'
-          - $ref: '#/components/schemas/CardNetworkTokenInstrument'
-          - $ref: '#/components/schemas/MockInstrument'
-          - $ref: '#/components/schemas/PassthroughWalletInstrument'
-          - $ref: '#/components/schemas/VaultedCardInstrument'
-        authenticationSettings:
-          type: array
-          description: Authorization-time authentication settings overrides.
-          items:
-            discriminator:
-              propertyName: type
-              mapping:
-                MULTI_FACTOR: '#/components/schemas/MultiFactorAuthenticationSettings'
-                APP_NOTIFICATION: '#/components/schemas/AppNotificationAuthenticationSettings'
-            oneOf:
-            - allOf:
-              - $ref: '#/components/schemas/MultiFactorAuthenticationSettings'
-              title: Authentication Settings
-            - allOf:
-              - $ref: '#/components/schemas/AppNotificationAuthenticationSettings'
-              title: Authentication Settings
-        startDate:
-          type: string
-          format: date-time
-          description: The start date of the agreement
-          example: '2023-03-26T20:24:27+00:00'
-        endDate:
-          type: string
-          format: date-time
-          description: The end date of the agreement
-          example: '2023-11-27T09:30:00+00:00'
-        frequency:
-          $ref: '#/components/schemas/Frequency'
-          description: The frequency of the agreement
-          example: MONTHLY
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-            example: GTM_Campaign
-            maxLength: 200
-          description: Custom labels associated with the payment charge or agreement.
-          maxProperties: 50
-          propertyNames:
-            type: string
-            example: consumer_origin
-            maxLength: 50
-          title: Add Labels
-      required:
-      - paymentMethod
-    ExternalThreeDsAuthenticationSettings:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationSettings'
-      - type: object
-        properties:
-          settings:
-            $ref: '#/components/schemas/ExternalThreeDs'
-            description: The EXTERNAL_3DS authentication settings.
-          type:
-            type: string
-            description: The `EXTERNAL_3DS` authentication type.
-            enum:
-            - EXTERNAL_3DS
-    Client:
-      type: object
-      properties:
-        ip:
-          type: string
-          description: The IP address of the client
-          example: 11.22.22.33
-        userAgent:
-          type: string
-          description: The user agent of the client device
-          example: Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36
-          maxLength: 500
-          minLength: 0
-    MoneyWithType:
-      type: object
-      properties:
-        value:
-          type: integer
-          format: int64
-          description: The amount in currency's smallest unit.
-          example: 1000
-        currency:
-          type: string
-          description: ISO 4217 3-letter currency code.
-          example: EUR
-          maxLength: 3
-          minLength: 3
-        type:
-          type: string
-          deprecated: true
-          description: Defines if the provided 'amount' is a maximum value or an exact value. This field is relevant only for recurring payments.
-          enum:
-          - MAX
-          - EXACT
-          - VARIABLE
-      required:
-      - currency
-      - value
-    MultiFactorAuthenticationSettings:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationSettings'
-      - type: object
-        properties:
-          settings:
-            $ref: '#/components/schemas/MultiFactorAuthenticationSettingsDetails'
-            description: The MULTI_FACTOR authentication details.
-          type:
-            type: string
-            description: The MULTI_FACTOR authentication type.
-            enum:
-            - MULTI_FACTOR
-    Frequency:
-      type: object
-      properties:
-        type:
-          type: string
-          description: The type of frequency between consecutive payment charges.
-          enum:
-          - DAILY
-          - WEEKLY
-          - MONTHLY
-          - YEARLY
-          - UNSCHEDULED
-          example: MONTHLY
-        interval:
-          type: integer
-          format: int32
-          default: 1
-          description: The interval between consecutive payment charges. The unit of the interval depends on the frequency type. For example, if type is MONTHLY and interval is 3, it means every 3 months.
-          example: 3
-          maximum: 1000
-          minimum: 1
-      required:
-      - type
-    Consumer:
-      type: object
-      properties:
-        name:
-          type: string
-          description: The consumer name.
-          example: John Smith
-        email:
-          type: string
-          description: The consumer email.
-          example: johnsmith@example.com
-        phone:
-          type: string
-          description: The consumer phone number.
-          example: '+491521111111'
-        country:
-          type: string
-          description: 2-letter ISO code of the country where the payment instrument or account has been issued or established (for example GB, US, DE).
-          example: DE
-        locale:
-          type: string
-          description: The locale describing the preferred language of the consumer
-          example: de-DE
-        taxIdentification:
-          type: string
-          description: The consumer's tax identification number, like CUIT in Argentina, CPF in Brazil, RUT in Chile, NIF in Spain or Portugal, Numéro fiscal in France, and Codice Fiscale in Italy, or the equivalent tax identifier applicable in the consumer's country.
-          example: 0798154336790
-        merchantConsumerReference:
-          type: string
-          description: The merchant provided consumer reference.
-          example: 5c019979-0751-469e-96e0-b67f1d95c577
-        billingAddress:
-          $ref: '#/components/schemas/Address'
-          description: The billing address details.
-        client:
-          $ref: '#/components/schemas/Client'
-          description: Consumer's client data
-        profile:
-          $ref: '#/components/schemas/Profile'
-          description: Defines the consumers order history.
-        birthDate:
-          type: string
-          format: date
-          description: The date of birth of the consumer making the payment.
-          example: '1995-06-06'
-    EducationDetails:
-      type: object
-      properties:
-        admissionNoticeUrl:
-          type: string
-          description: The admission notice URL
-        courseStartDate:
-          type: string
-          format: date
-          description: Course start date
-          example: '2025-06-10'
-        courseEndDate:
-          type: string
-          format: date
-          description: Course end date
-          example: '2025-10-10'
-        financedCourse:
-          type: boolean
-          description: Whether the course is financed?
-          example: true
-        diplomaCourse:
-          type: boolean
-          description: Whether the course is diploma?
-          example: true
-        postHighSchoolCourse:
-          type: boolean
-          description: Whether the course is post high school?
-          example: true
-    ExceptionResponseBody:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}
-    AirlineTripSegment:
-      type: object
-      properties:
-        fareBasisCode:
-          type: string
-          description: The fare basis code
-          example: YE3MGB
-        departureAirportCode:
-          type: string
-          description: The departure airport code
-          example: MAN
-        destinationAirportCode:
-          type: string
-          description: The destination airport code
-          example: SYD
-        flightNumber:
-          type: string
-          description: The flight number
-          example: BA98
-        departureDate:
-          type: string
-          format: date
-          description: The departure date
-          example: '2025-01-01'
-        flightCarrierCode:
-          type: string
-          description: The flight carrier code
-          example: '016'
-        segmentId:
-          type: string
-          description: The trip segment ID
-          example: '1'
-    ScanCodeAuthenticationMethod:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationMethod'
-      - type: object
-        properties:
-          type:
-            type: string
-            description: The SCAN_CODE authentication type.
-            enum:
-            - SCAN_CODE
-          details:
-            $ref: '#/components/schemas/ScanCodeAuthenticationDetails'
-            description: The SCAN_CODE authentication details.
-      title: Authentication Method (SCAN_CODE)
-    ThreeDsAuthenticationMethod:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationMethod'
-      - type: object
-        properties:
-          type:
-            type: string
-            description: The `3DS` authentication type.
-            enum:
-            - 3DS
-          details:
-            $ref: '#/components/schemas/ThreeDsAuthenticationDetails'
-            description: The 3DS authentication details.
-      title: Authentication Method (3DS)
-    PaymentChargeDetails:
-      allOf:
-      - $ref: '#/components/schemas/PaymentObjectDetails'
-      required:
-      - id
-      - status
-    PatchRequest:
-      type: object
-      properties:
-        amount:
-          $ref: '#/components/schemas/MoneyWithType'
-          description: The amount to be authorized.
-        amountType:
-          type: string
-          description: 'Defines if the provided ''amount'' is a maximum value or an exact value. This field is relevant only for recurring payments. '
-          enum:
-          - MAX
-          - EXACT
-          - VARIABLE
-        paymentDescriptor:
-          type: string
-          description: The payment descriptor (arbitrary string). May be presented to the consumer.
-          example: Acme - ORDER 1234
-        order:
-          $ref: '#/components/schemas/Order'
-          description: The order details.
-        initialPaymentCharge:
-          $ref: '#/components/schemas/InitialPaymentChargeForUpdate'
-          description: An initial payment charge to be created when initializing the agreement in a "link and pay" journey
-    ChargeAuthorizationResponse:
-      type: object
-      properties:
-        id:
-          type: string
-        paymentMethod:
-          type: string
-        currency:
-          type: string
-        country:
-          type: string
-        paymentDescriptor:
-          type: string
-        status:
-          type: string
-          enum:
-          - AUTHORIZATION_PROCESSING
-          - AUTHORIZATION_ASYNC
-          - AUTHENTICATION_PENDING
-          - CAPTURE_PENDING
-          - CAPTURE_PROCESSING
-          - CAPTURED
-          - REFUND_PROCESSING
-          - REFUNDED
-          - VOID_PROCESSING
-          - VOIDED
-          - DISCARDED
-          - FAILED
-        authenticationMethods:
-          type: array
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/AppIntentAuthenticationMethod'
-            - $ref: '#/components/schemas/AppNotificationAuthenticationMethod'
-            - $ref: '#/components/schemas/MultiFactorAuthenticationMethod'
-            - $ref: '#/components/schemas/RedirectAuthenticationMethod'
-            - $ref: '#/components/schemas/ScanCodeAuthenticationMethod'
-            - $ref: '#/components/schemas/ThreeDsAuthenticationMethod'
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-        failure:
-          $ref: '#/components/schemas/ProcessingFailure'
-    ThreeDsAuthenticationSettings:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationSettings'
-      - type: object
-        properties:
-          settings:
-            $ref: '#/components/schemas/ThreeDsAuthenticationSettingsDetails'
-            description: The 3DS authentication settings.
-          type:
-            type: string
-            description: The `3DS` authentication type.
-            enum:
-            - 3DS
-    ThreeDsAuthenticationSettingsDetails:
-      type: object
-      properties:
-        returnUrl:
-          type: string
-          description: The URL to which the consumer is redirected after completing the 3D Secure authentication flow.
-          example: https://www.ppro.com/
-        preference:
-          type: string
-          description: The preferred 3D Secure authentication flow.
-          enum:
-          - CHALLENGE
-          - FRICTIONLESS
-    Profile:
-      type: object
-      properties:
-        createdDate:
-          type: string
-          format: date
-          description: The date when the consumer profile was created.
-          example: '2025-01-01'
-        firstOrderDate:
-          type: string
-          format: date
-          description: The consumer's first order date.
-          example: '2025-01-05'
-        lastOrderDate:
-          type: string
-          format: date
-          description: The consumer's last order date.
-          example: '2025-06-06'
-        lifetimeOrderCount:
-          type: integer
-          format: int64
-          description: The consumer's total number of orders.
-          example: 10
-        lifetimeOrderValue:
-          type: integer
-          format: int64
-          description: The consumer's total value of orders, expressed in the smallest currency unit.
-          example: 1000
-        lifetimeCanceledOrderCount:
-          type: integer
-          format: int64
-          description: The consumer's total number of canceled orders.
-          example: 1
-    AgreementAuthorizationResponse:
-      type: object
-      properties:
-        id:
-          type: string
-        status:
-          type: string
-          enum:
-          - INITIALIZING
-          - AUTHENTICATION_PENDING
-          - ACTIVE
-          - REVOKED_BY_CONSUMER
-          - REVOKED_BY_MERCHANT
-          - PROVIDER_CONFIRMATION_ASYNC
-          - FAILED
-        description:
-          type: string
-        paymentMethod:
-          type: string
-        frequency:
-          $ref: '#/components/schemas/Frequency'
-        startDate:
-          type: string
-          format: date-time
-        endDate:
-          type: string
-          format: date-time
-        amount:
-          $ref: '#/components/schemas/Money'
-        instrumentId:
-          type: string
-        amountType:
-          type: string
-          enum:
-          - MAX
-          - EXACT
-          - VARIABLE
-        consumer:
-          $ref: '#/components/schemas/Consumer'
-        authenticationMethods:
-          type: array
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/AppIntentAuthenticationMethod'
-            - $ref: '#/components/schemas/AppNotificationAuthenticationMethod'
-            - $ref: '#/components/schemas/MultiFactorAuthenticationMethod'
-            - $ref: '#/components/schemas/RedirectAuthenticationMethod'
-            - $ref: '#/components/schemas/ScanCodeAuthenticationMethod'
-            - $ref: '#/components/schemas/ThreeDsAuthenticationMethod'
-        initialPaymentChargeId:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-        failure:
-          $ref: '#/components/schemas/ProcessingFailure'
-    ScanCodeAuthenticationSettingsDetails:
-      type: object
-      properties:
-        scanBy:
-          type: string
-          format: date-time
-          description: Custom expiry date in ISO 8601 format.
-          example: '2022-11-03T11:23:47.123Z'
-    Address:
-      type: object
-      properties:
-        firstName:
-          type: string
-          description: The address first name.
-          example: John
-        lastName:
-          type: string
-          description: The address last name.
-          example: Smith
-        phoneNumber:
-          type: string
-          description: The address phone number.
-          example: '01522113356'
-        street:
-          type: string
-          description: Street name, house number and other details such as apartment number or door number
-          example: Maple Street 102/B
-        postalCode:
-          type: string
-          description: The address postal code.
-          example: '41460'
-        city:
-          type: string
-          description: The address city.
-          example: Berlin
-        region:
-          type: string
-          description: The address region.
-          example: Berlin
-        country:
-          type: string
-          description: The address country.
-          example: DE
-    ThreeDsAuthenticationDetails:
-      type: object
-      properties:
-        requestUrl:
-          type: string
-          description: The URL where the consumer should be redirected in order to complete the 3D Secure authentication.
-          example: https://authman.sandbox.lp-pl.ppro.com/v0/pages/?redirection_token=token
-        requestMethod:
-          type: string
-          description: The redirect HTTP method.
-          enum:
-          - GET
-          - POST
-    InitialPaymentCharge:
-      type: object
-      properties:
-        initiator:
-          type: string
-          description: The charge initiator
-          enum:
-          - MERCHANT
-          - CONSUMER
-        paymentDescriptor:
-          type: string
-          description: The transaction descriptor (arbitrary string). May be presented to the consumer.
-          example: PPRO - ORDER 1234
-        amount:
-          $ref: '#/components/schemas/Money'
-          description: The amount to be authorized.
-        autoCapture:
-          type: boolean
-          description: Indicates whether the payment charge should be automatically captured after a successful authorization.
-          example: true
-        merchantPaymentChargeReference:
-          type: string
-          description: The merchant payment charge reference. Aka, Transaction Reference.
-          example: 5c019979-0751-469e-96e0-b67f1d95c577
-        webhooksUrl:
-          type: string
-          description: The URL to which the payment charge state changes will be notified
-          pattern: ^(https)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-            example: GTM_Campaign
-            maxLength: 200
-          description: Custom labels associated with the initial payment charge.
-          maxProperties: 50
-          propertyNames:
-            type: string
-            example: consumer_origin
-            maxLength: 50
-          title: Add Labels
-      required:
-      - amount
-    CardNetworkTokenDetails:
-      type: object
-      properties:
-        brand:
-          type: string
-        holderName:
-          type: string
-        expiryMonth:
-          type: integer
-          format: int32
-        expiryYear:
-          type: integer
-          format: int32
-        tokenNumber:
-          type: string
-        eci:
-          type: string
-        cryptogram:
-          type: string
-    MultiFactorAuthenticationMethod:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationMethod'
-      title: Authentication Method (MULTI_FACTOR)
-    AppNotificationAuthenticationSettingsDetails:
-      type: object
-      properties:
-        instrumentProviderIdentity:
-          type: string
-          description: App identifier, for instance email, phone number
-          example: '+34700000000'
-    MockInstrument:
-      allOf:
-      - $ref: '#/components/schemas/PaymentInstrument'
-      - type: object
-        properties:
-          details:
-            type: object
-            additionalProperties:
-              type: string
-            description: The MOCK payment details
-          type:
-            type: string
-            description: The MOCK payment instrument type
-            enum:
-            - MOCK
-      title: Payment Instrument (MOCK)
-    PaymentAgreementDetails:
-      allOf:
-      - $ref: '#/components/schemas/PaymentObjectDetails'
-      - type: object
-        properties:
-          instrumentId:
-            type: string
-          initialPaymentChargeId:
-            type: string
-            deprecated: true
-            description: The payment charge ID of the initial charge generated by the agreement
-          initialPaymentCharge:
-            $ref: '#/components/schemas/InitialPaymentChargeResponse'
-            description: The initial payment charge details echoed from the session.
-      required:
-      - id
-      - status
-    PassthroughWallet:
-      type: object
-      properties:
-        fingerprint:
-          type: string
-        paymentReference:
-          type: string
-        displayIdentifier:
-          type: string
-        country:
-          type: string
-        fundingType:
-          type: string
-          enum:
-          - CREDIT
-          - DEBIT
-    IndustryData:
-      discriminator:
-        propertyName: type
-      properties:
-        type:
-          type: string
-      required:
-      - type
-    AppNotificationAuthenticationMethod:
-      allOf:
-      - $ref: '#/components/schemas/AuthenticationMethod'
-      title: Authentication Method (APP_NOTIFICATION)
-    PaymentInstrument:
-      discriminator:
-        propertyName: type
-        mapping:
-          BANK_ACCOUNT: '#/components/schemas/BankAccountInstrument'
-          CARD_NETWORK_TOKEN: '#/components/schemas/CardNetworkTokenInstrument'
-          PASSTHROUGH_WALLET: '#/components/schemas/PassthroughWalletInstrument'
-          CARD_PPRO_VAULTED: '#/components/schemas/VaultedCardInstrument'
-          MOCK: '#/components/schemas/MockInstrument'
-          BANCONTACT_ACCOUNT: '#/components/schemas/BancontactAccountInstrument'
-      properties:
-        type:
-          type: string
-      required:
-      - type
-    CardNetworkTokenInstrument:
-      allOf:
-      - $ref: '#/components/schemas/PaymentInstrument'
-      - type: object
-        properties:
-          details:
-            $ref: '#/components/schemas/CardNetworkTokenDetails'
-            description: The card network token details
-          type:
-            type: string
-            description: The CARD_NETWORK_TOKEN payment instrument type
-            enum:
-            - CARD_NETWORK_TOKEN
-      required:
-      - details
-      title: Payment Instrument (CARD_NETWORK_TOKEN)
-    AppIntentAuthenticationDetails:
-      type: object
-      properties:
-        mobileIntentUri:
-          type: string
-          description: Intent URI to be used for app-to-app mobile flows.
-          example: upiGlobal://pay?tr=123&from_app=true
-    BancontactAccountInstrument:
-      allOf:
-      - $ref: '#/components/schemas/PaymentInstrument'
-      - type: object
-        properties:
-          details:
-            $ref: '#/components/schemas/BancontactAccount'
-            description: The Bancontact account details.
-          type:
-            type: string
-            description: The BANCONTACT_ACCOUNT payment instrument type.
-            enum:
-            - BANCONTACT_ACCOUNT
-      required:
-      - details
-      title: Payment Instrument (BANCONTACT_ACCOUNT)
-    VaultedCardDetails:
-      type: object
-      properties:
-        brand:
-          type: string
-          description: The card brand.
-          example: VISA
-        bin:
-          type: string
-          description: The card BIN number.
-          example: '411111'
-          minLength: 1
-        last4Digits:
-          type: string
-          description: The last 4 digits of the card.
-          example: '1234'
-          maxLength: 4
-          minLength: 4
-          pattern: ^\d+$
-        expiryMonth:
-          type: integer
-          format: int32
-          description: The card expiration month.
-          example: 1
-          maximum: 12
-          minimum: 1
-        expiryYear:
-          type: integer
-          format: int32
-          description: The card expiration year.
-          example: 2024
-          minimum: 2000
-        holderName:
-          type: string
-          description: The card holder name.
-          example: John Smith
-          minLength: 1
-        panAlias:
-          type: string
-          description: The card PAN alias.
-          example: ppro_tkn_06cf6d1
-          minLength: 1
-        cvvAlias:
-          type: string
-          description: The card CVV alias.
-          example: ppro_tkn_a2cf6d1
-      required:
-      - bin
-      - expiryMonth
-      - expiryYear
-      - holderName
-      - last4Digits
-      - panAlias
-    TravelIndustryData:
-      allOf:
-      - $ref: '#/components/schemas/IndustryData'
-      - type: object
-        properties:
-          details:
-            $ref: '#/components/schemas/TravelDetails'
-            description: The travel industry specific details.
-          type:
-            type: string
-            description: The `TRAVEL` industry data type.
-            enum:
-            - TRAVEL
-      required:
-      - details
-    OrderItem:
-      type: object
-      properties:
-        sku:
-          type: string
-          description: The order item SKU.
-          example: LS123456789
-        category:
-          type: string
-          description: The order item category.
-          example: bicycle
-        subCategory:
-          type: string
-          description: The sub category or classification of the product or service in the order.
-          example: Sports Wear
-        name:
-          type: string
-          description: The order item name.
-          example: White T-Shirt
-          minLength: 1
-        quantity:
-          type: integer
-          format: int32
-          description: The order item quantity.
-          example: 1
-        amount:
-          type: integer
-          format: int64
-          description: The amount to pay for each individual item in the payment charge currency's smallest unit.
-          example: 1000
-      required:
-      - amount
-      - name
-      - quantity
-    BancontactAccount:
-      type: object
-      properties:
-        bin:
-          type: string
-        last4Digits:
-          type: string
-        expiryMonth:
-          type: integer
-          format: int32
-        expiryYear:
-          type: integer
-          format: int32
-        panAlias:
-          type: string
-    Order:
-      type: object
-      properties:
-        orderItems:
-          type: array
-          description: The list of order items.
-          items:
-            $ref: '#/components/schemas/OrderItem'
-        shippingAddress:
-          $ref: '#/components/schemas/Address'
-          description: The shipping address details.
-        industryData:
-          type: array
-          description: The list of industry specific data.
-          items:
-            discriminator:
-              propertyName: type
-              mapping:
-                AIRLINE: '#/components/schemas/AirlineIndustryData'
-                EDUCATION: '#/components/schemas/EducationIndustryData'
-                TRAVEL: '#/components/schemas/TravelIndustryData'
-            oneOf:
-            - allOf:
-              - $ref: '#/components/schemas/AirlineIndustryData'
-              title: Industry Data
-            - allOf:
-              - $ref: '#/components/schemas/EducationIndustryData'
-              title: Industry Data
-            - allOf:
-              - $ref: '#/components/schemas/TravelIndustryData'
-              title: Industry Data
-        orderReferenceNumber:
-          type: string
-          description: The merchant's internal order reference (if different from merchantPaymentChargeReference)
-        totalTaxAmount:
-          type: integer
-          format: int64
-          description: The total tax value paid by the consumer for the order (in same currency units as specified by amount.currency)
-        installmentPlan:
-          $ref: '#/components/schemas/InstallmentPlan'
-          description: Describes the financing details chosen by the consumer for this order
-        shippingMethod:
-          type: string
-          description: 'Digital goods/services: VIRTUAL, Physical goods: TRACKED_DELIVERY, UNTRACKED_DELIVERY, IN_STORE_PICKUP, LOCKER_PICKUP or HYBRID'
-          enum:
-          - VIRTUAL
-          - TRACKED_DELIVERY
-          - UNTRACKED_DELIVERY
-          - IN_STORE_PICKUP
-          - LOCKER_PICKUP
-          - HYBRID
-          example: VIRTUAL
-    ConsumerWithCountry:
-      type: object
-      properties:
-        name:
-          type: string
-          description: The consumer name. This is a required field for a payment charge. If you already collect the consumer’s name in the checkout, it’s recommended to always use this parameter to avoid duplicate fields.
-          example: John Smith
-        email:
-          type: string
-          description: The consumer email.
-          example: johnsmith@example.com
-        phone:
-          type: string
-          description: The consumer phone number.
-          example: '+491521111111'
-        country:
-          type: string
-          description: 2-letter ISO code of the country where the payment instrument or account has been issued or established (for example GB, US, DE).
-          example: DE
-          minLength: 1
-        locale:
-          type: string
-          description: The locale describing the preferred language of the consumer
-          example: de-DE
-        taxIdentification:
-          type: string
-          description: The consumer's tax identification number, like CUIT in Argentina, CPF in Brazil, RUT in Chile, NIF in Spain or Portugal, Numéro fiscal in France, and Codice Fiscale in Italy, or the equivalent tax identifier applicable in the consumer's country.
-          example: 0798154336790
-        merchantConsumerReference:
-          type: string
-          description: The merchant provided consumer reference.
-          example: 5c019979-0751-469e-96e0-b67f1d95c577
-        billingAddress:
-          $ref: '#/components/schemas/Address'
-          description: The billing address details.
-        client:
-          $ref: '#/components/schemas/Client'
-          description: Consumer's client data
-        profile:
-          $ref: '#/components/schemas/Profile'
-          description: Defines the consumers order history.
-        birthDate:
-          type: string
-          format: date
-          description: The date of birth of the consumer making the payment.
-          example: '1995-06-06'
-      required:
-      - country
-    CreationResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The payment session ID
-          example: sess_FlTZQyHL4DeUYLYtXmOdq
-        status:
-          type: string
-          description: The payment-session status
-          enum:
-          - INITIATED
-          - AUTHORIZING_INFLIGHT
-          - AUTHENTICATION_PENDING
-          - SUCCEEDED
-          - FAILED
-          - EXPIRED
-          - REUSE_LIMIT_EXCEEDED
-        amount:
-          $ref: '#/components/schemas/Money'
-          description: The max or exact amount that can be authorized during the session.
-        amountType:
-          type: string
-          description: The type of the amount.
-          enum:
-          - MAX
-          - EXACT
-          - VARIABLE
-        paymentDescriptor:
-          type: string
-          description: The payment descriptor (arbitrary string). May be presented to the consumer.
-          example: Acme - ORDER 1234
-        recurring:
-          type: boolean
-          description: Indicates whether this is a recurring payment.
-          example: false
-        consumer:
-          $ref: '#/components/schemas/Consumer'
-          description: The consumer details.
-        hasInitialPaymentCharge:
-          type: boolean
-          deprecated: true
-          description: Indicates whether this has an initialPaymentCharge set.
-          example: false
-        initialPaymentCharge:
-          $ref: '#/components/schemas/InitialPaymentCharge'
-          description: The initial payment charge details for the payment session.
-        availablePaymentMethods:
-          type: array
-          description: List of payment methods enabled for a merchant based on contractual agreements
-          items:
-            $ref: '#/components/schemas/PaymentMethod'
-        expiresAt:
-          type: string
-          format: date-time
-          description: The payment session expiry timestamp in ISO 8601 format.
-          example: '2022-11-03T11:23:47.123Z'
-        createdAt:
-          type: string
-          format: date-time
-          description: The payment session creation timestamp in ISO 8601 format.
-          example: '2022-11-03T11:23:47.123Z'
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-            example: GTM_Campaign
-            maxLength: 200
-          description: Custom labels associated with the payment charge or agreement.
-          maxProperties: 50
-          propertyNames:
-            type: string
-            example: consumer_origin
-            maxLength: 50
-      required:
-      - recurring
-    BankAccountDetails:
-      type: object
-      properties:
-        accountNumber:
-          type: string
-          description: The account number.
-          example: '007123456'
-        holderName:
-          type: string
-          description: The account holder name.
-          example: John Doe
-        iban:
-          type: string
-          description: The IBAN.
-          example: DE75512108001245126199
-        swiftCode:
-          type: string
-          description: The SWIFT code.
-          example: DEUTDEFF123
-        bankName:
-          type: string
-          description: The bank name.
-          example: My Bank
-        bankCode:
-          type: string
-          description: The bank code.
-          example: '12341234'
-        debitMandateId:
-          type: string
-          description: The reference id for a mandate that allows debit charges on the bank account.
-    AuthorizationResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The id of instance of payment type
-          example: 5c019979-0751-469e-96e0-b67f1d95c577
-        status:
-          type: string
-          description: The status of payment session
-          enum:
-          - INITIATED
-          - AUTHORIZING_INFLIGHT
-          - AUTHENTICATION_PENDING
-          - SUCCEEDED
-          - FAILED
-          - EXPIRED
-          - REUSE_LIMIT_EXCEEDED
-          example: SUCCEEDED
-        data:
-          description: 'The authorization details. '
-          oneOf:
-          - $ref: '#/components/schemas/PaymentAgreementDetails'
-          - $ref: '#/components/schemas/PaymentChargeDetails'
-        authenticationMethods:
-          type: array
-          description: The available authentication methods for the authorization.
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/AppIntentAuthenticationMethod'
-            - $ref: '#/components/schemas/AppNotificationAuthenticationMethod'
-            - $ref: '#/components/schemas/MultiFactorAuthenticationMethod'
-            - $ref: '#/components/schemas/RedirectAuthenticationMethod'
-            - $ref: '#/components/schemas/ScanCodeAuthenticationMethod'
-            - $ref: '#/components/schemas/ThreeDsAuthenticationMethod'
-        failure:
-          $ref: '#/components/schemas/ProcessingFailure'
-          description: Payment session authorization error message
-    InstallmentPlan:
-      type: object
-      properties:
-        numberOfInstallments:
-          type: integer
-          format: int32
-          description: The number of installments the consumer will split the payment into.
-        feePaidBy:
-          type: string
-          description: 'Indicates which party bears the installment fees (e.g.: for BNPL installments).'
-          enum:
-          - MERCHANT
-          - CONSUMER
-          example: MERCHANT
-      required:
-      - numberOfInstallments
-    Money:
-      type: object
-      properties:
-        value:
-          type: integer
-          format: int64
-          description: The amount in currency's smallest unit.
-          example: 1000
-        currency:
-          type: string
-          description: ISO 4217 3-letter currency code.
-          example: EUR
-          maxLength: 3
-          minLength: 3
-      required:
-      - currency
-      - value
-    BankAccountInstrument:
-      allOf:
-      - $ref: '#/components/schemas/PaymentInstrument'
-      - type: object
-        properties:
-          details:
-            $ref: '#/components/schemas/BankAccountDetails'
-            description: The bank account details
-          type:
-            type: string
-            description: The BANK_ACCOUNT payment instrument type
-            enum:
-            - BANK_ACCOUNT
-      required:
-      - details
-      title: Payment Instrument (BANK_ACCOUNT)
-    EducationIndustryData:
-      allOf:
-      - $ref: '#/components/schemas/IndustryData'
-      - type: object
-        properties:
-          details:
-            $ref: '#/components/schemas/EducationDetails'
-            description: The education industry specific details.
-          type:
-            type: string
-            description: The `EDUCATION` industry data type.
-            enum:
-            - EDUCATION
-      required:
-      - details
-    PassthroughWalletInstrument:
-      allOf:
-      - $ref: '#/components/schemas/PaymentInstrument'
-      - type: object
-        properties:
-          details:
-            $ref: '#/components/schemas/PassthroughWallet'
-            description: The PASSTHROUGH_WALLET payment details
-          type:
-            type: string
-            description: The PASSTHROUGH_WALLET payment instrument type.
-            enum:
-            - PASSTHROUGH_WALLET
-      required:
-      - details
-      title: Payment Instrument (PASSTHROUGH_WALLET)
   securitySchemes:
     bearer_token:
       type: http
       scheme: bearer
-x-refined-from:
-- ppro-payment-sessions-openapi.yml
-- ppro-payment-sessions.json

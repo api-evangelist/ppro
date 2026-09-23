@@ -1,8 +1,8 @@
 openapi: 3.2.0
 info:
-  title: Ppro Dispute Reports API
+  title: Service Dispute Reports API
+  description: Provides authorized systems access to generate and retrieve dispute reports for a merchant. A report lists every status change for disputes updated within the requested date range.
   version: v1
-  description: 'Operations tagged Dispute Reports across 2 of this provider''s published API definitions: ppro-dispute-reports-openapi.yml, ppro-dispute-reports.yaml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.sandbox.eu.ppro.com
   description: Sandbox environment for integration testing
@@ -78,11 +78,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponseBody'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production
   /v1/dispute-reports/{reportId}:
     get:
       tags:
@@ -144,27 +139,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponseBody'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production
 components:
   schemas:
-    ExceptionResponseBody:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}
     ReportResponse:
       type: object
       description: Dispute report details
@@ -206,6 +182,20 @@ components:
           format: date-time
           description: Timestamp when the report was updated.
           example: '2026-07-17T12:00:00Z'
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
     CreateReportRequest:
       type: object
       description: Request body for creating a dispute report
@@ -227,6 +217,3 @@ components:
       required:
       - endDate
       - startDate
-x-refined-from:
-- ppro-dispute-reports-openapi.yml
-- ppro-dispute-reports.yaml

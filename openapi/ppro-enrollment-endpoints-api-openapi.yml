@@ -1,8 +1,7 @@
 openapi: 3.2.0
 info:
-  title: Ppro Enrollment Endpoints API
+  title: Enrollment Endpoints API
   version: v1
-  description: 'Operations tagged Enrollment Endpoints across 2 of this provider''s published API definitions: ppro-enrollment-api.json, ppro-enrollment-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.sandbox.eu.ppro.com
   description: Production - Sandbox environment for integration testing
@@ -76,11 +75,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponseBody'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Production - Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production endpoint for EU customers
   /v1/merchants/{merchant-id}/enrollments/{enrollment-id}:
     get:
       tags:
@@ -115,56 +109,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponseBody'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Production - Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production endpoint for EU customers
 components:
   schemas:
-    EnrollmentRequest:
-      type: object
-      properties:
-        paymentMethod:
-          type: string
-          description: The payment method to be enrolled.
-          example: WERO
-          minLength: 1
-        webhooksUrl:
-          type: string
-          description: The URL to which the enrollment state changes will be notified.
-          example: https://webshop.com/webhooks/enrollment-status
-          pattern: ^(https)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]
-      required:
-      - paymentMethod
-    ListEnrollmentsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          description: The merchant enrollments.
-          items:
-            $ref: '#/components/schemas/EnrollmentResponse'
-    EnrollmentFailure:
-      type: object
-      properties:
-        failureType:
-          type: string
-          description: The failure type.
-          enum:
-          - INTERNAL_ERROR
-          - INTERNAL_DECLINE
-          - PROVIDER_ERROR
-          - PROVIDER_DECLINE
-        failureCode:
-          type: string
-          description: The failure code.
-        providerFailureCode:
-          type: string
-          description: The payment provider failure code.
-        failureMessage:
-          type: string
-          description: The failure message.
     EnrollmentResponse:
       type: object
       properties:
@@ -199,6 +145,26 @@ components:
           format: date-time
           description: The enrollment update timestamp in ISO 8601 format.
           example: '2026-04-21T11:23:47.123Z'
+    EnrollmentFailure:
+      type: object
+      properties:
+        failureType:
+          type: string
+          description: The failure type.
+          enum:
+          - INTERNAL_ERROR
+          - INTERNAL_DECLINE
+          - PROVIDER_ERROR
+          - PROVIDER_DECLINE
+        failureCode:
+          type: string
+          description: The failure code.
+        providerFailureCode:
+          type: string
+          description: The payment provider failure code.
+        failureMessage:
+          type: string
+          description: The failure message.
     ExceptionResponseBody:
       type: object
       properties:
@@ -213,6 +179,26 @@ components:
         extensions:
           type: object
           additionalProperties: {}
-x-refined-from:
-- ppro-enrollment-api.json
-- ppro-enrollment-openapi.yml
+    ListEnrollmentsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The merchant enrollments.
+          items:
+            $ref: '#/components/schemas/EnrollmentResponse'
+    EnrollmentRequest:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          description: The payment method to be enrolled.
+          example: WERO
+          minLength: 1
+        webhooksUrl:
+          type: string
+          description: The URL to which the enrollment state changes will be notified.
+          example: https://webshop.com/webhooks/enrollment-status
+          pattern: ^(https)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]
+      required:
+      - paymentMethod

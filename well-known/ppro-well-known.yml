@@ -1,29 +1,26 @@
 generated: '2026-08-26'
 method: probed
 source: live GET of /.well-known/* on every apis.yml + OpenAPI servers[] host, 2026-08-26
-note: >-
-  Only one real document was served. developerhub.ppro.com returns HTTP 200 for /.well-known/security.txt,
-  /.well-known/ai-plugin.json, /.well-known/agent-card.json and /.well-known/agent.json, but the body in
-  every one of those cases is the 765KB ReadMe single-page-app HTML shell, not a document — those are
-  recorded as misses. The genuine hit is /.well-known/api-catalog, an RFC 9727 linkset that points at the
-  per-project catalogs, and the global-api catalog in turn names the canonical OpenAPI URL for all eleven
-  specifications. www.ppro.com answers every path with a Cloudflare "Just a moment..." interstitial (403),
-  so no well-known document could be read there; that is a bot-challenge, not a confirmed absence.
+note: Only one real document was served. developerhub.ppro.com returns HTTP 200 for /.well-known/security.txt,
+  /.well-known/ai-plugin.json, /.well-known/agent-card.json and /.well-known/agent.json, but the body
+  in every one of those cases is the 765KB ReadMe single-page-app HTML shell, not a document — those are
+  recorded as misses. The genuine hit is /.well-known/api-catalog, an RFC 9727 linkset that points at
+  the per-project catalogs, and the global-api catalog in turn names the canonical OpenAPI URL for all
+  eleven specifications. www.ppro.com answers every path with a Cloudflare "Just a moment..." interstitial
+  (403), so no well-known document could be read there; that is a bot-challenge, not a confirmed absence.
 hosts:
 - host: developerhub.ppro.com
   documents:
   - path: /.well-known/api-catalog
     status: 200
-    file: well-known/ppro-api-catalog.json
+    file: ppro-api-catalog.json
     media_type: application/linkset+json
     note: RFC 9727 API catalog; anchors https://developerhub.ppro.com/global-api and /risk-management
   - path: /global-api/.well-known/api-catalog
     status: 200
-    file: well-known/ppro-global-api-api-catalog.json
+    file: ppro-global-api-api-catalog.json
     media_type: application/linkset+json
-    note: >-
-      Second-level linkset naming a service-desc for all eleven OpenAPI documents at
-      https://developerhub.ppro.com/global-api/openapi/<filename>
+    note: Second-level linkset naming a service-desc for all eleven OpenAPI documents at https://developerhub.ppro.com/global-api/openapi/<filename>
   - path: /.well-known/security.txt
     status: 200
     file: null

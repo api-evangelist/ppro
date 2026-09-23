@@ -1,8 +1,8 @@
 openapi: 3.2.0
 info:
-  title: Ppro Internal API
+  title: Chargeback Service Internal API
+  description: These APIs provide authorized systems/users access to the Chargeback Service, enabling them to create chargebacks and manage their lifecycle.
   version: v1
-  description: 'Operations tagged Internal across 2 of this provider''s published API definitions: ppro-chargebacks-openapi.yml, ppro-chargebacks.json. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://api.sandbox.eu.ppro.com
   description: Sandbox environment for integration testing
@@ -72,11 +72,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production
   /v1/chargeback-reversals:
     get:
       tags:
@@ -134,11 +129,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production
   /v1/chargebacks/{id}:
     get:
       tags:
@@ -195,11 +185,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production
   /v1/chargeback-reversals/{id}:
     get:
       tags:
@@ -256,22 +241,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-    servers:
-    - url: https://api.sandbox.eu.ppro.com
-      description: Sandbox environment for integration testing
-    - url: https://api.eu.ppro.com
-      description: Production
 components:
   schemas:
-    ChargebackResponse:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ChargebackDetails'
     Pagination:
       type: object
       properties:
@@ -284,32 +255,6 @@ components:
         currentPage:
           type: integer
           format: int32
-    Amount:
-      type: object
-      properties:
-        value:
-          type: integer
-          format: int64
-        currency:
-          type: string
-      required:
-      - currency
-      - value
-    ApiError:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        extensions:
-          type: object
-          additionalProperties:
-            type: string
     ChargebackReversalResponse:
       type: object
       properties:
@@ -319,6 +264,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ChargebackReversalDetails'
+    ChargebackResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargebackDetails'
     ChargebackDetails:
       type: object
       properties:
@@ -449,6 +403,29 @@ components:
             type: object
             additionalProperties:
               type: string
-x-refined-from:
-- ppro-chargebacks-openapi.yml
-- ppro-chargebacks.json
+    ApiError:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        extensions:
+          type: object
+          additionalProperties:
+            type: string
+    Amount:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+        currency:
+          type: string
+      required:
+      - currency
+      - value
