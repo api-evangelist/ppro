@@ -111,6 +111,41 @@ paths:
                 $ref: '#/components/schemas/ExceptionResponseBody'
 components:
   schemas:
+    EnrollmentFailure:
+      type: object
+      properties:
+        failureType:
+          type: string
+          description: The failure type.
+          enum:
+          - INTERNAL_ERROR
+          - INTERNAL_DECLINE
+          - PROVIDER_ERROR
+          - PROVIDER_DECLINE
+        failureCode:
+          type: string
+          description: The failure code.
+        providerFailureCode:
+          type: string
+          description: The payment provider failure code.
+        failureMessage:
+          type: string
+          description: The failure message.
+    EnrollmentRequest:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          description: The payment method to be enrolled.
+          example: WERO
+          minLength: 1
+        webhooksUrl:
+          type: string
+          description: The URL to which the enrollment state changes will be notified.
+          example: https://webshop.com/webhooks/enrollment-status
+          pattern: ^(https)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]
+      required:
+      - paymentMethod
     EnrollmentResponse:
       type: object
       properties:
@@ -145,26 +180,14 @@ components:
           format: date-time
           description: The enrollment update timestamp in ISO 8601 format.
           example: '2026-04-21T11:23:47.123Z'
-    EnrollmentFailure:
+    ListEnrollmentsResponse:
       type: object
       properties:
-        failureType:
-          type: string
-          description: The failure type.
-          enum:
-          - INTERNAL_ERROR
-          - INTERNAL_DECLINE
-          - PROVIDER_ERROR
-          - PROVIDER_DECLINE
-        failureCode:
-          type: string
-          description: The failure code.
-        providerFailureCode:
-          type: string
-          description: The payment provider failure code.
-        failureMessage:
-          type: string
-          description: The failure message.
+        data:
+          type: array
+          description: The merchant enrollments.
+          items:
+            $ref: '#/components/schemas/EnrollmentResponse'
     ExceptionResponseBody:
       type: object
       properties:
@@ -179,26 +202,3 @@ components:
         extensions:
           type: object
           additionalProperties: {}
-    ListEnrollmentsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          description: The merchant enrollments.
-          items:
-            $ref: '#/components/schemas/EnrollmentResponse'
-    EnrollmentRequest:
-      type: object
-      properties:
-        paymentMethod:
-          type: string
-          description: The payment method to be enrolled.
-          example: WERO
-          minLength: 1
-        webhooksUrl:
-          type: string
-          description: The URL to which the enrollment state changes will be notified.
-          example: https://webshop.com/webhooks/enrollment-status
-          pattern: ^(https)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]
-      required:
-      - paymentMethod

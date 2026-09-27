@@ -182,20 +182,6 @@ components:
           format: date-time
           description: Timestamp when the report was updated.
           example: '2026-07-17T12:00:00Z'
-    ExceptionResponseBody:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}
     CreateReportRequest:
       type: object
       description: Request body for creating a dispute report
@@ -217,3 +203,17 @@ components:
       required:
       - endDate
       - startDate
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}

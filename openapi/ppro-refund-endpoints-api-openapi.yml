@@ -200,6 +200,15 @@ components:
           description: Custom labels associated with the refund.
       required:
       - amount
+    AdditionalData:
+      type: object
+      properties:
+        merchantAdviceCode:
+          type: string
+          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
+        merchantAdviceCodeText:
+          type: string
+          description: Human-readable explanation of the Merchant Advice Code (MAC).
     PaymentChargeRefundResponse:
       type: object
       properties:
@@ -260,48 +269,6 @@ components:
           description: Custom labels associated with the refund.
           example:
             consumer_origin: GTM_Campaign
-    AdditionalData:
-      type: object
-      properties:
-        merchantAdviceCode:
-          type: string
-          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
-        merchantAdviceCodeText:
-          type: string
-          description: Human-readable explanation of the Merchant Advice Code (MAC).
-    Link:
-      type: object
-      properties:
-        href:
-          type: string
-        hreflang:
-          type: string
-        title:
-          type: string
-        type:
-          type: string
-        deprecation:
-          type: string
-        profile:
-          type: string
-        name:
-          type: string
-        templated:
-          type: boolean
-    ExceptionResponseBody:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}
     GatewayProcessingFailureResponse:
       type: object
       properties:
@@ -327,10 +294,6 @@ components:
           description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
         additionalData:
           $ref: '#/components/schemas/AdditionalData'
-    Links:
-      type: object
-      additionalProperties:
-        $ref: '#/components/schemas/Link'
     GetRefundsResponse:
       type: object
       properties:
@@ -342,6 +305,43 @@ components:
         _links:
           $ref: '#/components/schemas/Links'
           readOnly: true
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        hreflang:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+        templated:
+          type: boolean
+    Links:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Link'
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
   securitySchemes:
     bearer_token:
       type: http

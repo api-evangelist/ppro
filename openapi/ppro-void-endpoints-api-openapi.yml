@@ -166,6 +166,15 @@ paths:
                 $ref: '#/components/schemas/ExceptionResponseBody'
 components:
   schemas:
+    AdditionalData:
+      type: object
+      properties:
+        merchantAdviceCode:
+          type: string
+          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
+        merchantAdviceCodeText:
+          type: string
+          description: Human-readable explanation of the Merchant Advice Code (MAC).
     PaymentChargeVoidResponse:
       type: object
       properties:
@@ -211,79 +220,6 @@ components:
         _links:
           $ref: '#/components/schemas/Links'
           readOnly: true
-    VoidRequest:
-      type: object
-      properties:
-        merchantVoidReference:
-          type: string
-          description: The merchant provided void reference.
-          example: 5c019979-0751-469e-96e0-b67f1d95c577
-        amount:
-          type: integer
-          format: int64
-          description: The void amount in the payment charge currency's smallest unit.
-          example: 1000
-          minimum: 1
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-          description: Custom labels associated with the void.
-      required:
-      - amount
-    AdditionalData:
-      type: object
-      properties:
-        merchantAdviceCode:
-          type: string
-          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
-        merchantAdviceCodeText:
-          type: string
-          description: Human-readable explanation of the Merchant Advice Code (MAC).
-    GetVoidsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          description: The payment charge voids.
-          items:
-            $ref: '#/components/schemas/PaymentChargeVoidResponse'
-        _links:
-          $ref: '#/components/schemas/Links'
-          readOnly: true
-    Link:
-      type: object
-      properties:
-        href:
-          type: string
-        hreflang:
-          type: string
-        title:
-          type: string
-        type:
-          type: string
-        deprecation:
-          type: string
-        profile:
-          type: string
-        name:
-          type: string
-        templated:
-          type: boolean
-    ExceptionResponseBody:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}
     GatewayProcessingFailureResponse:
       type: object
       properties:
@@ -309,10 +245,74 @@ components:
           description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
         additionalData:
           $ref: '#/components/schemas/AdditionalData'
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        hreflang:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+        templated:
+          type: boolean
+    GetVoidsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The payment charge voids.
+          items:
+            $ref: '#/components/schemas/PaymentChargeVoidResponse'
+        _links:
+          $ref: '#/components/schemas/Links'
+          readOnly: true
+    VoidRequest:
+      type: object
+      properties:
+        merchantVoidReference:
+          type: string
+          description: The merchant provided void reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        amount:
+          type: integer
+          format: int64
+          description: The void amount in the payment charge currency's smallest unit.
+          example: 1000
+          minimum: 1
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom labels associated with the void.
+      required:
+      - amount
     Links:
       type: object
       additionalProperties:
         $ref: '#/components/schemas/Link'
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
   securitySchemes:
     bearer_token:
       type: http

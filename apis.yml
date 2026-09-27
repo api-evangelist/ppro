@@ -47,7 +47,7 @@ modified: '2026-08-26'
 tags:
 - Payments
 - Local Payment Methods
-- Financial-Services
+- Financial Services
 - Fintech
 - Acquiring
 - Checkout
@@ -70,6 +70,7 @@ tags_raw:
 - Disputes
 - Chargebacks
 - Company
+- Financial-Services
 apis:
 - aid: ppro:ppro-authorization-endpoints-api
   name: PPRO Authorization Endpoints API

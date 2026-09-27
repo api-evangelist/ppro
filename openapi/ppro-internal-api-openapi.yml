@@ -243,37 +243,7 @@ paths:
                 $ref: '#/components/schemas/ApiError'
 components:
   schemas:
-    Pagination:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int32
-        totalCount:
-          type: integer
-          format: int32
-        currentPage:
-          type: integer
-          format: int32
-    ChargebackReversalResponse:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ChargebackReversalDetails'
-    ChargebackResponse:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ChargebackDetails'
-    ChargebackDetails:
+    ChargebackReversalDetails:
       type: object
       properties:
         id:
@@ -338,7 +308,48 @@ components:
             type: object
             additionalProperties:
               type: string
-    ChargebackReversalDetails:
+    Pagination:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalCount:
+          type: integer
+          format: int32
+        currentPage:
+          type: integer
+          format: int32
+    ChargebackReversalResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargebackReversalDetails'
+    Amount:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+        currency:
+          type: string
+      required:
+      - currency
+      - value
+    ChargebackResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargebackDetails'
+    ChargebackDetails:
       type: object
       properties:
         id:
@@ -418,14 +429,3 @@ components:
           type: object
           additionalProperties:
             type: string
-    Amount:
-      type: object
-      properties:
-        value:
-          type: integer
-          format: int64
-        currency:
-          type: string
-      required:
-      - currency
-      - value

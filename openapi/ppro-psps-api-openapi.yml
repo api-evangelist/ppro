@@ -1,6 +1,6 @@
 openapi: 3.2.0
 info:
-  title: Onboarding PS Ps API
+  title: Onboarding PSPs API
   version: 1.0.0
   license:
     name: Proprietary
@@ -79,26 +79,20 @@ paths:
           $ref: '#/components/responses/GatewayTimeout'
 components:
   responses:
-    InternalServerError:
-      description: Internal Server Error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
     BadRequest:
       description: Bad Request
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    NotFound:
-      description: Resource not found
+    MethodNotAllowed:
+      description: Method not allowed
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    MethodNotAllowed:
-      description: Method not allowed
+    Forbidden:
+      description: Forbidden
       content:
         application/json:
           schema:
@@ -115,46 +109,34 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     Conflict:
       description: Resource conflict
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    Forbidden:
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
   schemas:
-    CreatedAt:
+    PspId:
       type: string
-      format: date-time
-      description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+      pattern: ^([a-zA-Z0-9]{3,41}|psp_[a-zA-Z0-9-]{21})$
+      description: Unique identifier for the PSP
+      example: psp_abcdefghijklmno123456
     UpdatedAt:
       type: string
       format: date-time
       description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
-    Error:
-      $schema: https://json-schema.org/draft/2020-12/schema
-      title: Error
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-          description: HTTP status code
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp when the error occurred
-      required:
-      - status
-      - failureMessage
-      - timestamp
     PspDetails:
       title: PspDetails
       allOf:
@@ -175,11 +157,29 @@ components:
         - name
         - createdAt
         - updatedAt
-    PspId:
+    CreatedAt:
       type: string
-      pattern: ^([a-zA-Z0-9]{3,41}|psp_[a-zA-Z0-9-]{21})$
-      description: Unique identifier for the PSP
-      example: psp_abcdefghijklmno123456
+      format: date-time
+      description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    Error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      title: Error
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the error occurred
+      required:
+      - status
+      - failureMessage
+      - timestamp
   parameters:
     psp-id:
       name: psp-id
