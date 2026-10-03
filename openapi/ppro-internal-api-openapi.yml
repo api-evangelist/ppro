@@ -243,112 +243,21 @@ paths:
                 $ref: '#/components/schemas/ApiError'
 components:
   schemas:
-    ChargebackReversalDetails:
+    ApiError:
       type: object
       properties:
-        id:
-          type: string
-          description: The unique identifier.
-          example: cb_20240619XYZabcdefghij or cr_20240619XYZabcdefghij
-        amount:
-          $ref: '#/components/schemas/Amount'
-          description: Defines the value and currency.
-        reason:
-          type: string
-          description: Defines the reason.
-          enum:
-          - PDSP_AUTH_001
-          - PDSP_AUTH_002
-          - PDSP_AUTH_003
-          - PDSP_AUTH_004
-          - PDSP_PROD_001
-          - PDSP_PROD_002
-          - PDSP_PROD_003
-          - PDSP_PROD_004
-          - PDSP_PROD_005
-          - PDSP_CANC_001
-          - PDSP_CANC_002
-          - PDSP_CANC_003
-          - PDSP_CANC_004
-          - PDSP_SUBS_001
-          - PDSP_SUBS_002
-          - PDSP_SUBS_003
-          - PDSP_SUBS_004
-          - PDSP_GEN_001
-          - PDSP_GEN_002
-          - PDSP_GEN_003
-        paymentChargeId:
-          type: string
-          description: The payment charge identifier.
-          example: charge_7s8FcBoJxMwVkWFR3B41p
-        disputeId:
-          type: string
-          description: The unique identifier of the associated dispute.
-          example: dispute_20240619XYZabcdefghij
-        transferStatus:
-          type: string
-          description: Status of the transfer for settlement tracking.
-          enum:
-          - EXPECTED
-          - FAILED
-          - SETTLED
-        createdAt:
+        timestamp:
           type: string
           format: date-time
-          description: Date and time when the entity was created in PPRO.
-          example: '2025-06-19T12:34:56.789Z'
-        updatedAt:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
           type: string
-          format: date-time
-          description: Date and Time when the entity was last updated.
-          example: '2025-06-19T12:34:56.789Z'
-        _links:
+        extensions:
           type: object
           additionalProperties:
-            type: object
-            additionalProperties:
-              type: string
-    Pagination:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int32
-        totalCount:
-          type: integer
-          format: int32
-        currentPage:
-          type: integer
-          format: int32
-    ChargebackReversalResponse:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ChargebackReversalDetails'
-    Amount:
-      type: object
-      properties:
-        value:
-          type: integer
-          format: int64
-        currency:
-          type: string
-      required:
-      - currency
-      - value
-    ChargebackResponse:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ChargebackDetails'
+            type: string
     ChargebackDetails:
       type: object
       properties:
@@ -414,18 +323,109 @@ components:
             type: object
             additionalProperties:
               type: string
-    ApiError:
+    ChargebackResponse:
       type: object
       properties:
-        timestamp:
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargebackDetails'
+    Amount:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+        currency:
+          type: string
+      required:
+      - currency
+      - value
+    ChargebackReversalDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier.
+          example: cb_20240619XYZabcdefghij or cr_20240619XYZabcdefghij
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Defines the value and currency.
+        reason:
+          type: string
+          description: Defines the reason.
+          enum:
+          - PDSP_AUTH_001
+          - PDSP_AUTH_002
+          - PDSP_AUTH_003
+          - PDSP_AUTH_004
+          - PDSP_PROD_001
+          - PDSP_PROD_002
+          - PDSP_PROD_003
+          - PDSP_PROD_004
+          - PDSP_PROD_005
+          - PDSP_CANC_001
+          - PDSP_CANC_002
+          - PDSP_CANC_003
+          - PDSP_CANC_004
+          - PDSP_SUBS_001
+          - PDSP_SUBS_002
+          - PDSP_SUBS_003
+          - PDSP_SUBS_004
+          - PDSP_GEN_001
+          - PDSP_GEN_002
+          - PDSP_GEN_003
+        paymentChargeId:
+          type: string
+          description: The payment charge identifier.
+          example: charge_7s8FcBoJxMwVkWFR3B41p
+        disputeId:
+          type: string
+          description: The unique identifier of the associated dispute.
+          example: dispute_20240619XYZabcdefghij
+        transferStatus:
+          type: string
+          description: Status of the transfer for settlement tracking.
+          enum:
+          - EXPECTED
+          - FAILED
+          - SETTLED
+        createdAt:
           type: string
           format: date-time
-        status:
-          type: integer
-          format: int32
-        failureMessage:
+          description: Date and time when the entity was created in PPRO.
+          example: '2025-06-19T12:34:56.789Z'
+        updatedAt:
           type: string
-        extensions:
+          format: date-time
+          description: Date and Time when the entity was last updated.
+          example: '2025-06-19T12:34:56.789Z'
+        _links:
           type: object
           additionalProperties:
-            type: string
+            type: object
+            additionalProperties:
+              type: string
+    ChargebackReversalResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargebackReversalDetails'
+    Pagination:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalCount:
+          type: integer
+          format: int32
+        currentPage:
+          type: integer
+          format: int32

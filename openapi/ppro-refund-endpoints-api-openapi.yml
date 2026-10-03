@@ -166,6 +166,29 @@ paths:
                 $ref: '#/components/schemas/ExceptionResponseBody'
 components:
   schemas:
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
+    AdditionalData:
+      type: object
+      properties:
+        merchantAdviceCode:
+          type: string
+          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
+        merchantAdviceCodeText:
+          type: string
+          description: Human-readable explanation of the Merchant Advice Code (MAC).
     RefundRequest:
       type: object
       properties:
@@ -200,15 +223,36 @@ components:
           description: Custom labels associated with the refund.
       required:
       - amount
-    AdditionalData:
+    GetRefundsResponse:
       type: object
       properties:
-        merchantAdviceCode:
+        data:
+          type: array
+          description: The payment charge refunds.
+          items:
+            $ref: '#/components/schemas/PaymentChargeRefundResponse'
+        _links:
+          $ref: '#/components/schemas/Links'
+          readOnly: true
+    Link:
+      type: object
+      properties:
+        href:
           type: string
-          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
-        merchantAdviceCodeText:
+        hreflang:
           type: string
-          description: Human-readable explanation of the Merchant Advice Code (MAC).
+        title:
+          type: string
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+        templated:
+          type: boolean
     PaymentChargeRefundResponse:
       type: object
       properties:
@@ -294,54 +338,10 @@ components:
           description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
         additionalData:
           $ref: '#/components/schemas/AdditionalData'
-    GetRefundsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          description: The payment charge refunds.
-          items:
-            $ref: '#/components/schemas/PaymentChargeRefundResponse'
-        _links:
-          $ref: '#/components/schemas/Links'
-          readOnly: true
-    Link:
-      type: object
-      properties:
-        href:
-          type: string
-        hreflang:
-          type: string
-        title:
-          type: string
-        type:
-          type: string
-        deprecation:
-          type: string
-        profile:
-          type: string
-        name:
-          type: string
-        templated:
-          type: boolean
     Links:
       type: object
       additionalProperties:
         $ref: '#/components/schemas/Link'
-    ExceptionResponseBody:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}
   securitySchemes:
     bearer_token:
       type: http

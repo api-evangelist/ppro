@@ -410,70 +410,21 @@ paths:
                 $ref: '#/components/schemas/ApiError'
 components:
   schemas:
-    MessageRequest:
-      type: object
-      description: Request body for merchant message
-      properties:
-        content:
-          type: string
-          description: The message content
-          example: I have attached the requested documentation
-          minLength: 1
-      required:
-      - content
-    Link:
+    ApiError:
       type: object
       properties:
-        href:
+        timestamp:
           type: string
-        hreflang:
+          format: date-time
+        status:
+          type: integer
+          format: int32
+        failureMessage:
           type: string
-        title:
-          type: string
-        type:
-          type: string
-        deprecation:
-          type: string
-        profile:
-          type: string
-        name:
-          type: string
-        templated:
-          type: boolean
-    UploadFileRequest:
-      type: object
-      description: Request to upload a file to a dispute
-      properties:
-        file:
-          type: string
-          format: binary
-          description: The file to upload as a multipart form part with name 'file'
-      required:
-      - file
-    MerchantActionRequest:
-      type: object
-      description: Request body for merchant action
-      properties:
-        type:
-          type: string
-          description: Action that can be performed on the dispute
-          enum:
-          - ACCEPT
-          - CHALLENGE
-          - OFFER
-        resolution:
-          type: string
-          description: The resolution chosen by the merchant for this action. Required if defined in the config for certain action types.
-          example: partial-refund
-        message:
-          type: string
-          description: Message text. Required if defined in the config for certain action types.
-          example: We offer a partial refund of $80 for this transaction.
-        amount:
-          $ref: '#/components/schemas/Amount'
-          description: Amount to be used for the action. Required if defined in the config for certain action types.
-      required:
-      - type
+        extensions:
+          type: object
+          additionalProperties:
+            type: string
     FileResponse:
       type: object
       description: File resource response with HATEOAS links
@@ -525,264 +476,17 @@ components:
       required:
       - phase
       - sender
-    ActionConfigDto:
+    MessageRequest:
       type: object
-      description: Action configuration for dispute operations
-      discriminator:
-        propertyName: type
-        mapping:
-          CHALLENGE: '#/components/schemas/ChallengeActionDto'
-          ACCEPT: '#/components/schemas/AcceptActionDto'
-          OFFER: '#/components/schemas/OfferActionDto'
-      properties:
-        dueBy:
-          type: string
-          format: date-time
-          description: Date and time by which this action must be completed.
-          example: '2025-06-19T12:34:56.789Z'
-        messageConfig:
-          $ref: '#/components/schemas/MessageConfigDto'
-          description: Message requirements. If not provided, messaging will be disabled for this action.
-        type:
-          type: string
-      required:
-      - type
-    CapabilityConfigDto:
-      type: object
-      description: Capability configuration for dispute operations
-      discriminator:
-        propertyName: type
-        mapping:
-          UPLOAD_FILE: '#/components/schemas/FileUploadCapabilityDto'
-          POST_MESSAGES: '#/components/schemas/PostMessageCapabilityDto'
-      properties:
-        statusAllowedIn:
-          type: array
-          description: The status in which this capability is allowed
-          items:
-            type: string
-            enum:
-            - VALIDATION_PENDING
-            - UNMATCHED
-            - OPEN
-            - ACCEPT_PROCESSING
-            - CHALLENGE_PROCESSING
-            - OFFER_PROCESSING
-            - UNDER_REVIEW
-            - LOST
-            - WON
-            - OFFER_ACCEPTED
-            - OFFER_REJECTED
-            - VOIDED
-          uniqueItems: true
-        url:
-          type: string
-          description: URL to perform this capability
-          readOnly: true
-        type:
-          type: string
-      required:
-      - type
-    DisputeReason:
-      type: object
-      properties:
-        code:
-          type: string
-          description: Reason code for the dispute
-          example: PDSP_PROD_001
-          minLength: 1
-        message:
-          type: string
-          description: Reason description for the dispute
-          example: Product not as described
-      required:
-      - code
-    DisputeListResponse:
-      type: object
-      description: Response containing a list of disputes
-      properties:
-        data:
-          type: array
-          description: List of disputes
-          items:
-            $ref: '#/components/schemas/DisputeResponse'
-      required:
-      - data
-    MerchantActionDto:
-      type: object
-      description: Details of a merchant action (ACCEPT, CHALLENGE, or OFFER) taken on a dispute
-      properties:
-        id:
-          type: string
-          description: Unique identifier for this merchant action
-          example: action_20240619XYZabcdefghij
-        phase:
-          type: string
-          description: Phase of the dispute when this action was taken
-          enum:
-          - PRE_DISPUTE
-          - DISPUTE
-          - PRE_ARBITRATION
-          - ARBITRATION
-        type:
-          type: string
-          description: Type of action taken by the merchant
-          enum:
-          - ACCEPT
-          - CHALLENGE
-          - OFFER
-          example: ACCEPT
-        resolution:
-          type:
-          - string
-          - 'null'
-          description: Resolution chosen for this action (e.g., FULL, PARTIAL)
-          example: FULL
-        message:
-          type:
-          - string
-          - 'null'
-          description: Message provided by the merchant with this action
-          example: We accept this dispute and will refund the customer.
-        amount:
-          $ref: '#/components/schemas/Amount'
-          description: Amount associated with this action (for OFFER actions)
-        createdAt:
-          type: string
-          format: date-time
-          description: Date and time when this action was created
-          example: '2025-06-19T12:34:56.789Z'
-    PostMessageCapabilityDto:
-      allOf:
-      - $ref: '#/components/schemas/CapabilityConfigDto'
-      - type: object
-        properties:
-          minLength:
-            type: integer
-            format: int32
-            description: Minimum length of the message content
-            example: 1
-          maxLength:
-            type: integer
-            format: int32
-            description: Maximum length of the message content
-            example: 2000
-          type:
-            type: string
-            description: Post messages operation type
-            enum:
-            - POST_MESSAGES
-      description: Post messages operation configuration
-      title: Capability Config Dto (POST_MESSAGES)
-    ChargebackDetails:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The unique identifier.
-          example: cb_20240619XYZabcdefghij or cr_20240619XYZabcdefghij
-        amount:
-          $ref: '#/components/schemas/Amount'
-          description: Defines the value and currency.
-        reason:
-          type: string
-          description: Defines the reason.
-          enum:
-          - PDSP_AUTH_001
-          - PDSP_AUTH_002
-          - PDSP_AUTH_003
-          - PDSP_AUTH_004
-          - PDSP_PROD_001
-          - PDSP_PROD_002
-          - PDSP_PROD_003
-          - PDSP_PROD_004
-          - PDSP_PROD_005
-          - PDSP_CANC_001
-          - PDSP_CANC_002
-          - PDSP_CANC_003
-          - PDSP_CANC_004
-          - PDSP_SUBS_001
-          - PDSP_SUBS_002
-          - PDSP_SUBS_003
-          - PDSP_SUBS_004
-          - PDSP_GEN_001
-          - PDSP_GEN_002
-          - PDSP_GEN_003
-        createdAt:
-          type: string
-          format: date-time
-          description: Date and time when the entity was created in PPRO.
-          example: '2025-06-19T12:34:56.789Z'
-        updatedAt:
-          type: string
-          format: date-time
-          description: Date and Time when the entity was last updated.
-          example: '2025-06-19T12:34:56.789Z'
-        _links:
-          type: object
-          additionalProperties:
-            type: object
-            additionalProperties:
-              type: string
-    Links:
-      type: object
-      additionalProperties:
-        $ref: '#/components/schemas/Link'
-    MessageDto:
-      type: object
-      description: Message details
+      description: Request body for merchant message
       properties:
         content:
           type: string
           description: The message content
-          example: We have reviewed your claim and require additional documentation
+          example: I have attached the requested documentation
           minLength: 1
-        sender:
-          type: string
-          description: Sender of the message
-          enum:
-          - MERCHANT
-          - PROVIDER
-          readOnly: true
-        phase:
-          type: string
-          description: Phase of the dispute when message was created
-          enum:
-          - PRE_DISPUTE
-          - DISPUTE
-          - PRE_ARBITRATION
-          - ARBITRATION
-          readOnly: true
-        createdAt:
-          type: string
-          format: date-time
-          description: Date and time when the message was created
-          example: '2025-06-19T12:34:56.789Z'
       required:
       - content
-      - createdAt
-    MerchantActionResponse:
-      type: object
-      properties:
-        disputeId:
-          type: string
-        status:
-          type: string
-    ApiError:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        extensions:
-          type: object
-          additionalProperties:
-            type: string
     DisputeResponse:
       type: object
       description: 'Dispute resource response. Contains dispute details and HATEOAS links. Links returned: ''self'' (link to the dispute resource), ''payment_charge'' (link to the associated payment charge)'
@@ -922,72 +626,17 @@ components:
       - paymentChargeId
       - phase
       - status
-    Amount:
+    DisputeListResponse:
       type: object
-      description: Amount in ISO 4217 format
+      description: Response containing a list of disputes
       properties:
-        value:
-          type: integer
-          format: int64
-          description: The monetary value to be charged or processed, expressed in the smallest currency unit (e.g., cents for EUR).
-          example: 5000
-        currency:
-          type: string
-          description: The three-letter ISO 4217 currency code representing the currency in which the amount is denominated.
-          example: EUR
-          maxLength: 3
-          minLength: 3
+        data:
+          type: array
+          description: List of disputes
+          items:
+            $ref: '#/components/schemas/DisputeResponse'
       required:
-      - currency
-      - value
-    ChallengeActionDto:
-      allOf:
-      - $ref: '#/components/schemas/ActionConfigDto'
-      - type: object
-        properties:
-          dueByInDays:
-            type: integer
-            format: int32
-            deprecated: true
-            description: 'Number of days by when this action is due. Deprecated: use dueBy instead.'
-            example: 7
-            writeOnly: true
-          filesRequired:
-            type: boolean
-            description: Are files required for the challenge? if yes, file upload capability config should also be provided.
-            writeOnly: true
-          amountRequired:
-            type: boolean
-            description: Is the amount required for the challenge. If not specified, the full disputed amount will be challenged.
-          type:
-            type: string
-            description: Challenge action type
-            enum:
-            - CHALLENGE
-      description: Challenge action configuration
-      title: Action Config Dto (CHALLENGE)
-    FileUploadCapabilityDto:
-      allOf:
-      - $ref: '#/components/schemas/CapabilityConfigDto'
-      - type: object
-        properties:
-          allowedFileTypes:
-            type: string
-            description: File types allowed for upload as comma separated values
-          maxFileSizeInMb:
-            type: number
-            description: Maximum individual file size allowed (in Mb)
-          maxNumberOfFiles:
-            type: integer
-            format: int32
-            description: Total number of files allowed
-          type:
-            type: string
-            description: File upload operation type.
-            enum:
-            - UPLOAD_FILE
-      description: File upload operation configuration
-      title: Capability Config Dto (UPLOAD_FILE)
+      - data
     MessageConfigDto:
       type: object
       description: Message configuration details
@@ -1007,6 +656,44 @@ components:
       - maxLength
       - minLength
       - required
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        hreflang:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+        templated:
+          type: boolean
+    OfferActionDto:
+      allOf:
+      - $ref: '#/components/schemas/ActionConfigDto'
+      - type: object
+        properties:
+          dueByInDays:
+            type: integer
+            format: int32
+            deprecated: true
+            description: 'Number of days by when this action is due. Deprecated: use dueBy instead.'
+            example: 7
+            writeOnly: true
+          type:
+            type: string
+            description: Offer action type
+            enum:
+            - OFFER
+      description: Defines parameters for the OFFER action, used when the merchant chooses to make an offer on a dispute.
+      title: Action Config Dto (OFFER)
     AcceptActionDto:
       allOf:
       - $ref: '#/components/schemas/ActionConfigDto'
@@ -1035,7 +722,220 @@ components:
             - ACCEPT
       description: Defines parameters for the ACCEPT action, used when the merchant chooses to accept a dispute.
       title: Action Config Dto (ACCEPT)
-    OfferActionDto:
+    PostMessageCapabilityDto:
+      allOf:
+      - $ref: '#/components/schemas/CapabilityConfigDto'
+      - type: object
+        properties:
+          minLength:
+            type: integer
+            format: int32
+            description: Minimum length of the message content
+            example: 1
+          maxLength:
+            type: integer
+            format: int32
+            description: Maximum length of the message content
+            example: 2000
+          type:
+            type: string
+            description: Post messages operation type
+            enum:
+            - POST_MESSAGES
+      description: Post messages operation configuration
+      title: Capability Config Dto (POST_MESSAGES)
+    Amount:
+      type: object
+      description: Amount in ISO 4217 format
+      properties:
+        value:
+          type: integer
+          format: int64
+          description: The monetary value to be charged or processed, expressed in the smallest currency unit (e.g., cents for EUR).
+          example: 5000
+        currency:
+          type: string
+          description: The three-letter ISO 4217 currency code representing the currency in which the amount is denominated.
+          example: EUR
+          maxLength: 3
+          minLength: 3
+      required:
+      - currency
+      - value
+    MerchantActionRequest:
+      type: object
+      description: Request body for merchant action
+      properties:
+        type:
+          type: string
+          description: Action that can be performed on the dispute
+          enum:
+          - ACCEPT
+          - CHALLENGE
+          - OFFER
+        resolution:
+          type: string
+          description: The resolution chosen by the merchant for this action. Required if defined in the config for certain action types.
+          example: partial-refund
+        message:
+          type: string
+          description: Message text. Required if defined in the config for certain action types.
+          example: We offer a partial refund of $80 for this transaction.
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Amount to be used for the action. Required if defined in the config for certain action types.
+      required:
+      - type
+    UploadFileRequest:
+      type: object
+      description: Request to upload a file to a dispute
+      properties:
+        file:
+          type: string
+          format: binary
+          description: The file to upload as a multipart form part with name 'file'
+      required:
+      - file
+    ActionConfigDto:
+      type: object
+      description: Action configuration for dispute operations
+      discriminator:
+        propertyName: type
+        mapping:
+          CHALLENGE: '#/components/schemas/ChallengeActionDto'
+          ACCEPT: '#/components/schemas/AcceptActionDto'
+          OFFER: '#/components/schemas/OfferActionDto'
+      properties:
+        dueBy:
+          type: string
+          format: date-time
+          description: Date and time by which this action must be completed.
+          example: '2025-06-19T12:34:56.789Z'
+        messageConfig:
+          $ref: '#/components/schemas/MessageConfigDto'
+          description: Message requirements. If not provided, messaging will be disabled for this action.
+        type:
+          type: string
+      required:
+      - type
+    FileUploadCapabilityDto:
+      allOf:
+      - $ref: '#/components/schemas/CapabilityConfigDto'
+      - type: object
+        properties:
+          allowedFileTypes:
+            type: string
+            description: File types allowed for upload as comma separated values
+          maxFileSizeInMb:
+            type: number
+            description: Maximum individual file size allowed (in Mb)
+          maxNumberOfFiles:
+            type: integer
+            format: int32
+            description: Total number of files allowed
+          type:
+            type: string
+            description: File upload operation type.
+            enum:
+            - UPLOAD_FILE
+      description: File upload operation configuration
+      title: Capability Config Dto (UPLOAD_FILE)
+    MerchantActionDto:
+      type: object
+      description: Details of a merchant action (ACCEPT, CHALLENGE, or OFFER) taken on a dispute
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this merchant action
+          example: action_20240619XYZabcdefghij
+        phase:
+          type: string
+          description: Phase of the dispute when this action was taken
+          enum:
+          - PRE_DISPUTE
+          - DISPUTE
+          - PRE_ARBITRATION
+          - ARBITRATION
+        type:
+          type: string
+          description: Type of action taken by the merchant
+          enum:
+          - ACCEPT
+          - CHALLENGE
+          - OFFER
+          example: ACCEPT
+        resolution:
+          type:
+          - string
+          - 'null'
+          description: Resolution chosen for this action (e.g., FULL, PARTIAL)
+          example: FULL
+        message:
+          type:
+          - string
+          - 'null'
+          description: Message provided by the merchant with this action
+          example: We accept this dispute and will refund the customer.
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Amount associated with this action (for OFFER actions)
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when this action was created
+          example: '2025-06-19T12:34:56.789Z'
+    Links:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Link'
+    MessageDto:
+      type: object
+      description: Message details
+      properties:
+        content:
+          type: string
+          description: The message content
+          example: We have reviewed your claim and require additional documentation
+          minLength: 1
+        sender:
+          type: string
+          description: Sender of the message
+          enum:
+          - MERCHANT
+          - PROVIDER
+          readOnly: true
+        phase:
+          type: string
+          description: Phase of the dispute when message was created
+          enum:
+          - PRE_DISPUTE
+          - DISPUTE
+          - PRE_ARBITRATION
+          - ARBITRATION
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when the message was created
+          example: '2025-06-19T12:34:56.789Z'
+      required:
+      - content
+      - createdAt
+    DisputeReason:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Reason code for the dispute
+          example: PDSP_PROD_001
+          minLength: 1
+        message:
+          type: string
+          description: Reason description for the dispute
+          example: Product not as described
+      required:
+      - code
+    ChallengeActionDto:
       allOf:
       - $ref: '#/components/schemas/ActionConfigDto'
       - type: object
@@ -1047,10 +947,110 @@ components:
             description: 'Number of days by when this action is due. Deprecated: use dueBy instead.'
             example: 7
             writeOnly: true
+          filesRequired:
+            type: boolean
+            description: Are files required for the challenge? if yes, file upload capability config should also be provided.
+            writeOnly: true
+          amountRequired:
+            type: boolean
+            description: Is the amount required for the challenge. If not specified, the full disputed amount will be challenged.
           type:
             type: string
-            description: Offer action type
+            description: Challenge action type
             enum:
-            - OFFER
-      description: Defines parameters for the OFFER action, used when the merchant chooses to make an offer on a dispute.
-      title: Action Config Dto (OFFER)
+            - CHALLENGE
+      description: Challenge action configuration
+      title: Action Config Dto (CHALLENGE)
+    MerchantActionResponse:
+      type: object
+      properties:
+        disputeId:
+          type: string
+        status:
+          type: string
+    ChargebackDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier.
+          example: cb_20240619XYZabcdefghij or cr_20240619XYZabcdefghij
+        amount:
+          $ref: '#/components/schemas/Amount'
+          description: Defines the value and currency.
+        reason:
+          type: string
+          description: Defines the reason.
+          enum:
+          - PDSP_AUTH_001
+          - PDSP_AUTH_002
+          - PDSP_AUTH_003
+          - PDSP_AUTH_004
+          - PDSP_PROD_001
+          - PDSP_PROD_002
+          - PDSP_PROD_003
+          - PDSP_PROD_004
+          - PDSP_PROD_005
+          - PDSP_CANC_001
+          - PDSP_CANC_002
+          - PDSP_CANC_003
+          - PDSP_CANC_004
+          - PDSP_SUBS_001
+          - PDSP_SUBS_002
+          - PDSP_SUBS_003
+          - PDSP_SUBS_004
+          - PDSP_GEN_001
+          - PDSP_GEN_002
+          - PDSP_GEN_003
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when the entity was created in PPRO.
+          example: '2025-06-19T12:34:56.789Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Date and Time when the entity was last updated.
+          example: '2025-06-19T12:34:56.789Z'
+        _links:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+    CapabilityConfigDto:
+      type: object
+      description: Capability configuration for dispute operations
+      discriminator:
+        propertyName: type
+        mapping:
+          UPLOAD_FILE: '#/components/schemas/FileUploadCapabilityDto'
+          POST_MESSAGES: '#/components/schemas/PostMessageCapabilityDto'
+      properties:
+        statusAllowedIn:
+          type: array
+          description: The status in which this capability is allowed
+          items:
+            type: string
+            enum:
+            - VALIDATION_PENDING
+            - UNMATCHED
+            - OPEN
+            - ACCEPT_PROCESSING
+            - CHALLENGE_PROCESSING
+            - OFFER_PROCESSING
+            - UNDER_REVIEW
+            - LOST
+            - WON
+            - OFFER_ACCEPTED
+            - OFFER_REJECTED
+            - VOIDED
+          uniqueItems: true
+        url:
+          type: string
+          description: URL to perform this capability
+          readOnly: true
+        type:
+          type: string
+      required:
+      - type

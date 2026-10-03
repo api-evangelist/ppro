@@ -141,6 +141,20 @@ paths:
                 $ref: '#/components/schemas/ExceptionResponseBody'
 components:
   schemas:
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
     ReportResponse:
       type: object
       description: Dispute report details
@@ -203,17 +217,3 @@ components:
       required:
       - endDate
       - startDate
-    ExceptionResponseBody:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}

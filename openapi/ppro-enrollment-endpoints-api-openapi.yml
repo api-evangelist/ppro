@@ -111,6 +111,20 @@ paths:
                 $ref: '#/components/schemas/ExceptionResponseBody'
 components:
   schemas:
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
     EnrollmentFailure:
       type: object
       properties:
@@ -188,17 +202,3 @@ components:
           description: The merchant enrollments.
           items:
             $ref: '#/components/schemas/EnrollmentResponse'
-    ExceptionResponseBody:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}

@@ -154,125 +154,17 @@ paths:
         '504':
           $ref: '#/components/responses/GatewayTimeout'
 components:
-  responses:
-    BadRequest:
-      description: Bad Request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    MethodNotAllowed:
-      description: Method not allowed
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    TooManyRequests:
-      description: Too many requests
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Conflict:
-      description: Resource conflict
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Forbidden:
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    GatewayTimeout:
-      description: Gateway Timeout
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    InternalServerError:
-      description: Internal Server Error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
   schemas:
-    PspId:
-      type: string
-      pattern: ^([a-zA-Z0-9]{3,41}|psp_[a-zA-Z0-9-]{21})$
-      description: Unique identifier for the PSP
-      example: psp_abcdefghijklmno123456
     LegalEntityName:
       type: string
       pattern: ^(?=.{1,255}$).*\S.*
       description: The officially registered name of the business as recorded in legal or governmental registries.
       example: Example LLC
-    CreatePlatformRequest:
-      title: CreatePlatformRequest
-      type: object
-      properties:
-        pspId:
-          $ref: '#/components/schemas/PspId'
-        externalPlatformReference:
-          description: Unique reference, assigned by external client. Note that the same reference cannot be used for both a Merchant and a Platform.
-          $ref: '#/components/schemas/ExternalReference'
-        legalEntityName:
-          $ref: '#/components/schemas/LegalEntityName'
-      required:
-      - legalEntityName
-    ExternalReference:
+    PspId:
       type: string
-      pattern: ^[A-Z0-9]{1,32}$
-      description: Unique reference, assigned by external client.
-      example: ENTITY1234567890
-    PlatformPage:
-      title: PlatformPage
-      allOf:
-      - $ref: '#/components/schemas/ResponsePageDetails'
-      - type: object
-        properties:
-          content:
-            type: array
-            items:
-              $ref: '#/components/schemas/PlatformDetails'
-        required:
-        - content
-    CreatedAt:
-      type: string
-      format: date-time
-      description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
-    Error:
-      $schema: https://json-schema.org/draft/2020-12/schema
-      title: Error
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-          description: HTTP status code
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp when the error occurred
-      required:
-      - status
-      - failureMessage
-      - timestamp
-    UpdatePlatformRequest:
-      title: UpdatePlatformRequest
-      type: object
-      properties:
-        legalEntityName:
-          $ref: '#/components/schemas/LegalEntityName'
+      pattern: ^([a-zA-Z0-9]{3,41}|psp_[a-zA-Z0-9-]{21})$
+      description: Unique identifier for the PSP
+      example: psp_abcdefghijklmno123456
     ResponsePageDetails:
       title: ResponsePageDetails
       type: object
@@ -312,11 +204,42 @@ components:
       - nextPage
       - previousPage
       - links
+    ExternalReference:
+      type: string
+      pattern: ^[A-Z0-9]{1,32}$
+      description: Unique reference, assigned by external client.
+      example: ENTITY1234567890
+    PlatformPage:
+      title: PlatformPage
+      allOf:
+      - $ref: '#/components/schemas/ResponsePageDetails'
+      - type: object
+        properties:
+          content:
+            type: array
+            items:
+              $ref: '#/components/schemas/PlatformDetails'
+        required:
+        - content
     PlatformId:
       type: string
       pattern: ^([A-Z0-9]{5,32}|platform_[a-zA-Z0-9-]{21})$
       description: Unique identifier for the platform
       example: PLATFORMID123456
+    UpdatePlatformRequest:
+      title: UpdatePlatformRequest
+      type: object
+      properties:
+        legalEntityName:
+          $ref: '#/components/schemas/LegalEntityName'
+    UpdatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    CreatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
     PlatformDetails:
       title: PlatformDetails
       allOf:
@@ -341,20 +264,101 @@ components:
         - legalEntityName
         - createdAt
         - updatedAt
-    UpdatedAt:
-      type: string
-      format: date-time
-      description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
-  parameters:
-    page:
-      name: page
-      description: The page number to return. 1-indexed
-      in: query
-      required: false
+    Error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      title: Error
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the error occurred
+      required:
+      - status
+      - failureMessage
+      - timestamp
+    CreatePlatformRequest:
+      title: CreatePlatformRequest
+      type: object
+      properties:
+        pspId:
+          $ref: '#/components/schemas/PspId'
+        externalPlatformReference:
+          description: Unique reference, assigned by external client. Note that the same reference cannot be used for both a Merchant and a Platform.
+          $ref: '#/components/schemas/ExternalReference'
+        legalEntityName:
+          $ref: '#/components/schemas/LegalEntityName'
+      required:
+      - legalEntityName
+  responses:
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    GatewayTimeout:
+      description: Gateway Timeout
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    MethodNotAllowed:
+      description: Method not allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  headers:
+    Location:
+      description: Path of the created resource.
       schema:
-        type: integer
-        default: 1
-        minimum: 1
+        type: string
+        format: uri-reference
+        example: /api/merchants/ABC123XYZ
+  parameters:
+    platform-id:
+      name: platform-id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/PlatformId'
     limit:
       name: limit
       description: The maximum number of items to return in this page
@@ -365,16 +369,12 @@ components:
         default: 10
         minimum: 1
         maximum: 100
-    platform-id:
-      name: platform-id
-      in: path
-      required: true
+    page:
+      name: page
+      description: The page number to return. 1-indexed
+      in: query
+      required: false
       schema:
-        $ref: '#/components/schemas/PlatformId'
-  headers:
-    Location:
-      description: Path of the created resource.
-      schema:
-        type: string
-        format: uri-reference
-        example: /api/merchants/ABC123XYZ
+        type: integer
+        default: 1
+        minimum: 1
