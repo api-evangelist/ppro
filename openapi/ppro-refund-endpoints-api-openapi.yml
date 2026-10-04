@@ -166,93 +166,31 @@ paths:
                 $ref: '#/components/schemas/ExceptionResponseBody'
 components:
   schemas:
-    ExceptionResponseBody:
+    GatewayProcessingFailureResponse:
       type: object
       properties:
-        status:
-          type: integer
-          format: int32
+        failureType:
+          type: string
+          description: The failure type.
+          enum:
+          - INTERNAL_ERROR
+          - INTERNAL_DECLINE
+          - PROVIDER_ERROR
+          - PROVIDER_DECLINE
+        failureCode:
+          type: string
+          description: The failure code.
+        providerFailureCode:
+          type: string
+          description: The payment provider failure code.
         failureMessage:
           type: string
-        timestamp:
-          type: string
-          format: date-time
-        extensions:
-          type: object
-          additionalProperties: {}
-    AdditionalData:
-      type: object
-      properties:
-        merchantAdviceCode:
-          type: string
-          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
-        merchantAdviceCodeText:
-          type: string
-          description: Human-readable explanation of the Merchant Advice Code (MAC).
-    RefundRequest:
-      type: object
-      properties:
-        merchantRefundReference:
-          type: string
-          description: The merchant provided refund reference.
-          example: 5c019979-0751-469e-96e0-b67f1d95c577
-        amount:
-          type: integer
-          format: int64
-          description: The refund amount in the payment charge currency's smallest unit.
-          example: 1000
-          minimum: 1
-        refundDescriptor:
-          type: string
-          description: The refund descriptor (arbitrary string). To provide consumer's bank account details
-          example: 'Name: Jamie Shopper CPF:12345678909 Bank Name: Scotland Bank Agency Number: 1234 Account Number: 123456789'
-        refundReason:
-          type: string
-          description: The reason for the refund request.
-          enum:
-          - RETURN
-          - DUPLICATE
-          - FRAUD
-          - CUSTOMER_REQUEST
-          - PRE_DISPUTE
-          - OTHER
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-          description: Custom labels associated with the refund.
-      required:
-      - amount
-    GetRefundsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          description: The payment charge refunds.
-          items:
-            $ref: '#/components/schemas/PaymentChargeRefundResponse'
-        _links:
-          $ref: '#/components/schemas/Links'
-          readOnly: true
-    Link:
-      type: object
-      properties:
-        href:
-          type: string
-        hreflang:
-          type: string
-        title:
-          type: string
-        type:
-          type: string
-        deprecation:
-          type: string
-        profile:
-          type: string
-        name:
-          type: string
-        templated:
+          description: The failure message.
+        isRetryable:
           type: boolean
+          description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
+        additionalData:
+          $ref: '#/components/schemas/AdditionalData'
     PaymentChargeRefundResponse:
       type: object
       properties:
@@ -313,35 +251,97 @@ components:
           description: Custom labels associated with the refund.
           example:
             consumer_origin: GTM_Campaign
-    GatewayProcessingFailureResponse:
+    Link:
       type: object
       properties:
-        failureType:
+        href:
           type: string
-          description: The failure type.
-          enum:
-          - INTERNAL_ERROR
-          - INTERNAL_DECLINE
-          - PROVIDER_ERROR
-          - PROVIDER_DECLINE
-        failureCode:
+        hreflang:
           type: string
-          description: The failure code.
-        providerFailureCode:
+        title:
           type: string
-          description: The payment provider failure code.
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+        templated:
+          type: boolean
+    GetRefundsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The payment charge refunds.
+          items:
+            $ref: '#/components/schemas/PaymentChargeRefundResponse'
+        _links:
+          $ref: '#/components/schemas/Links'
+          readOnly: true
+    ExceptionResponseBody:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
         failureMessage:
           type: string
-          description: The failure message.
-        isRetryable:
-          type: boolean
-          description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
-        additionalData:
-          $ref: '#/components/schemas/AdditionalData'
+        timestamp:
+          type: string
+          format: date-time
+        extensions:
+          type: object
+          additionalProperties: {}
     Links:
       type: object
       additionalProperties:
         $ref: '#/components/schemas/Link'
+    AdditionalData:
+      type: object
+      properties:
+        merchantAdviceCode:
+          type: string
+          description: Merchant Advice Code (MAC) returned by the payment network on decline, indicating whether and when the payment may be retried.
+        merchantAdviceCodeText:
+          type: string
+          description: Human-readable explanation of the Merchant Advice Code (MAC).
+    RefundRequest:
+      type: object
+      properties:
+        merchantRefundReference:
+          type: string
+          description: The merchant provided refund reference.
+          example: 5c019979-0751-469e-96e0-b67f1d95c577
+        amount:
+          type: integer
+          format: int64
+          description: The refund amount in the payment charge currency's smallest unit.
+          example: 1000
+          minimum: 1
+        refundDescriptor:
+          type: string
+          description: The refund descriptor (arbitrary string). To provide consumer's bank account details
+          example: 'Name: Jamie Shopper CPF:12345678909 Bank Name: Scotland Bank Agency Number: 1234 Account Number: 123456789'
+        refundReason:
+          type: string
+          description: The reason for the refund request.
+          enum:
+          - RETURN
+          - DUPLICATE
+          - FRAUD
+          - CUSTOMER_REQUEST
+          - PRE_DISPUTE
+          - OTHER
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom labels associated with the refund.
+      required:
+      - amount
   securitySchemes:
     bearer_token:
       type: http

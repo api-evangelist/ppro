@@ -276,32 +276,33 @@ paths:
           $ref: '#/components/responses/GatewayTimeout'
 components:
   schemas:
-    LegalEntityName:
+    WebsiteUrl:
       type: string
-      pattern: ^(?=.{1,255}$).*\S.*
-      description: The officially registered name of the business as recorded in legal or governmental registries.
-      example: Example LLC
+      format: uri
+      maxLength: 255
+      description: An e-commerce website or public-facing digital storefront.
+      example: https://www.example.com
+    UpdatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    MerchantId:
+      type: string
+      pattern: ^([A-Z0-9]{5,32}|merchant_[a-zA-Z0-9-]{21})$
+      description: Unique identifier for the merchant
+      example: MERCHANTID456
     LegalEntityRegistrationNumber:
       type: string
       pattern: ^[A-Za-z0-9]{1,255}$
       description: A unique identifier assigned to the business upon incorporation by a government or regulatory authority.
-    MonthlyTransactionCount:
-      type: integer
-      format: int64
-      description: The expected or historical number of transactions processed per month.
-      example: 1000
-    LegalEntityType:
+    PaymentDescriptor:
+      title: PaymentDescriptor
       type: string
-      enum:
-      - COMPANY
-      - PARTNERSHIP
-      - SOLE_TRADER
-      - INDIVIDUAL
-      - NON_PROFIT
-      description: 'Classification of the business structure. Allowed values: COMPANY, PARTNERSHIP, SOLE_TRADER, INDIVIDUAL, NON_PROFIT.'
-      example: COMPANY
-    UpdateMerchantRequest:
-      title: UpdateMerchantRequest
+      pattern: ^[A-Za-z0-9.',& /+\-]{0,255}$
+      description: The text customers see on their bank statement for transactions from this store.
+      example: Example LLC Store
+    ReplaceMerchantRequest:
+      title: ReplaceMerchantRequest
       type: object
       properties:
         legalEntityName:
@@ -309,84 +310,119 @@ components:
         legalEntityType:
           $ref: '#/components/schemas/LegalEntityType'
         tradeName:
-          allOf:
-          - $ref: '#/components/schemas/MerchantTradeName'
+          $ref: '#/components/schemas/MerchantTradeName'
         registrationNumber:
-          allOf:
-          - $ref: '#/components/schemas/LegalEntityRegistrationNumber'
+          $ref: '#/components/schemas/LegalEntityRegistrationNumber'
         incorporationDate:
-          allOf:
-          - $ref: '#/components/schemas/IncorporationDate'
+          $ref: '#/components/schemas/IncorporationDate'
         address:
           $ref: '#/components/schemas/Address'
         phoneNumber:
-          allOf:
-          - $ref: '#/components/schemas/PhoneNumber'
+          $ref: '#/components/schemas/PhoneNumber'
         simpleApiWebhooksUrl:
-          allOf:
-          - $ref: '#/components/schemas/SimpleApiWebhooksUrl'
+          $ref: '#/components/schemas/SimpleApiWebhooksUrl'
         url:
-          allOf:
-          - $ref: '#/components/schemas/WebsiteUrl'
+          $ref: '#/components/schemas/WebsiteUrl'
         mcc:
           $ref: '#/components/schemas/MerchantCategoryCode'
         averageTransactionValue:
-          allOf:
-          - $ref: '#/components/schemas/AverageTransactionValue'
+          $ref: '#/components/schemas/AverageTransactionValue'
         monthlyTransactionCount:
-          allOf:
-          - $ref: '#/components/schemas/MonthlyTransactionCount'
+          $ref: '#/components/schemas/MonthlyTransactionCount'
         currency:
-          allOf:
-          - $ref: '#/components/schemas/Currency'
+          $ref: '#/components/schemas/Currency'
         paymentDescriptor:
-          allOf:
-          - $ref: '#/components/schemas/PaymentDescriptor'
-    IncorporationDate:
-      type: string
-      format: date
-      description: The date the business was legally registered or incorporated.
-      example: '2020-01-01'
-    PspId:
-      type: string
-      pattern: ^([a-zA-Z0-9]{3,41}|psp_[a-zA-Z0-9-]{21})$
-      description: Unique identifier for the PSP
-      example: psp_abcdefghijklmno123456
-    CreateMerchantPersonRequest:
-      title: CreateMerchantPersonRequest
-      type: object
-      properties:
-        relationshipType:
-          $ref: '#/components/schemas/RelationshipType'
-        personId:
-          $ref: '#/components/schemas/PersonId'
-          description: Unique identifier for the existing person to assign. Do not provide if creating a new person and attach.
-        person:
-          $ref: '#/components/schemas/CreatePersonRequest'
-          description: Object containing the details for the new person to create and attach. Do not provide if attaching an existing person."
+          $ref: '#/components/schemas/PaymentDescriptor'
       required:
-      - relationshipType
-      example:
-        relationshipType: ULTIMATE_BENEFICIAL_OWNER
-        person:
-          externalPersonReference: REF123
-          firstName: John
-          lastName: Doe
-          middleName: Michael
-          nativeName: 道
-          birthDate: '2000-01-01'
-          address:
-            street: 123 Main St
-            city: Anytown
-            region: CA
-            postalCode: '12345'
-            country: US
-          email: john.doe@example.com
+      - legalEntityName
+      - legalEntityType
+      - address
+      - url
+      - mcc
+    PlatformId:
+      type: string
+      pattern: ^([A-Z0-9]{5,32}|platform_[a-zA-Z0-9-]{21})$
+      description: Unique identifier for the platform
+      example: PLATFORMID123456
+    MonthlyTransactionCount:
+      type: integer
+      format: int64
+      description: The expected or historical number of transactions processed per month.
+      example: 1000
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      description: ISO-4217 currency code (e.g., EUR, USD)
+      example: EUR
     ExternalReference:
       type: string
       pattern: ^[A-Z0-9]{1,32}$
       description: Unique reference, assigned by external client.
       example: ENTITY1234567890
+    AverageTransactionValue:
+      type: number
+      description: The typical value of a single transaction. Major units, example 50.00
+      example: 50
+    EmailAddress:
+      type: string
+      format: email
+      pattern: ^.{1,255}$
+      description: An email address.
+      example: john.doe@example.com
+    CreatePersonRequest:
+      title: CreatePersonRequest
+      type: object
+      properties:
+        externalPersonReference:
+          $ref: '#/components/schemas/ExternalReference'
+        firstName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal given name of the person.
+          example: John
+        lastName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: The legal surname or family name of the person.
+          example: Doe
+        middleName:
+          type: string
+          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
+          description: An optional middle name of the person, if applicable.
+          example: Michael
+        nativeName:
+          type: string
+          pattern: ^[\p{L}\p{M}\p{Zs}'\-\.]{1,255}$
+          description: The person’s name in their native script (e.g., Cyrillic, Kanji), if different from Latin characters.
+          example: 道
+        birthDate:
+          type: string
+          format: date
+          description: The person’s birth date, in ISO-8601 format YYYY-MM-DD.
+          example: '2000-01-01'
+        address:
+          $ref: '#/components/schemas/Address'
+        email:
+          $ref: '#/components/schemas/EmailAddress'
+      required:
+      - firstName
+      - lastName
+      - birthDate
+      - address
+      example:
+        externalPersonReference: REF123
+        firstName: John
+        lastName: Doe
+        middleName: Michael
+        nativeName: 道
+        birthDate: '2000-01-01'
+        address:
+          street: 123 Main St
+          city: Anytown
+          region: CA
+          postalCode: '12345'
+          country: US
+        email: john.doe@example.com
     CountryCode:
       type: string
       pattern: ^[A-Z]{2}$
@@ -444,110 +480,30 @@ components:
       - address
       - url
       - mcc
-    WebsiteUrl:
-      type: string
-      format: uri
-      maxLength: 255
-      description: An e-commerce website or public-facing digital storefront.
-      example: https://www.example.com
-    ReplaceMerchantRequest:
-      title: ReplaceMerchantRequest
+    Error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      title: Error
       type: object
       properties:
-        legalEntityName:
-          $ref: '#/components/schemas/LegalEntityName'
-        legalEntityType:
-          $ref: '#/components/schemas/LegalEntityType'
-        tradeName:
-          $ref: '#/components/schemas/MerchantTradeName'
-        registrationNumber:
-          $ref: '#/components/schemas/LegalEntityRegistrationNumber'
-        incorporationDate:
-          $ref: '#/components/schemas/IncorporationDate'
-        address:
-          $ref: '#/components/schemas/Address'
-        phoneNumber:
-          $ref: '#/components/schemas/PhoneNumber'
-        simpleApiWebhooksUrl:
-          $ref: '#/components/schemas/SimpleApiWebhooksUrl'
-        url:
-          $ref: '#/components/schemas/WebsiteUrl'
-        mcc:
-          $ref: '#/components/schemas/MerchantCategoryCode'
-        averageTransactionValue:
-          $ref: '#/components/schemas/AverageTransactionValue'
-        monthlyTransactionCount:
-          $ref: '#/components/schemas/MonthlyTransactionCount'
-        currency:
-          $ref: '#/components/schemas/Currency'
-        paymentDescriptor:
-          $ref: '#/components/schemas/PaymentDescriptor'
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the error occurred
       required:
-      - legalEntityName
-      - legalEntityType
-      - address
-      - url
-      - mcc
-    CreateMerchantResponse:
-      title: CreateMerchantResponse
-      description: Merchant created payload including initial people assignments.
-      allOf:
-      - $ref: '#/components/schemas/MerchantDetails'
-      - type: object
-        properties:
-          people:
-            type: array
-            items:
-              $ref: '#/components/schemas/MerchantPersonDetails'
-    EmailAddress:
+      - status
+      - failureMessage
+      - timestamp
+    PersonId:
       type: string
-      format: email
-      pattern: ^.{1,255}$
-      description: An email address.
-      example: john.doe@example.com
-    PhoneNumber:
-      type: string
-      pattern: ^[\+]?[0-9\s\-\(\)]{7,20}$
-      example: +1 234-567-8900
-    SimpleApiWebhooksUrl:
-      type: string
-      format: uri
-      maxLength: 255
-      description: The endpoint where Simple API (v1) event webhooks should be sent.
-      example: https://www.example.com/webhook
-    Address:
-      title: Address
-      type: object
-      properties:
-        street:
-          type: string
-          pattern: ^[0-9a-zA-Z\s\-\.,'/#]{1,255}$
-          example: 123 Main St
-        city:
-          type: string
-          pattern: ^[0-9a-zA-Z\s\-\.,'/#]{1,255}$
-          example: Anytown
-        region:
-          type: string
-          pattern: ^[0-9a-zA-Z\s\-\.,'/#]{1,255}$
-          example: CA
-        postalCode:
-          type: string
-          pattern: ^[0-9A-Z\s\-]{1,20}$
-          description: 'Required for countries that use postal codes. This field can be omitted for the following country codes: AO,AI,AG,AW,BS,BZ,BJ,BM,BO,BQ,BW,CF,TD,KM,CG,CD,CK,CI,CW,DJ,DM,TL,GQ,ER,FJ,TF,GA,GM,GY,GD,HK,HM,IO,MO,MH,MS,NR,NU,NF,PW,PA,WS,KN,LC,VC,ST,SC,SL,SX,SB,SS,GS,SH,TC,TK,TO,TV,UG,AE,VA,VU,YE,ZW'
-          example: '12345'
-        country:
-          $ref: '#/components/schemas/CountryCode'
-      required:
-      - street
-      - city
-      - country
-      example:
-        street: 123 Main St
-        city: Anytown
-        region: CA
-        postalCode: '12345'
-        country: US
+      pattern: ^person_[a-zA-Z0-9-]{21}$
+      description: Unique identifier for the person
+      example: person_abcdefghijklmno123456
     MerchantDetails:
       title: MerchantDetails
       description: Merchant record as returned by Entity .
@@ -607,70 +563,133 @@ components:
         - updatedAt
         - url
         - mcc
-    CreatePersonRequest:
-      title: CreatePersonRequest
-      type: object
-      properties:
-        externalPersonReference:
-          $ref: '#/components/schemas/ExternalReference'
-        firstName:
-          type: string
-          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
-          description: The legal given name of the person.
-          example: John
-        lastName:
-          type: string
-          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
-          description: The legal surname or family name of the person.
-          example: Doe
-        middleName:
-          type: string
-          pattern: ^[\p{L}\p{M}\s'\-]{1,255}$
-          description: An optional middle name of the person, if applicable.
-          example: Michael
-        nativeName:
-          type: string
-          pattern: ^[\p{L}\p{M}\p{Zs}'\-\.]{1,255}$
-          description: The person’s name in their native script (e.g., Cyrillic, Kanji), if different from Latin characters.
-          example: 道
-        birthDate:
-          type: string
-          format: date
-          description: The person’s birth date, in ISO-8601 format YYYY-MM-DD.
-          example: '2000-01-01'
-        address:
-          $ref: '#/components/schemas/Address'
-        email:
-          $ref: '#/components/schemas/EmailAddress'
-      required:
-      - firstName
-      - lastName
-      - birthDate
-      - address
-      example:
-        externalPersonReference: REF123
-        firstName: John
-        lastName: Doe
-        middleName: Michael
-        nativeName: 道
-        birthDate: '2000-01-01'
-        address:
-          street: 123 Main St
-          city: Anytown
-          region: CA
-          postalCode: '12345'
-          country: US
-        email: john.doe@example.com
-    PlatformId:
+    PhoneNumber:
       type: string
-      pattern: ^([A-Z0-9]{5,32}|platform_[a-zA-Z0-9-]{21})$
-      description: Unique identifier for the platform
-      example: PLATFORMID123456
+      pattern: ^[\+]?[0-9\s\-\(\)]{7,20}$
+      example: +1 234-567-8900
+    PspId:
+      type: string
+      pattern: ^([a-zA-Z0-9]{3,41}|psp_[a-zA-Z0-9-]{21})$
+      description: Unique identifier for the PSP
+      example: psp_abcdefghijklmno123456
+    CreateMerchantResponse:
+      title: CreateMerchantResponse
+      description: Merchant created payload including initial people assignments.
+      allOf:
+      - $ref: '#/components/schemas/MerchantDetails'
+      - type: object
+        properties:
+          people:
+            type: array
+            items:
+              $ref: '#/components/schemas/MerchantPersonDetails'
     MerchantTradeName:
       type: string
       pattern: ^(?=.{1,255}$).*\S.*
       description: The name the business operates under in public-facing contexts. This is the "doing business as" (DBA) name and may differ from the legal name.
       example: Example LLC
+    CreateMerchantPersonRequest:
+      title: CreateMerchantPersonRequest
+      type: object
+      properties:
+        relationshipType:
+          $ref: '#/components/schemas/RelationshipType'
+        personId:
+          $ref: '#/components/schemas/PersonId'
+          description: Unique identifier for the existing person to assign. Do not provide if creating a new person and attach.
+        person:
+          $ref: '#/components/schemas/CreatePersonRequest'
+          description: Object containing the details for the new person to create and attach. Do not provide if attaching an existing person."
+      required:
+      - relationshipType
+      example:
+        relationshipType: ULTIMATE_BENEFICIAL_OWNER
+        person:
+          externalPersonReference: REF123
+          firstName: John
+          lastName: Doe
+          middleName: Michael
+          nativeName: 道
+          birthDate: '2000-01-01'
+          address:
+            street: 123 Main St
+            city: Anytown
+            region: CA
+            postalCode: '12345'
+            country: US
+          email: john.doe@example.com
+    MerchantCategoryCode:
+      type: string
+      pattern: ^[0-9]{4}$
+      description: Merchant Category Code assigned to the business, indicating the type of goods or services sold.
+      example: '5411'
+    LegalEntityName:
+      type: string
+      pattern: ^(?=.{1,255}$).*\S.*
+      description: The officially registered name of the business as recorded in legal or governmental registries.
+      example: Example LLC
+    CreatedAt:
+      type: string
+      format: date-time
+      description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    LegalEntityType:
+      type: string
+      enum:
+      - COMPANY
+      - PARTNERSHIP
+      - SOLE_TRADER
+      - INDIVIDUAL
+      - NON_PROFIT
+      description: 'Classification of the business structure. Allowed values: COMPANY, PARTNERSHIP, SOLE_TRADER, INDIVIDUAL, NON_PROFIT.'
+      example: COMPANY
+    UpdateMerchantRequest:
+      title: UpdateMerchantRequest
+      type: object
+      properties:
+        legalEntityName:
+          $ref: '#/components/schemas/LegalEntityName'
+        legalEntityType:
+          $ref: '#/components/schemas/LegalEntityType'
+        tradeName:
+          allOf:
+          - $ref: '#/components/schemas/MerchantTradeName'
+        registrationNumber:
+          allOf:
+          - $ref: '#/components/schemas/LegalEntityRegistrationNumber'
+        incorporationDate:
+          allOf:
+          - $ref: '#/components/schemas/IncorporationDate'
+        address:
+          $ref: '#/components/schemas/Address'
+        phoneNumber:
+          allOf:
+          - $ref: '#/components/schemas/PhoneNumber'
+        simpleApiWebhooksUrl:
+          allOf:
+          - $ref: '#/components/schemas/SimpleApiWebhooksUrl'
+        url:
+          allOf:
+          - $ref: '#/components/schemas/WebsiteUrl'
+        mcc:
+          $ref: '#/components/schemas/MerchantCategoryCode'
+        averageTransactionValue:
+          allOf:
+          - $ref: '#/components/schemas/AverageTransactionValue'
+        monthlyTransactionCount:
+          allOf:
+          - $ref: '#/components/schemas/MonthlyTransactionCount'
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/Currency'
+        paymentDescriptor:
+          allOf:
+          - $ref: '#/components/schemas/PaymentDescriptor'
+    SimpleApiWebhooksUrl:
+      type: string
+      format: uri
+      maxLength: 255
+      description: The endpoint where Simple API (v1) event webhooks should be sent.
+      example: https://www.example.com/webhook
     PersonLinkRequest:
       title: PersonLinkRequest
       description: Request payload to associate an existing person with a merchant.
@@ -683,47 +702,6 @@ components:
       required:
       - personId
       - relationshipType
-    AverageTransactionValue:
-      type: number
-      description: The typical value of a single transaction. Major units, example 50.00
-      example: 50
-    PersonId:
-      type: string
-      pattern: ^person_[a-zA-Z0-9-]{21}$
-      description: Unique identifier for the person
-      example: person_abcdefghijklmno123456
-    UpdatedAt:
-      type: string
-      format: date-time
-      description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
-    CreatedAt:
-      type: string
-      format: date-time
-      description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
-    MerchantCategoryCode:
-      type: string
-      pattern: ^[0-9]{4}$
-      description: Merchant Category Code assigned to the business, indicating the type of goods or services sold.
-      example: '5411'
-    Error:
-      $schema: https://json-schema.org/draft/2020-12/schema
-      title: Error
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-          description: HTTP status code
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp when the error occurred
-      required:
-      - status
-      - failureMessage
-      - timestamp
     MerchantPersonDetails:
       title: MerchantPersonDetails
       type: object
@@ -814,22 +792,44 @@ components:
         email: john.doe@ppro.com
         createdAt: '2023-01-01T00:00:00Z'
         updatedAt: '2023-01-01T00:00:00Z'
-    PaymentDescriptor:
-      title: PaymentDescriptor
+    Address:
+      title: Address
+      type: object
+      properties:
+        street:
+          type: string
+          pattern: ^[0-9a-zA-Z\s\-\.,'/#]{1,255}$
+          example: 123 Main St
+        city:
+          type: string
+          pattern: ^[0-9a-zA-Z\s\-\.,'/#]{1,255}$
+          example: Anytown
+        region:
+          type: string
+          pattern: ^[0-9a-zA-Z\s\-\.,'/#]{1,255}$
+          example: CA
+        postalCode:
+          type: string
+          pattern: ^[0-9A-Z\s\-]{1,20}$
+          description: 'Required for countries that use postal codes. This field can be omitted for the following country codes: AO,AI,AG,AW,BS,BZ,BJ,BM,BO,BQ,BW,CF,TD,KM,CG,CD,CK,CI,CW,DJ,DM,TL,GQ,ER,FJ,TF,GA,GM,GY,GD,HK,HM,IO,MO,MH,MS,NR,NU,NF,PW,PA,WS,KN,LC,VC,ST,SC,SL,SX,SB,SS,GS,SH,TC,TK,TO,TV,UG,AE,VA,VU,YE,ZW'
+          example: '12345'
+        country:
+          $ref: '#/components/schemas/CountryCode'
+      required:
+      - street
+      - city
+      - country
+      example:
+        street: 123 Main St
+        city: Anytown
+        region: CA
+        postalCode: '12345'
+        country: US
+    IncorporationDate:
       type: string
-      pattern: ^[A-Za-z0-9.',& /+\-]{0,255}$
-      description: The text customers see on their bank statement for transactions from this store.
-      example: Example LLC Store
-    MerchantId:
-      type: string
-      pattern: ^([A-Z0-9]{5,32}|merchant_[a-zA-Z0-9-]{21})$
-      description: Unique identifier for the merchant
-      example: MERCHANTID456
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      description: ISO-4217 currency code (e.g., EUR, USD)
-      example: EUR
+      format: date
+      description: The date the business was legally registered or incorporated.
+      example: '2020-01-01'
     RelationshipType:
       type: string
       enum:
@@ -838,38 +838,8 @@ components:
       description: The relationship type of the person in relation to the business (e.g., DIRECTOR, ULTIMATE_BENEFICIAL_OWNER)
       example: DIRECTOR
   responses:
-    InternalServerError:
-      description: Internal Server Error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
     TooManyRequests:
       description: Too many requests
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Forbidden:
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadRequest:
-      description: Bad Request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    GatewayTimeout:
-      description: Gateway Timeout
       content:
         application/json:
           schema:
@@ -886,13 +856,36 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-  headers:
-    Location:
-      description: Path of the created resource.
-      schema:
-        type: string
-        format: uri-reference
-        example: /api/merchants/ABC123XYZ
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    GatewayTimeout:
+      description: Gateway Timeout
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   parameters:
     person-id:
       name: person-id
@@ -906,3 +899,10 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/MerchantId'
+  headers:
+    Location:
+      description: Path of the created resource.
+      schema:
+        type: string
+        format: uri-reference
+        example: /api/merchants/ABC123XYZ

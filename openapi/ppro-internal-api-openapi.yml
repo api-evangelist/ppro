@@ -243,22 +243,7 @@ paths:
                 $ref: '#/components/schemas/ApiError'
 components:
   schemas:
-    ApiError:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        status:
-          type: integer
-          format: int32
-        failureMessage:
-          type: string
-        extensions:
-          type: object
-          additionalProperties:
-            type: string
-    ChargebackDetails:
+    ChargebackReversalDetails:
       type: object
       properties:
         id:
@@ -323,15 +308,6 @@ components:
             type: object
             additionalProperties:
               type: string
-    ChargebackResponse:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ChargebackDetails'
     Amount:
       type: object
       properties:
@@ -343,7 +319,43 @@ components:
       required:
       - currency
       - value
-    ChargebackReversalDetails:
+    Pagination:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalCount:
+          type: integer
+          format: int32
+        currentPage:
+          type: integer
+          format: int32
+    ApiError:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+        failureMessage:
+          type: string
+        extensions:
+          type: object
+          additionalProperties:
+            type: string
+    ChargebackResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargebackDetails'
+    ChargebackDetails:
       type: object
       properties:
         id:
@@ -417,15 +429,3 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ChargebackReversalDetails'
-    Pagination:
-      type: object
-      properties:
-        totalPages:
-          type: integer
-          format: int32
-        totalCount:
-          type: integer
-          format: int32
-        currentPage:
-          type: integer
-          format: int32

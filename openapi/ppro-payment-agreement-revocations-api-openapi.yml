@@ -48,6 +48,19 @@ paths:
                 $ref: '#/components/schemas/AgreementRevocationResponse'
 components:
   schemas:
+    AgreementRevocationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The status of agreement revocation request
+          enum:
+          - REVOKED
+          - FAILED
+          example: REVOKED
+        failure:
+          $ref: '#/components/schemas/ProcessingFailure'
+          description: The latest payment agreement processing failure.
     AdditionalData:
       type: object
       properties:
@@ -57,7 +70,6 @@ components:
         merchantAdviceCodeText:
           type: string
           description: Human-readable explanation of the Merchant Advice Code (MAC).
-    AgreementRevocationRequest: {}
     ProcessingFailure:
       type: object
       properties:
@@ -83,19 +95,7 @@ components:
           description: Indicates whether the merchant should create a fresh new attempt, where initiating a fresh new attempt at a later time may potentially result in a successful outcome.
         additionalData:
           $ref: '#/components/schemas/AdditionalData'
-    AgreementRevocationResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          description: The status of agreement revocation request
-          enum:
-          - REVOKED
-          - FAILED
-          example: REVOKED
-        failure:
-          $ref: '#/components/schemas/ProcessingFailure'
-          description: The latest payment agreement processing failure.
+    AgreementRevocationRequest: {}
   securitySchemes:
     bearer_token:
       type: http

@@ -155,11 +155,75 @@ paths:
           $ref: '#/components/responses/GatewayTimeout'
 components:
   schemas:
-    LegalEntityName:
+    UpdatedAt:
       type: string
-      pattern: ^(?=.{1,255}$).*\S.*
-      description: The officially registered name of the business as recorded in legal or governmental registries.
-      example: Example LLC
+      format: date-time
+      description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+    PlatformDetails:
+      title: PlatformDetails
+      allOf:
+      - type: object
+        properties:
+          id:
+            $ref: '#/components/schemas/PlatformId'
+          pspId:
+            $ref: '#/components/schemas/PspId'
+          externalPlatformReference:
+            description: Unique reference, assigned by external client. Note that the same reference cannot be used for both a Merchant and a Platform.
+            $ref: '#/components/schemas/ExternalReference'
+          legalEntityName:
+            $ref: '#/components/schemas/LegalEntityName'
+          createdAt:
+            $ref: '#/components/schemas/CreatedAt'
+          updatedAt:
+            $ref: '#/components/schemas/UpdatedAt'
+        required:
+        - id
+        - externalPlatformReference
+        - legalEntityName
+        - createdAt
+        - updatedAt
+    PlatformId:
+      type: string
+      pattern: ^([A-Z0-9]{5,32}|platform_[a-zA-Z0-9-]{21})$
+      description: Unique identifier for the platform
+      example: PLATFORMID123456
+    ExternalReference:
+      type: string
+      pattern: ^[A-Z0-9]{1,32}$
+      description: Unique reference, assigned by external client.
+      example: ENTITY1234567890
+    PlatformPage:
+      title: PlatformPage
+      allOf:
+      - $ref: '#/components/schemas/ResponsePageDetails'
+      - type: object
+        properties:
+          content:
+            type: array
+            items:
+              $ref: '#/components/schemas/PlatformDetails'
+        required:
+        - content
+    Error:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      title: Error
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code
+        failureMessage:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the error occurred
+      required:
+      - status
+      - failureMessage
+      - timestamp
     PspId:
       type: string
       pattern: ^([a-zA-Z0-9]{3,41}|psp_[a-zA-Z0-9-]{21})$
@@ -204,85 +268,21 @@ components:
       - nextPage
       - previousPage
       - links
-    ExternalReference:
-      type: string
-      pattern: ^[A-Z0-9]{1,32}$
-      description: Unique reference, assigned by external client.
-      example: ENTITY1234567890
-    PlatformPage:
-      title: PlatformPage
-      allOf:
-      - $ref: '#/components/schemas/ResponsePageDetails'
-      - type: object
-        properties:
-          content:
-            type: array
-            items:
-              $ref: '#/components/schemas/PlatformDetails'
-        required:
-        - content
-    PlatformId:
-      type: string
-      pattern: ^([A-Z0-9]{5,32}|platform_[a-zA-Z0-9-]{21})$
-      description: Unique identifier for the platform
-      example: PLATFORMID123456
     UpdatePlatformRequest:
       title: UpdatePlatformRequest
       type: object
       properties:
         legalEntityName:
           $ref: '#/components/schemas/LegalEntityName'
-    UpdatedAt:
+    LegalEntityName:
       type: string
-      format: date-time
-      description: Timestamp when the resource was last updated. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
+      pattern: ^(?=.{1,255}$).*\S.*
+      description: The officially registered name of the business as recorded in legal or governmental registries.
+      example: Example LLC
     CreatedAt:
       type: string
       format: date-time
       description: Timestamp when the resource was created. UTC timezone. Format YYYY-MM-DDTHH:MM:SS.ssssssZ
-    PlatformDetails:
-      title: PlatformDetails
-      allOf:
-      - type: object
-        properties:
-          id:
-            $ref: '#/components/schemas/PlatformId'
-          pspId:
-            $ref: '#/components/schemas/PspId'
-          externalPlatformReference:
-            description: Unique reference, assigned by external client. Note that the same reference cannot be used for both a Merchant and a Platform.
-            $ref: '#/components/schemas/ExternalReference'
-          legalEntityName:
-            $ref: '#/components/schemas/LegalEntityName'
-          createdAt:
-            $ref: '#/components/schemas/CreatedAt'
-          updatedAt:
-            $ref: '#/components/schemas/UpdatedAt'
-        required:
-        - id
-        - externalPlatformReference
-        - legalEntityName
-        - createdAt
-        - updatedAt
-    Error:
-      $schema: https://json-schema.org/draft/2020-12/schema
-      title: Error
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-          description: HTTP status code
-        failureMessage:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp when the error occurred
-      required:
-      - status
-      - failureMessage
-      - timestamp
     CreatePlatformRequest:
       title: CreatePlatformRequest
       type: object
@@ -297,38 +297,8 @@ components:
       required:
       - legalEntityName
   responses:
-    InternalServerError:
-      description: Internal Server Error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
     TooManyRequests:
       description: Too many requests
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Forbidden:
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadRequest:
-      description: Bad Request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    GatewayTimeout:
-      description: Gateway Timeout
       content:
         application/json:
           schema:
@@ -341,6 +311,36 @@ components:
             $ref: '#/components/schemas/Error'
     Conflict:
       description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    GatewayTimeout:
+      description: Gateway Timeout
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
       content:
         application/json:
           schema:
