@@ -64,57 +64,156 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-PPRO is a local payments infrastructure company. It lets payment service providers, acquirers,
-platforms and enterprise merchants accept the payment methods consumers actually use in their own
-market — bank redirects (iDEAL, BLIK, Przelewy24, Pay By Bank), wallets (Alipay, WeChat Pay, Amazon
-Pay, Cash App Pay, TWINT, Swish), cash and voucher rails (Boleto, OXXO, Multibanco, Indomaret), SEPA
-Direct Debit, Pix, UPI, BNPL and stablecoins — through one REST integration.
+PPRO is a local payments infrastructure company that lets payment service providers, acquirers, platforms and enterprise merchants accept the payment methods consumers actually use in their own market — bank redirects such as iDEAL, BLIK, Przelewy24 and Pay By Bank, wallets such as Alipay, WeChat Pay, Amazon Pay, Cash App Pay, TWINT and Swish, cash and voucher rails such as Boleto, OXXO, Multibanco and Indomaret, SEPA Direct Debit, Pix, UPI, BNPL and stablecoins — through a single REST integration. The PPRO Global API is an OpenAPI 3.1 platform built around four core objects (payment charges, payment instruments, payment agreements and payment sessions) plus captures, refunds, voids, fund statuses, disputes and chargebacks, with CloudEvents 1.0.2 webhooks, an idempotency-key contract, a documented token-bucket rate limit, a Drop-in Checkout component library and a hosted Model Context Protocol server so coding agents can call the platform directly.
 
-## What this profile found
+**Areas:** Payments · Local Payment Methods · Financial Services · Fintech · Acquiring · Checkout · E-Commerce · Digital Wallet · Recurring Payments · Disputes · Chargebacks · Company
 
-- **Eleven OpenAPI 3.1 documents, 63 operations and 30 webhook definitions**, all served from PPRO's
-  own developer hub and discovered through an RFC 9727 API catalog at
-  `https://developerhub.ppro.com/.well-known/api-catalog`.
-- **A live, first-party remote MCP server** at `https://mcp.eu.ppro.com` (sandbox
-  `https://mcp.sandbox.eu.ppro.com`). Anonymous `initialize` + `tools/list` returned **28 tools with
-  complete JSON Schema inputs**, saved verbatim in `mcp/ppro-mcp-tools.json`. Every tool binds
-  one-to-one to a published OpenAPI `operationId`.
-- **A documented idempotency contract** (`Request-Idempotency-Key`, UUIDv4, 24h retention, 409 on
-  in-flight or body-mismatch replay) and a **token-bucket rate limit with four response headers**.
-- **CloudEvents 1.0.2 webhooks** with HMAC-SHA256 `PPRO-Signature` verification and a documented
-  retry ladder (15s first retry, doubling, 15 attempts, ~68 hours).
-- **76 published failure codes** across four failure types, catalogued in
-  `errors/ppro-failure-codes.yml`.
-- **No AsyncAPI, no GraphQL, no gRPC, no SOAP, no OAuth, no agent card, no security.txt** — all
-  probed, all recorded as absent rather than assumed.
+## PPRO on APIs.io
 
-## Contents
+Everything profiled for PPRO is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/ppro/](https://apis.io/providers/ppro/)** — or go straight to one of the APIs or properties below.
 
-| Directory | What is in it |
+### APIs (18)
+
+- [PPRO Authorization Endpoints API](https://apis.io/apis/ppro/ppro-authorization-endpoints-api/) — The Authorization Endpoints API from PPRO — 5 operation(s) for authorization endpoints.
+- [PPRO Capture Endpoints API](https://apis.io/apis/ppro/ppro-capture-endpoints-api/) — The Capture Endpoints API from PPRO — 2 operation(s) for capture endpoints.
+- [PPRO Dispute Reports API](https://apis.io/apis/ppro/ppro-dispute-reports-api/) — Endpoints for generating and retrieving dispute reports
+- [PPRO Disputes API](https://apis.io/apis/ppro/ppro-disputes-api/) — The Disputes API from PPRO — 6 operation(s) for disputes.
+- [PPRO Enrollment Endpoints API](https://apis.io/apis/ppro/ppro-enrollment-endpoints-api/) — The Enrollment Endpoints API from PPRO — 2 operation(s) for enrollment endpoints.
+- [PPRO Internal API](https://apis.io/apis/ppro/ppro-internal-api/) — The Internal API from PPRO — 4 operation(s) for internal.
+- [PPRO Merchants API](https://apis.io/apis/ppro/ppro-merchants-api/) — Merchant management
+- [PPRO Payment Agreement Revocations API](https://apis.io/apis/ppro/ppro-payment-agreement-revocations-api/) — The Payment Agreement Revocations API from PPRO — 1 operation(s) for payment agreement revocations.
+- [PPRO Payment Agreements API](https://apis.io/apis/ppro/ppro-payment-agreements-api/) — The Payment Agreements API from PPRO — 2 operation(s) for payment agreements.
+- [PPRO Payment Charge Controller API](https://apis.io/apis/ppro/ppro-payment-charge-controller-api/) — The payment-charge-controller API from PPRO — 1 operation(s) for payment-charge-controller.
+- [PPRO Payment Charges API](https://apis.io/apis/ppro/ppro-payment-charges-api/) — The Payment Charges API from PPRO — 1 operation(s) for payment charges.
+- [PPRO Payment Instruments API](https://apis.io/apis/ppro/ppro-payment-instruments-api/) — The Payment Instruments API from PPRO — 2 operation(s) for payment instruments.
+- [PPRO Payment Sessions API](https://apis.io/apis/ppro/ppro-payment-sessions-api/) — The Payment Sessions API from PPRO — 3 operation(s) for payment sessions.
+- [PPRO People API](https://apis.io/apis/ppro/ppro-people-api/) — Person management
+- [PPRO Platforms API](https://apis.io/apis/ppro/ppro-platforms-api/) — Platform management
+- [PPRO PS Ps API](https://apis.io/apis/ppro/ppro-psps-api/) — PSP management
+- [PPRO Refund Endpoints API](https://apis.io/apis/ppro/ppro-refund-endpoints-api/) — The Refund Endpoints API from PPRO — 2 operation(s) for refund endpoints.
+- [PPRO Void Endpoints API](https://apis.io/apis/ppro/ppro-void-endpoints-api/) — The Void Endpoints API from PPRO — 2 operation(s) for void endpoints.
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### AsyncAPI (1)
+
+Event-driven and webhook contracts.
+
+- [Ppro Webhooks](https://apis.io/asyncapis/ppro/ppro-webhooks/)
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [PPRO Global API MCP Server](https://apis.io/servers/ppro/ppro-global-api-mcp-server/)
+
+#### Overlays (11)
+
+OpenAPI overlays, including conversational phrasing for each operation.
+
+- [Ppro Chargebacks Overlay](https://apis.io/overlays/ppro/ppro-chargebacks-overlay/)
+- [Ppro Dispute Reports Overlay](https://apis.io/overlays/ppro/ppro-dispute-reports-overlay/)
+- [Ppro Enrollment Overlay](https://apis.io/overlays/ppro/ppro-enrollment-overlay/)
+- [Ppro Fund Statuses Overlay](https://apis.io/overlays/ppro/ppro-fund-statuses-overlay/)
+- [Ppro Onboarding Overlay](https://apis.io/overlays/ppro/ppro-onboarding-overlay/)
+- [Ppro Payment Agreements Overlay](https://apis.io/overlays/ppro/ppro-payment-agreements-overlay/)
+- [Ppro Payment Charges Overlay](https://apis.io/overlays/ppro/ppro-payment-charges-overlay/)
+- [Ppro Payment Instruments Overlay](https://apis.io/overlays/ppro/ppro-payment-instruments-overlay/)
+- [Ppro Payment Sessions Overlay](https://apis.io/overlays/ppro/ppro-payment-sessions-overlay/)
+- [Ppro Risk Management Overlay](https://apis.io/overlays/ppro/ppro-risk-management-overlay/)
+- [Ppro Webhooks Overlay](https://apis.io/overlays/ppro/ppro-webhooks-overlay/)
+
+#### Security (4)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Ppro Authentication](https://apis.io/security/ppro/ppro-authentication/)
+- [Ppro Domain Security](https://apis.io/security/ppro/ppro-domain-security/)
+- [Ppro Trust Center](https://apis.io/security/ppro/ppro-trust-center/)
+- [Ppro Vulnerability Disclosure](https://apis.io/security/ppro/ppro-vulnerability-disclosure/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Ppro Plans Pricing](https://apis.io/plans/ppro/ppro-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Ppro Rate Limits](https://apis.io/rate-limits/ppro/ppro-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://www.ppro.com/)
+- [Documentation](https://developerhub.ppro.com/global-api/docs/welcome)
+- [Getting started](https://developerhub.ppro.com/global-api/docs/get-started)
+- [API reference](https://developerhub.ppro.com/global-api/reference)
+- [Sign up](https://dashboard.ppro.com/)
+- [Support](https://www.ppro.com/contact/)
+- [Blog](https://www.ppro.com/news/)
+- [Trust centre](https://trust.ppro.com/)
+- [Terms of service](https://www.ppro.com/legal/payment-services-agreement-general-terms-and-conditions/)
+- [Privacy policy](https://www.ppro.com/legal/privacy-notice/)
+- [GitHub](https://github.com/PPRO)
+- [Status](https://status.ppro.com/)
+
+## API Evangelist rating
+
+**Kin Score 52.1** — developing · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
 |---|---|
-| `openapi/` | Eleven PPRO OpenAPI 3.1 documents; raw harvests in `_original/` |
-| `overlays/` | OpenAPI Overlay 1.0.0 documents carrying our enhancements |
-| `mcp/` | MCP server manifest, the verbatim `tools/list` response, and the tool ↔ REST crosswalk |
-| `asyncapi/` | The 30-event CloudEvents webhook catalogue |
-| `conventions/` | Auth, idempotency, pagination, data standards, reversibility |
-| `errors/` | HTTP problem types and the 76 published failure codes |
-| `authentication/`, `security/` | Auth profile, domain security probe, trust center, disclosure probe |
-| `lifecycle/`, `changelog/` | Versioning and deprecation posture, monthly changelog |
-| `sandbox/`, `plans/`, `rate-limits/` | Test environment and triggers, pricing posture, published limits |
-| `packages/`, `components/` | The one first-party npm SDK, and the Drop-in Checkout component family |
-| `data-model/` | 19-entity graph derived from the `$ref` and id-reference links |
-| `conformance/` | Standards conformance, including the domain-standard signatures |
-| `skills/`, `llms/`, `well-known/` | Agent skills, PPRO's own llms.txt files, well-known probe record |
+| Discoverability | 80.0 |
+| Contract quality | 59.3 |
+| Contract governance | 18.2 |
+| Operational transparency | 73.7 |
+| Developer ergonomics | 56.5 |
+| Access clarity | 28.9 |
 
-## Primary public sources
+**Agent readiness 46.9** — agent-native
 
-- https://www.ppro.com/
-- https://developerhub.ppro.com/
-- https://developerhub.ppro.com/global-api/reference
-- https://developerhub.ppro.com/.well-known/api-catalog
-- https://developerhub.ppro.com/llms.txt
-- https://mcp.eu.ppro.com
-- https://status.ppro.com/
-- https://trust.ppro.com/
-- https://www.postman.com/pprodev (linked from PPRO's own developer-resources page)
-- https://www.npmjs.com/package/@pprogroup/drop-in-checkout
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | documented (partial credit) |
+| MCP Server | documented (partial credit) |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | verified |
+| Error Semantics | verified |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | yes |
+| Agent Skills | derived (partial credit) |
+| Well Known Catalog | yes |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | — |
+| Operation Distinctiveness | mostly |
+
+**Regulatory alignment 26.8** — Payments
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/ppro/](https://apis.io/providers/ppro/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for PPRO: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/ppro/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
